@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../utils/auth';
-import { Mail, Lock, Eye, EyeOff, User, Plane, Mountain, Sun, MapPin } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../utils/auth";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  Plane,
+  Mountain,
+  Sun,
+  MapPin,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 // Shared animation variants (SAMA dengan login)
 const containerVariants = {
@@ -11,17 +21,17 @@ const containerVariants = {
     opacity: 1,
     transition: {
       duration: 0.8,
-      staggerChildren: 0.15
-    }
+      staggerChildren: 0.15,
+    },
   },
   exit: {
     opacity: 0,
     x: 100,
     transition: {
       duration: 0.6,
-      ease: "easeInOut"
-    }
-  }
+      ease: "easeInOut",
+    },
+  },
 };
 
 const itemVariants = {
@@ -33,9 +43,9 @@ const itemVariants = {
     transition: {
       type: "spring",
       stiffness: 100,
-      damping: 15
-    }
-  }
+      damping: 15,
+    },
+  },
 };
 
 const floatingAnimation = {
@@ -44,57 +54,61 @@ const floatingAnimation = {
     transition: {
       duration: 4,
       repeat: Infinity,
-      ease: "easeInOut"
-    }
-  }
+      ease: "easeInOut",
+    },
+  },
 };
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
-    const result = await register(formData.name, formData.email, formData.password);
-    
+    const result = await register(
+      formData.name,
+      formData.email,
+      formData.password
+    );
+
     if (result.success) {
-      navigate('/home');
+      navigate("/home");
     } else {
       setError(result.message);
     }
-    
+
     setLoading(false);
   };
 
   // Background image URL - ganti dengan gambar lu nanti
-//   const backgroundImage = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
+  //   const backgroundImage = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
   const backgroundImage = "/images/bg5.png";
 
   return (
@@ -105,22 +119,22 @@ const Register = () => {
       className="min-h-screen flex relative overflow-hidden"
     >
       {/* Background Image dengan Green Overlay */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${backgroundImage})`
+          backgroundImage: `url(${backgroundImage})`,
         }}
       >
         {/* Green Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-green-600/80 via-green-700/80 to-green-800/80"></div>
-        
+
         {/* Additional Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-white rounded-full blur-xl"></div>
           <div className="absolute top-3/4 left-1/4 w-24 h-24 bg-white rounded-full blur-lg"></div>
           <div className="absolute top-1/2 right-1/2 w-40 h-40 bg-white rounded-full blur-2xl"></div>
         </div>
-        
+
         {/* Floating Icons */}
         <motion.div
           variants={floatingAnimation}
@@ -148,50 +162,51 @@ const Register = () => {
       </div>
 
       {/* Left Side - Hero Content */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -100 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 1, delay: 0.5 }}
         className="hidden lg:flex flex-1 relative z-10 items-center justify-center"
       >
         <div className="text-center text-white max-w-2xl px-12">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
             className="text-6xl font-bold mb-8 leading-tight"
           >
             Start Your
-            <motion.br 
+            <motion.br
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}
             />
-            <motion.span 
+            <motion.span
               className="bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent"
-              animate={{ 
+              animate={{
                 backgroundPosition: ["0%", "100%"],
               }}
-              transition={{ 
+              transition={{
                 duration: 3,
                 repeat: Infinity,
-                repeatType: "reverse"
+                repeatType: "reverse",
               }}
             >
               Adventure
             </motion.span>
           </motion.h1>
-          
-          <motion.p 
+
+          <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.8 }}
             className="text-xl text-green-100 mb-12 leading-relaxed"
           >
-            Join our community of travelers and start planning your dream vacations with ease and style.
+            Join our community of travelers and start planning your dream
+            vacations with ease and style.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 0.8 }}
@@ -200,7 +215,7 @@ const Register = () => {
             {[
               { icon: User, text: "Create Profile" },
               { icon: MapPin, text: "Save Destinations" },
-              { icon: Sun, text: "Share Memories" }
+              { icon: Sun, text: "Share Memories" },
             ].map((item, index) => {
               const Icon = item.icon;
               return (
@@ -210,16 +225,16 @@ const Register = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1.6 + index * 0.2, duration: 0.6 }}
                   className="text-center"
-                  whileHover={{ 
+                  whileHover={{
                     y: -10,
-                    transition: { type: "spring", stiffness: 300 }
+                    transition: { type: "spring", stiffness: 300 },
                   }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30 inline-block mb-3"
-                    whileHover={{ 
+                    whileHover={{
                       rotate: 360,
-                      transition: { duration: 0.8 }
+                      transition: { duration: 0.8 },
                     }}
                   >
                     <Icon className="h-8 w-8 text-white" />
@@ -233,40 +248,47 @@ const Register = () => {
       </motion.div>
 
       {/* Right Side - Form */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         className="flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 relative z-10"
       >
-        <motion.div variants={containerVariants} className="max-w-md w-full space-y-8">
+        <motion.div
+          variants={containerVariants}
+          className="max-w-md w-full space-y-8"
+        >
           {/* Header */}
           <motion.div variants={itemVariants} className="text-center">
-            <motion.div 
+            <motion.div
               className="flex justify-center"
-              whileHover={{ 
+              whileHover={{
                 scale: 1.1,
                 rotate: [0, -5, 5, 0],
-                transition: { duration: 0.5 }
+                transition: { duration: 0.5 },
               }}
               whileTap={{ scale: 0.95 }}
             >
-              <motion.div 
+              <motion.div
                 className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30"
-                whileHover={{ 
+                whileHover={{
                   boxShadow: "0 20px 40px rgba(34, 197, 94, 0.3)",
-                  background: ["rgba(255,255,255,0.2)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.2)"]
+                  background: [
+                    "rgba(255,255,255,0.2)",
+                    "rgba(255,255,255,0.3)",
+                    "rgba(255,255,255,0.2)",
+                  ],
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
                 <Plane className="h-12 w-12 text-white" />
               </motion.div>
             </motion.div>
-            <motion.h2 
+            <motion.h2
               variants={itemVariants}
               className="mt-8 text-4xl font-bold text-white"
             >
               Join Us
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={itemVariants}
               className="mt-4 text-lg text-green-100"
             >
@@ -275,9 +297,13 @@ const Register = () => {
           </motion.div>
 
           {/* Form */}
-          <motion.form variants={itemVariants} className="mt-12 space-y-6" onSubmit={handleSubmit}>
+          <motion.form
+            variants={itemVariants}
+            className="mt-12 space-y-6"
+            onSubmit={handleSubmit}
+          >
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.8, y: -20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 text-red-100 px-4 py-3 rounded-xl text-sm"
@@ -289,7 +315,7 @@ const Register = () => {
             <div className="space-y-6">
               {/* Name Input */}
               <motion.div variants={itemVariants}>
-                <motion.div 
+                <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -304,7 +330,7 @@ const Register = () => {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/30 transition-all duration-300"
+                    className="block w-full pl-12 pr-4 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
                     placeholder="Enter your full name"
                   />
                 </motion.div>
@@ -312,7 +338,7 @@ const Register = () => {
 
               {/* Email Input */}
               <motion.div variants={itemVariants}>
-                <motion.div 
+                <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -327,7 +353,7 @@ const Register = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/30 transition-all duration-300"
+                    className="block w-full pl-12 pr-4 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
                     placeholder="Enter your email"
                   />
                 </motion.div>
@@ -335,7 +361,7 @@ const Register = () => {
 
               {/* Password Input */}
               <motion.div variants={itemVariants}>
-                <motion.div 
+                <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -346,11 +372,11 @@ const Register = () => {
                   <input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-12 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/30 transition-all duration-300"
+                    className="block w-full pl-12 pr-12 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
                     placeholder="Create a password"
                   />
                   <motion.button
@@ -371,7 +397,7 @@ const Register = () => {
 
               {/* Confirm Password Input */}
               <motion.div variants={itemVariants}>
-                <motion.div 
+                <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -382,11 +408,11 @@ const Register = () => {
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/30 transition-all duration-300"
+                    className="block w-full pl-12 pr-4 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
                     placeholder="Confirm your password"
                   />
                 </motion.div>
@@ -399,28 +425,32 @@ const Register = () => {
                 type="submit"
                 disabled={loading}
                 className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-green-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                whileHover={{ 
+                whileHover={{
                   scale: loading ? 1 : 1.02,
-                  boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)"
+                  boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)",
                 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 {loading ? (
-                  <motion.div 
+                  <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                     className="rounded-full h-6 w-6 border-b-2 border-green-600"
                   ></motion.div>
                 ) : (
                   <motion.span
-                    animate={{ 
+                    animate={{
                       backgroundPosition: ["0%", "100%"],
                     }}
-                    transition={{ 
+                    transition={{
                       duration: 2,
                       repeat: Infinity,
-                      repeatType: "reverse"
+                      repeatType: "reverse",
                     }}
                     className="bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent"
                   >
@@ -433,21 +463,21 @@ const Register = () => {
             {/* Login Link */}
             <motion.div variants={itemVariants} className="text-center pt-6">
               <p className="text-white/80">
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <motion.span className="inline-block">
                   <Link
                     to="/login"
                     className="font-semibold text-white hover:text-gray-200 transition-colors relative"
                   >
                     <motion.span
-                      whileHover={{ 
+                      whileHover={{
                         scale: 1.05,
-                        textShadow: "0 0 20px rgba(255,255,255,0.8)"
+                        textShadow: "0 0 20px rgba(255,255,255,0.8)",
                       }}
                       className="relative"
                     >
                       Sign In Here
-                      <motion.div 
+                      <motion.div
                         className="absolute bottom-0 left-0 w-0 h-0.5 bg-white"
                         whileHover={{ width: "100%" }}
                         transition={{ duration: 0.3 }}
