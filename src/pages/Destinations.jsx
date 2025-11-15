@@ -12,6 +12,7 @@ import {
   DollarSign,
   MapPin,
   Download,
+  RefreshCw,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { destinationService } from "../services/destinationService";
@@ -27,6 +28,8 @@ const Destinations = () => {
     key: "departure_date",
     direction: "asc",
   });
+  const [refreshing, setRefreshing] = useState(false);
+  const [operationLoading, setOperationLoading] = useState(null);
 
   // Load destinations from API
   useEffect(() => {
@@ -48,9 +51,15 @@ const Destinations = () => {
     }
   };
 
-  // Handle delete
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadDestinations();
+    setRefreshing(false);
+  };
+
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this destination?")) {
+      setOperationLoading(id);
       try {
         await destinationService.delete(id);
         setDestinations((prev) => prev.filter((d) => d.id !== id));
@@ -60,6 +69,8 @@ const Destinations = () => {
       } catch (error) {
         console.error("Failed to delete destination:", error);
         alert("Failed to delete destination. Please try again.");
+      } finally {
+        setOperationLoading(null);
       }
     }
   };
@@ -82,6 +93,28 @@ const Destinations = () => {
         console.error("Failed to delete destinations:", error);
         alert("Failed to delete destinations. Please try again.");
       }
+    }
+  };
+
+  const handleBulkStatusUpdate = async (newStatus) => {
+    if (selectedDestinations.length === 0) return;
+
+    try {
+      await destinationService.bulkUpdate(selectedDestinations, {
+        is_achieved: newStatus,
+      });
+      // Update local state
+      setDestinations((prev) =>
+        prev.map((d) =>
+          selectedDestinations.includes(d.id)
+            ? { ...d, is_achieved: newStatus }
+            : d
+        )
+      );
+      setSelectedDestinations([]);
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      alert("Failed to update status");
     }
   };
 
@@ -120,6 +153,22 @@ const Destinations = () => {
     });
   };
 
+  const toggleStatus = async (id, currentStatus) => {
+    try {
+      await destinationService.update(id, {
+        is_achieved: !currentStatus,
+      });
+      setDestinations((prev) =>
+        prev.map((d) =>
+          d.id === id ? { ...d, is_achieved: !currentStatus } : d
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      alert("Failed to update status");
+    }
+  };
+
   // Handle selection
   const toggleDestinationSelection = (id) => {
     setSelectedDestinations((prev) =>
@@ -151,6 +200,11 @@ const Destinations = () => {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const handleExport = () => {
+    // Implement export to CSV/Excel
+    console.log("Export functionality to be implemented");
   };
 
   if (loading) {
@@ -193,7 +247,20 @@ const Destinations = () => {
               </p>
             </div>
             <div className="flex gap-3">
-              <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw
+                  className={`h-5 w-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </button>
+              <button
+                onClick={handleExport}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 <Download className="h-5 w-5 mr-2" />
                 Export
               </button>
@@ -270,6 +337,20 @@ const Destinations = () => {
                   {selectedDestinations.length} destination(s) selected
                 </p>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => handleBulkStatusUpdate(true)}
+                    className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Mark as Achieved
+                  </button>
+                  <button
+                    onClick={() => handleBulkStatusUpdate(false)}
+                    className="inline-flex items-center px-3 py-1 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    <XCircle className="h-4 w-4 mr-1" />
+                    Mark as Planning
+                  </button>
                   <button
                     onClick={handleBulkDelete}
                     className="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -443,11 +524,17 @@ const Destinations = () => {
 
                       {/* Status */}
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <button
+                          onClick={() =>
+                            toggleStatus(
+                              destination.id,
+                              destination.is_achieved
+                            )
+                          }
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
                             destination.is_achieved
-                              ? "bg-green-100 text-green-800"
-                              : "bg-orange-100 text-orange-800"
+                              ? "bg-green-100 text-green-800 hover:bg-green-200"
+                              : "bg-orange-100 text-orange-800 hover:bg-orange-200"
                           }`}
                         >
                           {destination.is_achieved ? (
@@ -461,15 +548,18 @@ const Destinations = () => {
                               Planning
                             </>
                           )}
-                        </span>
+                        </button>
                       </td>
 
                       {/* Actions */}
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          <button className="text-blue-600 hover:text-blue-900 transition-colors">
+                          <Link
+                            to={`/destinations/${destination.id}`}
+                            className="text-blue-600 hover:text-blue-900 transition-colors"
+                          >
                             <Eye className="h-4 w-4" />
-                          </button>
+                          </Link>
                           <Link
                             to={`/destinations/${destination.id}/edit`}
                             className="text-green-600 hover:text-green-900 transition-colors"
@@ -478,9 +568,14 @@ const Destinations = () => {
                           </Link>
                           <button
                             onClick={() => handleDelete(destination.id)}
-                            className="text-red-600 hover:text-red-900 transition-colors"
+                            disabled={operationLoading === destination.id}
+                            className="text-red-600 hover:text-red-900 transition-colors disabled:opacity-50"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {operationLoading === destination.id ? (
+                              <div className="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full"></div>
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
                           </button>
                         </div>
                       </td>
