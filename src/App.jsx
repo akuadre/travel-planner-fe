@@ -1,20 +1,17 @@
 import { useEffect } from "react";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import AppLayout from "./layouts/AppLayout.jsx";
-
-// Import pages
 import Home from "./pages/Home.jsx";
 import Destinations from "./pages/Destinations.jsx";
 import Itineraries from "./pages/Itineraries.jsx";
-
 import { GuestRoute, ProtectedRoute } from "./routes/AuthRoutes.jsx";
 
 // ScrollToTop Component
@@ -22,69 +19,45 @@ function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    if ("scrollRestoration" in window.history) {
-      window.history.scrollRestoration = "manual";
-    }
-
-    const scrollToTop = () => {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: "instant",
-      });
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    };
-
-    scrollToTop();
-    const timer = setTimeout(scrollToTop, 10);
-
-    return () => clearTimeout(timer);
+    // Force scroll to top on route change
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   }, [pathname]);
-
-  useEffect(() => {
-    const handleLoad = () => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    };
-
-    handleLoad();
-    window.addEventListener("load", handleLoad);
-
-    return () => window.removeEventListener("load", handleLoad);
-  }, []);
 
   return null;
 }
 
 function App() {
+  const location = useLocation();
+
   return (
-    <Router>
+    <>
       <ScrollToTop />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Navigate to="/home" replace />} />
 
-      <Routes>
-        <Route path="/" element={<Navigate to="/home" replace />} />
-
-        {/* Public Routes (Guest Only) */}
-        <Route element={<GuestRoute />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Route>
-
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/destinations" element={<Destinations />} />
-            <Route path="/itineraries" element={<Itineraries />} />
+          {/* Public Routes (Guest Only) */}
+          <Route element={<GuestRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Route>
-        </Route>
 
-        {/* Catch all route */}
-        <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes>
-    </Router>
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/destinations" element={<Destinations />} />
+              <Route path="/itineraries" element={<Itineraries />} />
+            </Route>
+          </Route>
+
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </>
   );
 }
 
