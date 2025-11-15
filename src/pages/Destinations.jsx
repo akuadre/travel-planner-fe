@@ -1,100 +1,110 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  CheckCircle, 
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Eye,
+  CheckCircle,
   XCircle,
   Calendar,
   DollarSign,
   MapPin,
   Download,
-  Upload
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { destinationService } from "../services/destinationService";
 
 const Destinations = () => {
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedDestinations, setSelectedDestinations] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: 'departure_date', direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({
+    key: "departure_date",
+    direction: "asc",
+  });
 
-  // Mock data - nanti ganti dengan API
-  const mockDestinations = [
-    {
-      id: 1,
-      title: 'Trip ke Gunung Bromo',
-      photo: null,
-      departure_date: '2024-03-15',
-      budget: 2500000,
-      duration_days: 3,
-      is_achieved: true,
-      created_at: '2024-01-15'
-    },
-    {
-      id: 2,
-      title: 'Liburan ke Pantai Kuta Bali',
-      photo: null,
-      departure_date: '2024-04-20',
-      budget: 5000000,
-      duration_days: 5,
-      is_achieved: false,
-      created_at: '2024-01-20'
-    },
-    {
-      id: 3,
-      title: 'Camping di Gunung Cikuray',
-      photo: null,
-      departure_date: '2024-05-10',
-      budget: 1500000,
-      duration_days: 2,
-      is_achieved: false,
-      created_at: '2024-02-01'
-    },
-    {
-      id: 4,
-      title: 'City Tour Jakarta',
-      photo: null,
-      departure_date: '2024-06-01',
-      budget: 3000000,
-      duration_days: 4,
-      is_achieved: true,
-      created_at: '2024-02-05'
-    }
-  ];
-
+  // Load destinations from API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setDestinations(mockDestinations);
-      setLoading(false);
-    }, 1000);
+    loadDestinations();
   }, []);
 
+  const loadDestinations = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await destinationService.getAll();
+      setDestinations(data);
+    } catch (error) {
+      console.error("Failed to load destinations:", error);
+      setError("Failed to load destinations. Please try again.");
+      setDestinations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle delete
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this destination?")) {
+      try {
+        await destinationService.delete(id);
+        setDestinations((prev) => prev.filter((d) => d.id !== id));
+        setSelectedDestinations((prev) =>
+          prev.filter((destId) => destId !== id)
+        );
+      } catch (error) {
+        console.error("Failed to delete destination:", error);
+        alert("Failed to delete destination. Please try again.");
+      }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedDestinations.length === 0) return;
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedDestinations.length} destinations?`
+      )
+    ) {
+      try {
+        await destinationService.bulkDelete(selectedDestinations);
+        setDestinations((prev) =>
+          prev.filter((d) => !selectedDestinations.includes(d.id))
+        );
+        setSelectedDestinations([]);
+      } catch (error) {
+        console.error("Failed to delete destinations:", error);
+        alert("Failed to delete destinations. Please try again.");
+      }
+    }
+  };
+
   // Filter destinations
-  const filteredDestinations = destinations.filter(destination => {
-    const matchesSearch = destination.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = 
-      statusFilter === 'all' || 
-      (statusFilter === 'achieved' && destination.is_achieved) ||
-      (statusFilter === 'not_achieved' && !destination.is_achieved);
-    
+  const filteredDestinations = destinations.filter((destination) => {
+    const matchesSearch = destination.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "achieved" && destination.is_achieved) ||
+      (statusFilter === "not_achieved" && !destination.is_achieved);
+
     return matchesSearch && matchesStatus;
   });
 
   // Sort destinations
   const sortedDestinations = [...filteredDestinations].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key]) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
+      return sortConfig.direction === "asc" ? -1 : 1;
     }
     if (a[sortConfig.key] > b[sortConfig.key]) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
+      return sortConfig.direction === "asc" ? 1 : -1;
     }
     return 0;
   });
@@ -103,16 +113,17 @@ const Destinations = () => {
   const handleSort = (key) => {
     setSortConfig({
       key,
-      direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc'
+      direction:
+        sortConfig.key === key && sortConfig.direction === "asc"
+          ? "desc"
+          : "asc",
     });
   };
 
   // Handle selection
   const toggleDestinationSelection = (id) => {
-    setSelectedDestinations(prev =>
-      prev.includes(id)
-        ? prev.filter(destId => destId !== id)
-        : [...prev, id]
+    setSelectedDestinations((prev) =>
+      prev.includes(id) ? prev.filter((destId) => destId !== id) : [...prev, id]
     );
   };
 
@@ -120,40 +131,25 @@ const Destinations = () => {
     if (selectedDestinations.length === sortedDestinations.length) {
       setSelectedDestinations([]);
     } else {
-      setSelectedDestinations(sortedDestinations.map(d => d.id));
-    }
-  };
-
-  // Handle delete
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this destination?')) {
-      setDestinations(prev => prev.filter(d => d.id !== id));
-      setSelectedDestinations(prev => prev.filter(destId => destId !== id));
-    }
-  };
-
-  const handleBulkDelete = () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedDestinations.length} destinations?`)) {
-      setDestinations(prev => prev.filter(d => !selectedDestinations.includes(d.id)));
-      setSelectedDestinations([]);
+      setSelectedDestinations(sortedDestinations.map((d) => d.id));
     }
   };
 
   // Format currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
   // Format date
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -167,13 +163,34 @@ const Destinations = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Error Display */}
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <p className="text-red-800">{error}</p>
+              <button
+                onClick={loadDestinations}
+                className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">All Destinations</h1>
-              <p className="text-gray-600 mt-2">Manage your travel destinations</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                All Destinations
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Manage your travel destinations
+              </p>
             </div>
             <div className="flex gap-3">
               <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
@@ -226,7 +243,7 @@ const Destinations = () => {
               <select
                 value={`${sortConfig.key}-${sortConfig.direction}`}
                 onChange={(e) => {
-                  const [key, direction] = e.target.value.split('-');
+                  const [key, direction] = e.target.value.split("-");
                   setSortConfig({ key, direction });
                 }}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -245,7 +262,7 @@ const Destinations = () => {
           {selectedDestinations.length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
             >
               <div className="flex items-center justify-between">
@@ -278,12 +295,13 @@ const Destinations = () => {
             // Empty State
             <div className="text-center py-12">
               <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No destinations found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No destinations found
+              </h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm || statusFilter !== 'all' 
-                  ? 'Try adjusting your search or filter criteria'
-                  : 'Get started by creating your first destination'
-                }
+                {searchTerm || statusFilter !== "all"
+                  ? "Try adjusting your search or filter criteria"
+                  : "Get started by creating your first destination"}
               </p>
               <Link
                 to="/destinations/new"
@@ -302,7 +320,11 @@ const Destinations = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                       <input
                         type="checkbox"
-                        checked={selectedDestinations.length === sortedDestinations.length && sortedDestinations.length > 0}
+                        checked={
+                          selectedDestinations.length ===
+                            sortedDestinations.length &&
+                          sortedDestinations.length > 0
+                        }
                         onChange={toggleSelectAll}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
@@ -310,28 +332,28 @@ const Destinations = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Destination
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort('departure_date')}
+                      onClick={() => handleSort("departure_date")}
                     >
                       <div className="flex items-center">
                         Departure Date
-                        {sortConfig.key === 'departure_date' && (
+                        {sortConfig.key === "departure_date" && (
                           <span className="ml-1">
-                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
                           </span>
                         )}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort('budget')}
+                      onClick={() => handleSort("budget")}
                     >
                       <div className="flex items-center">
                         Budget
-                        {sortConfig.key === 'budget' && (
+                        {sortConfig.key === "budget" && (
                           <span className="ml-1">
-                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
                           </span>
                         )}
                       </div>
@@ -360,8 +382,12 @@ const Destinations = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
-                          checked={selectedDestinations.includes(destination.id)}
-                          onChange={() => toggleDestinationSelection(destination.id)}
+                          checked={selectedDestinations.includes(
+                            destination.id
+                          )}
+                          onChange={() =>
+                            toggleDestinationSelection(destination.id)
+                          }
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </td>
@@ -417,11 +443,13 @@ const Destinations = () => {
 
                       {/* Status */}
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          destination.is_achieved
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-orange-100 text-orange-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            destination.is_achieved
+                              ? "bg-green-100 text-green-800"
+                              : "bg-orange-100 text-orange-800"
+                          }`}
+                        >
                           {destination.is_achieved ? (
                             <>
                               <CheckCircle className="h-3 w-3 mr-1" />
@@ -442,10 +470,13 @@ const Destinations = () => {
                           <button className="text-blue-600 hover:text-blue-900 transition-colors">
                             <Eye className="h-4 w-4" />
                           </button>
-                          <button className="text-green-600 hover:text-green-900 transition-colors">
+                          <Link
+                            to={`/destinations/${destination.id}/edit`}
+                            className="text-green-600 hover:text-green-900 transition-colors"
+                          >
                             <Edit className="h-4 w-4" />
-                          </button>
-                          <button 
+                          </Link>
+                          <button
                             onClick={() => handleDelete(destination.id)}
                             className="text-red-600 hover:text-red-900 transition-colors"
                           >
@@ -465,7 +496,9 @@ const Destinations = () => {
         {sortedDestinations.length > 0 && (
           <div className="mt-6 flex items-center justify-between">
             <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">{sortedDestinations.length}</span> destinations
+              Showing{" "}
+              <span className="font-medium">{sortedDestinations.length}</span>{" "}
+              destinations
             </p>
             {/* Add pagination controls here if needed */}
           </div>

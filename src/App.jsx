@@ -1,16 +1,13 @@
 import { useEffect } from "react";
-import {
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import AppLayout from "./layouts/AppLayout.jsx";
 import Home from "./pages/Home.jsx";
 import Destinations from "./pages/Destinations.jsx";
+import DestinationForm from "./pages/DestinationForm.jsx";
 import Itineraries from "./pages/Itineraries.jsx";
 import { GuestRoute, ProtectedRoute } from "./routes/AuthRoutes.jsx";
 
@@ -49,6 +46,12 @@ function App() {
             <Route element={<AppLayout />}>
               <Route path="/home" element={<Home />} />
               <Route path="/destinations" element={<Destinations />} />
+              <Route path="/destinations" element={<Destinations />} />
+              <Route path="/destinations/new" element={<DestinationForm />} />
+              <Route
+                path="/destinations/:id/edit"
+                element={<DestinationForm />}
+              />
               <Route path="/itineraries" element={<Itineraries />} />
             </Route>
           </Route>

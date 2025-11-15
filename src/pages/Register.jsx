@@ -474,7 +474,7 @@ const Register = () => {
 
             {/* Login Link */}
             <motion.div variants={itemVariants} className="text-center pt-6">
-              <p className="text-white/80">
+              <div className="text-white/80">
                 Already have an account?{" "}
                 <motion.span className="inline-block">
                   <Link
@@ -497,7 +497,7 @@ const Register = () => {
                     </motion.span>
                   </Link>
                 </motion.span>
-              </p>
+              </div>
             </motion.div>
           </motion.form>
         </motion.div>

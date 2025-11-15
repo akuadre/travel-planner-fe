@@ -317,7 +317,7 @@ const Login = () => {
 
             {/* Register Link */}
             <motion.div variants={itemVariants} className="text-center pt-6">
-              <p className="text-white/80">
+              <div className="text-white/80">
                 Don't have an account?{" "}
                 <motion.span className="inline-block">
                   <Link
@@ -340,7 +340,7 @@ const Login = () => {
                     </motion.span>
                   </Link>
                 </motion.span>
-              </p>
+              </div>
             </motion.div>
           </motion.form>
 

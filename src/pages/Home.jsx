@@ -2,51 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, Filter, MapPin, Calendar, DollarSign, CheckCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { destinationService } from '../services/destinationService';
 
 const Home = () => {
   const [destinations, setDestinations] = useState([]);
-  const [filter, setFilter] = useState('all'); // all, achieved, not_achieved
+  const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Mock data - nanti ganti dengan API call
-  const mockDestinations = [
-    {
-      id: 1,
-      title: 'Trip ke Gunung Bromo',
-      photo: null,
-      departure_date: '2024-03-15',
-      budget: 2500000,
-      duration_days: 3,
-      is_achieved: true
-    },
-    {
-      id: 2,
-      title: 'Liburan ke Pantai Kuta Bali',
-      photo: null,
-      departure_date: '2024-04-20',
-      budget: 5000000,
-      duration_days: 5,
-      is_achieved: false
-    },
-    {
-      id: 3,
-      title: 'Camping di Gunung Cikuray',
-      photo: null,
-      departure_date: '2024-05-10',
-      budget: 1500000,
-      duration_days: 2,
-      is_achieved: false
-    }
-  ];
-
+  // Load destinations from API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setDestinations(mockDestinations);
-      setLoading(false);
-    }, 1000);
+    loadDestinations();
   }, []);
+
+  const loadDestinations = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await destinationService.getAll();
+      setDestinations(data);
+    } catch (error) {
+      console.error('Failed to load destinations:', error);
+      setError('Failed to load destinations. Please try again.');
+      // Fallback to empty array
+      setDestinations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter destinations
   const filteredDestinations = destinations.filter(destination => {
@@ -63,7 +47,7 @@ const Home = () => {
   const stats = {
     total: destinations.length,
     achieved: destinations.filter(d => d.is_achieved).length,
-    totalBudget: destinations.reduce((sum, d) => sum + d.budget, 0)
+    totalBudget: destinations.reduce((sum, d) => sum + parseFloat(d.budget), 0)
   };
 
   // Format currency
@@ -92,6 +76,22 @@ const Home = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-lg mb-4">{error}</div>
+          <button
+            onClick={loadDestinations}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Section */}
@@ -103,7 +103,7 @@ const Home = () => {
               <p className="text-gray-600 mt-2">Manage and track your upcoming adventures</p>
             </div>
             <Link
-              to="/destinations"
+              to="/destinations/new"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="h-5 w-5 mr-2" />
