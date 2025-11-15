@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import api from '../services/api';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -15,55 +15,61 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Load user from localStorage on mount
   useEffect(() => {
-    checkAuth();
+    const loadUser = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        console.log('🔐 Loading user, token exists:', !!token);
+        
+        if (token) {
+          const userData = await authService.getUser();
+          console.log('✅ User loaded:', userData);
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('❌ Failed to load user:', error);
+        localStorage.removeItem('auth_token');
+      } finally {
+        setLoading(false);
+        console.log('🏁 Auth loading finished');
+      }
+    };
+
+    loadUser();
   }, []);
-
-  const checkAuth = async () => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await api.get('/user');
-      setUser(response.data);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      localStorage.removeItem('auth_token');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/login', { email, password });
-      const { access_token, user: userData } = response.data;
+      console.log('🔐 Attempting login for:', email);
+      const response = await authService.login(email, password);
+      console.log('✅ Login response:', response);
       
-      localStorage.setItem('auth_token', access_token);
-      setUser(userData);
+      setUser(response.user);
+      localStorage.setItem('auth_token', response.token);
       
-      return { success: true, user: userData };
+      return { success: true };
     } catch (error) {
+      console.error('❌ Login error:', error);
       return { 
         success: false, 
-        message: error.message || 'Login failed. Please try again.' 
+        message: error.message || 'Login failed. Please check your credentials.' 
       };
     }
   };
 
   const register = async (name, email, password) => {
     try {
-      const response = await api.post('/register', { name, email, password });
-      const { access_token, user: userData } = response.data;
+      console.log('👤 Attempting registration for:', email);
+      const response = await authService.register(name, email, password);
+      console.log('✅ Register response:', response);
       
-      localStorage.setItem('auth_token', access_token);
-      setUser(userData);
+      setUser(response.user);
+      localStorage.setItem('auth_token', response.token);
       
-      return { success: true, user: userData };
+      return { success: true };
     } catch (error) {
+      console.error('❌ Register error:', error);
       return { 
         success: false, 
         message: error.message || 'Registration failed. Please try again.' 
@@ -73,21 +79,23 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.post('/logout');
+      console.log('🚪 Attempting logout');
+      await authService.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ Logout error:', error);
     } finally {
-      localStorage.removeItem('auth_token');
       setUser(null);
+      localStorage.removeItem('auth_token');
+      console.log('✅ Logout completed');
     }
   };
 
   const value = {
     user,
+    loading,
     login,
     register,
-    logout,
-    loading
+    logout
   };
 
   return (

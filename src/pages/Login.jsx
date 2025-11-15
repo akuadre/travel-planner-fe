@@ -113,7 +113,7 @@ const Login = () => {
         }}
       >
         {/* Blue Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80"></div>
 
         {/* Additional Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
@@ -307,7 +307,7 @@ const Login = () => {
                       repeat: Infinity,
                       repeatType: "reverse",
                     }}
-                    className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
+                    className="bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
                   >
                     Sign In
                   </motion.span>
@@ -391,7 +391,7 @@ const Login = () => {
               transition={{ delay: 1.2 }}
             />
             <motion.span
-              className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent"
+              className="bg-linear-to-r from-white to-blue-200 bg-clip-text text-transparent"
               animate={{
                 backgroundPosition: ["0%", "100%"],
               }}

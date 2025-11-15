@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, DollarSign, MapPin, CheckCircle, XCircle, Edit, Trash2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { destinationService } from '../services/destinationService';
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Calendar,
+  DollarSign,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { destinationService } from "../services/destinationService";
 
 const DestinationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [destination, setDestination] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadDestination();
@@ -21,35 +30,44 @@ const DestinationDetail = () => {
       const data = await destinationService.getById(id);
       setDestination(data);
     } catch (error) {
-      console.error('Failed to load destination:', error);
-      setError('Destination not found');
+      console.error("Failed to load destination:", error);
+      setError("Destination not found");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this destination?')) {
+    if (window.confirm("Are you sure you want to delete this destination?")) {
       try {
         await destinationService.delete(id);
-        navigate('/destinations');
+        navigate("/destinations");
       } catch (error) {
-        console.error('Failed to delete destination:', error);
-        alert('Failed to delete destination');
+        console.error("Failed to delete destination:", error);
+        alert("Failed to delete destination");
       }
     }
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (error || !destination) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Destination not found'}</p>
-          <Link to="/destinations" className="text-blue-600 hover:text-blue-800">
+          <p className="text-red-600 mb-4">
+            {error || "Destination not found"}
+          </p>
+          <Link
+            to="/destinations"
+            className="text-blue-600 hover:text-blue-800"
+          >
             Back to Destinations
           </Link>
         </div>
@@ -94,7 +112,7 @@ const DestinationDetail = () => {
           className="bg-white rounded-xl shadow-sm border overflow-hidden"
         >
           {/* Image */}
-          <div className="h-64 bg-gradient-to-br from-blue-500 to-purple-600 relative">
+          <div className="h-64 bg-linear-to-br from-blue-500 to-purple-600 relative">
             {destination.photo ? (
               <img
                 src={destination.photo}
@@ -111,12 +129,16 @@ const DestinationDetail = () => {
           {/* Content */}
           <div className="p-6">
             <div className="flex items-start justify-between mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">{destination.title}</h1>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                destination.is_achieved
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-orange-100 text-orange-800'
-              }`}>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {destination.title}
+              </h1>
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  destination.is_achieved
+                    ? "bg-green-100 text-green-800"
+                    : "bg-orange-100 text-orange-800"
+                }`}
+              >
                 {destination.is_achieved ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-1" />
@@ -138,12 +160,15 @@ const DestinationDetail = () => {
                 <div>
                   <p className="text-sm text-gray-600">Departure Date</p>
                   <p className="font-semibold">
-                    {new Date(destination.departure_date).toLocaleDateString('id-ID', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {new Date(destination.departure_date).toLocaleDateString(
+                      "id-ID",
+                      {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
                   </p>
                 </div>
               </div>
@@ -153,10 +178,10 @@ const DestinationDetail = () => {
                 <div>
                   <p className="text-sm text-gray-600">Budget</p>
                   <p className="font-semibold">
-                    {new Intl.NumberFormat('id-ID', {
-                      style: 'currency',
-                      currency: 'IDR',
-                      minimumFractionDigits: 0
+                    {new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                      minimumFractionDigits: 0,
                     }).format(destination.budget)}
                   </p>
                 </div>
@@ -166,7 +191,9 @@ const DestinationDetail = () => {
                 <MapPin className="h-6 w-6 text-gray-400 mr-3" />
                 <div>
                   <p className="text-sm text-gray-600">Duration</p>
-                  <p className="font-semibold">{destination.duration_days} days</p>
+                  <p className="font-semibold">
+                    {destination.duration_days} days
+                  </p>
                 </div>
               </div>
             </div>

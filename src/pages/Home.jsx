@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, MapPin, Calendar, DollarSign, CheckCircle, XCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { destinationService } from '../services/destinationService';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  Plus,
+  Search,
+  Filter,
+  MapPin,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { destinationService } from "../services/destinationService";
 
 const Home = () => {
   const [destinations, setDestinations] = useState([]);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Load destinations from API
   useEffect(() => {
@@ -19,12 +28,12 @@ const Home = () => {
   const loadDestinations = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const data = await destinationService.getAll();
       setDestinations(data);
     } catch (error) {
-      console.error('Failed to load destinations:', error);
-      setError('Failed to load destinations. Please try again.');
+      console.error("Failed to load destinations:", error);
+      setError("Failed to load destinations. Please try again.");
       // Fallback to empty array
       setDestinations([]);
     } finally {
@@ -33,38 +42,40 @@ const Home = () => {
   };
 
   // Filter destinations
-  const filteredDestinations = destinations.filter(destination => {
-    const matchesSearch = destination.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = 
-      filter === 'all' || 
-      (filter === 'achieved' && destination.is_achieved) ||
-      (filter === 'not_achieved' && !destination.is_achieved);
-    
+  const filteredDestinations = destinations.filter((destination) => {
+    const matchesSearch = destination.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "achieved" && destination.is_achieved) ||
+      (filter === "not_achieved" && !destination.is_achieved);
+
     return matchesSearch && matchesFilter;
   });
 
   // Calculate stats
   const stats = {
     total: destinations.length,
-    achieved: destinations.filter(d => d.is_achieved).length,
-    totalBudget: destinations.reduce((sum, d) => sum + parseFloat(d.budget), 0)
+    achieved: destinations.filter((d) => d.is_achieved).length,
+    totalBudget: destinations.reduce((sum, d) => sum + parseFloat(d.budget), 0),
   };
 
   // Format currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
   // Format date
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
 
@@ -93,14 +104,18 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-indigo-50">
       {/* Header Section */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white/70 backdrop-blur-sm border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Travel Plans</h1>
-              <p className="text-gray-600 mt-2">Manage and track your upcoming adventures</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                My Travel Plans
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Manage and track your upcoming adventures
+              </p>
             </div>
             <Link
               to="/destinations/new"
@@ -127,8 +142,12 @@ const Home = () => {
                 <MapPin className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Destinations</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Destinations
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.total}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -146,7 +165,9 @@ const Home = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Achieved</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.achieved}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.achieved}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -163,7 +184,9 @@ const Home = () => {
                 <DollarSign className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Budget</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Budget
+                </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {formatCurrency(stats.totalBudget)}
                 </p>
@@ -190,31 +213,31 @@ const Home = () => {
             {/* Filter Buttons */}
             <div className="flex gap-2">
               <button
-                onClick={() => setFilter('all')}
+                onClick={() => setFilter("all")}
                 className={`px-4 py-2 rounded-lg border transition-colors ${
-                  filter === 'all'
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  filter === "all"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 All
               </button>
               <button
-                onClick={() => setFilter('achieved')}
+                onClick={() => setFilter("achieved")}
                 className={`px-4 py-2 rounded-lg border transition-colors ${
-                  filter === 'achieved'
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  filter === "achieved"
+                    ? "bg-green-600 text-white border-green-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 Achieved
               </button>
               <button
-                onClick={() => setFilter('not_achieved')}
+                onClick={() => setFilter("not_achieved")}
                 className={`px-4 py-2 rounded-lg border transition-colors ${
-                  filter === 'not_achieved'
-                    ? 'bg-orange-600 text-white border-orange-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  filter === "not_achieved"
+                    ? "bg-orange-600 text-white border-orange-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 Planning
@@ -233,12 +256,13 @@ const Home = () => {
           >
             <div className="max-w-md mx-auto">
               <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No destinations found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No destinations found
+              </h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm || filter !== 'all' 
-                  ? 'Try adjusting your search or filter criteria'
-                  : 'Start by adding your first travel destination'
-                }
+                {searchTerm || filter !== "all"
+                  ? "Try adjusting your search or filter criteria"
+                  : "Start by adding your first travel destination"}
               </p>
               <Link
                 to="/destinations"
@@ -265,7 +289,7 @@ const Home = () => {
                 className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-all duration-300"
               >
                 {/* Destination Image */}
-                <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 relative">
+                <div className="h-48 bg-linear-to-br from-blue-500 to-purple-600 relative">
                   {destination.photo ? (
                     <img
                       src={destination.photo}
@@ -277,13 +301,15 @@ const Home = () => {
                       <MapPin className="h-12 w-12 text-white opacity-50" />
                     </div>
                   )}
-                  
+
                   {/* Status Badge */}
-                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium ${
-                    destination.is_achieved
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-orange-100 text-orange-800'
-                  }`}>
+                  <div
+                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium ${
+                      destination.is_achieved
+                        ? "bg-green-100 text-green-800"
+                        : "bg-orange-100 text-orange-800"
+                    }`}
+                  >
                     {destination.is_achieved ? (
                       <span className="flex items-center">
                         <CheckCircle className="h-4 w-4 mr-1" />
@@ -303,21 +329,27 @@ const Home = () => {
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
                     {destination.title}
                   </h3>
-                  
+
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center text-gray-600">
                       <Calendar className="h-4 w-4 mr-2" />
-                      <span className="text-sm">{formatDate(destination.departure_date)}</span>
+                      <span className="text-sm">
+                        {formatDate(destination.departure_date)}
+                      </span>
                     </div>
-                    
+
                     <div className="flex items-center text-gray-600">
                       <DollarSign className="h-4 w-4 mr-2" />
-                      <span className="text-sm">{formatCurrency(destination.budget)}</span>
+                      <span className="text-sm">
+                        {formatCurrency(destination.budget)}
+                      </span>
                     </div>
-                    
+
                     <div className="flex items-center text-gray-600">
                       <MapPin className="h-4 w-4 mr-2" />
-                      <span className="text-sm">{destination.duration_days} days</span>
+                      <span className="text-sm">
+                        {destination.duration_days} days
+                      </span>
                     </div>
                   </div>
 
