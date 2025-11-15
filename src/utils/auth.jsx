@@ -21,15 +21,20 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('auth_token');
-    if (token) {
-      try {
-        const response = await api.get('/user');
-        setUser(response.data);
-      } catch (error) {
-        localStorage.removeItem('auth_token');
-      }
+    if (!token) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      const response = await api.get('/user');
+      setUser(response.data);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('auth_token');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const login = async (email, password) => {
@@ -40,11 +45,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('auth_token', access_token);
       setUser(userData);
       
-      return { success: true };
+      return { success: true, user: userData };
     } catch (error) {
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Login failed' 
+        message: error.message || 'Login failed. Please try again.' 
       };
     }
   };
@@ -57,19 +62,24 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('auth_token', access_token);
       setUser(userData);
       
-      return { success: true };
+      return { success: true, user: userData };
     } catch (error) {
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Registration failed' 
+        message: error.message || 'Registration failed. Please try again.' 
       };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    setUser(null);
-    api.post('/logout').catch(console.error);
+  const logout = async () => {
+    try {
+      await api.post('/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      setUser(null);
+    }
   };
 
   const value = {

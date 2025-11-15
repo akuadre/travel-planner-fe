@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 seconds timeout
 });
 
 // Add token to requests
@@ -18,7 +19,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle token expiration
+// Handle responses and errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -26,6 +27,16 @@ api.interceptors.response.use(
       localStorage.removeItem('auth_token');
       window.location.href = '/login';
     }
+    
+    // Better error messages
+    if (error.response?.data?.message) {
+      error.message = error.response.data.message;
+    } else if (error.code === 'NETWORK_ERROR') {
+      error.message = 'Network error. Please check your connection.';
+    } else if (error.code === 'TIMEOUT_ERROR') {
+      error.message = 'Request timeout. Please try again.';
+    }
+    
     return Promise.reject(error);
   }
 );
