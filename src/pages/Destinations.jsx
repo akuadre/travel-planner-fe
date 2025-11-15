@@ -13,6 +13,10 @@ import {
   MapPin,
   Download,
   RefreshCw,
+  Filter,
+  SortAsc,
+  Plane,
+  Compass,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { destinationService } from "../services/destinationService";
@@ -103,7 +107,6 @@ const Destinations = () => {
       await destinationService.bulkUpdate(selectedDestinations, {
         is_achieved: newStatus,
       });
-      // Update local state
       setDestinations((prev) =>
         prev.map((d) =>
           selectedDestinations.includes(d.id)
@@ -207,398 +210,520 @@ const Destinations = () => {
     console.log("Export functionality to be implemented");
   };
 
+  // Helper function untuk active button classes
+  const getActiveButtonClass = (color) => {
+    const colorMap = {
+      blue: "bg-blue-500 text-white border-blue-500 shadow-md",
+      green: "bg-green-500 text-white border-green-500 shadow-md", 
+      orange: "bg-orange-500 text-white border-orange-500 shadow-md",
+    };
+    
+    return colorMap[color] || colorMap.blue;
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your destinations...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Error Display */}
-      {error && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex justify-between items-center">
-              <p className="text-red-800">{error}</p>
-              <button
-                onClick={loadDestinations}
-                className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Retry
-              </button>
-            </div>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-br from-blue-500/10 to-cyan-400/10 rounded-2xl p-6 mb-6 border border-blue-200/30 backdrop-blur-sm"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Your Destinations 🗺️
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Manage and organize all your travel plans
+            </p>
           </div>
-        </div>
-      )}
-
-      {/* Header Section */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                All Destinations
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Manage your travel destinations
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <RefreshCw
-                  className={`h-5 w-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
-                />
-                Refresh
-              </button>
-              <button
-                onClick={handleExport}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Download className="h-5 w-5 mr-2" />
-                Export
-              </button>
+          <div className="flex gap-3">
+            <motion.button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              whileHover={{ scale: refreshing ? 1 : 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-5 w-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </motion.button>
+            <motion.button
+              onClick={handleExport}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
+            >
+              <Download className="h-5 w-5 mr-2" />
+              Export
+            </motion.button>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Link
                 to="/destinations/new"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl"
               >
                 <Plus className="h-5 w-5 mr-2" />
-                Add Destination
+                New Destination
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
+      </motion.div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{destinations.length}</p>
+              <p className="text-sm text-gray-600 mt-1">Total</p>
+            </div>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Compass className="h-5 w-5 text-blue-600" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {destinations.filter(d => d.is_achieved).length}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Completed</p>
+            </div>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {destinations.filter(d => !d.is_achieved).length}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Planning</p>
+            </div>
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <XCircle className="h-5 w-5 text-orange-600" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatCurrency(destinations.reduce((sum, d) => sum + parseFloat(d.budget), 0))}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Total Budget</p>
+            </div>
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <DollarSign className="h-5 w-5 text-purple-600" />
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Filter Section */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 justify-between">
-            {/* Search Input */}
-            <div className="flex-1 relative max-w-md">
+      {/* Search and Filter Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6"
+      >
+        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <div className="flex-1 w-full lg:max-w-md">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search destinations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50/50"
               />
-            </div>
-
-            {/* Filter and Status */}
-            <div className="flex gap-3">
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="achieved">Achieved</option>
-                <option value="not_achieved">Planning</option>
-              </select>
-
-              {/* Sort Options */}
-              <select
-                value={`${sortConfig.key}-${sortConfig.direction}`}
-                onChange={(e) => {
-                  const [key, direction] = e.target.value.split("-");
-                  setSortConfig({ key, direction });
-                }}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="departure_date-asc">Date: Oldest First</option>
-                <option value="departure_date-desc">Date: Newest First</option>
-                <option value="title-asc">Title: A-Z</option>
-                <option value="title-desc">Title: Z-A</option>
-                <option value="budget-asc">Budget: Low to High</option>
-                <option value="budget-desc">Budget: High to Low</option>
-              </select>
             </div>
           </div>
 
-          {/* Bulk Actions */}
-          {selectedDestinations.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+          <div className="flex gap-3">
+            <div className="flex gap-2">
+              {[
+                { key: "all", label: "All", color: "blue" },
+                { key: "achieved", label: "Completed", color: "green" },
+                { key: "not_achieved", label: "Planning", color: "orange" },
+              ].map((filterOption) => (
+                <motion.button
+                  key={filterOption.key}
+                  onClick={() => setStatusFilter(filterOption.key)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-4 py-2 rounded-xl border transition-all font-medium ${
+                    statusFilter === filterOption.key
+                      ? getActiveButtonClass(filterOption.color)
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {filterOption.label}
+                </motion.button>
+              ))}
+            </div>
+
+            <select
+              value={`${sortConfig.key}-${sortConfig.direction}`}
+              onChange={(e) => {
+                const [key, direction] = e.target.value.split("-");
+                setSortConfig({ key, direction });
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50/50"
             >
-              <div className="flex items-center justify-between">
-                <p className="text-blue-800">
-                  {selectedDestinations.length} destination(s) selected
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleBulkStatusUpdate(true)}
-                    className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    Mark as Achieved
-                  </button>
-                  <button
-                    onClick={() => handleBulkStatusUpdate(false)}
-                    className="inline-flex items-center px-3 py-1 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-                  >
-                    <XCircle className="h-4 w-4 mr-1" />
-                    Mark as Planning
-                  </button>
-                  <button
-                    onClick={handleBulkDelete}
-                    className="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete Selected
-                  </button>
-                  <button
-                    onClick={() => setSelectedDestinations([])}
-                    className="px-3 py-1 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Clear Selection
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              <option value="departure_date-asc">Date: Oldest First</option>
+              <option value="departure_date-desc">Date: Newest First</option>
+              <option value="title-asc">Title: A-Z</option>
+              <option value="title-desc">Title: Z-A</option>
+              <option value="budget-asc">Budget: Low to High</option>
+              <option value="budget-desc">Budget: High to Low</option>
+            </select>
+          </div>
         </div>
 
-        {/* Destinations Table */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          {sortedDestinations.length === 0 ? (
-            // Empty State
-            <div className="text-center py-12">
-              <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No destinations found
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {searchTerm || statusFilter !== "all"
-                  ? "Try adjusting your search or filter criteria"
-                  : "Get started by creating your first destination"}
+        {/* Bulk Actions */}
+        {selectedDestinations.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="mt-4 p-4 bg-gradient-to-r from-blue-500/10 to-cyan-400/10 border border-blue-200 rounded-xl"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-blue-800 font-medium">
+                {selectedDestinations.length} destination(s) selected
               </p>
+              <div className="flex gap-2">
+                <motion.button
+                  onClick={() => handleBulkStatusUpdate(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center px-3 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all"
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Mark Completed
+                </motion.button>
+                <motion.button
+                  onClick={() => handleBulkStatusUpdate(false)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center px-3 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all"
+                >
+                  <XCircle className="h-4 w-4 mr-1" />
+                  Mark Planning
+                </motion.button>
+                <motion.button
+                  onClick={handleBulkDelete}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete Selected
+                </motion.button>
+                <button
+                  onClick={() => setSelectedDestinations([])}
+                  className="px-3 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Destinations Table */}
+      {sortedDestinations.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm"
+        >
+          <div className="max-w-md mx-auto">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Plane className="h-10 w-10 text-blue-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">
+              {searchTerm || statusFilter !== "all" 
+                ? "No destinations found" 
+                : "No destinations yet"
+              }
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {searchTerm || statusFilter !== "all"
+                ? "Try adjusting your search or filter criteria"
+                : "Start planning your first amazing journey"
+              }
+            </p>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Link
                 to="/destinations/new"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg"
               >
                 <Plus className="h-5 w-5 mr-2" />
-                Add Destination
+                Create Your First Destination
               </Link>
-            </div>
-          ) : (
-            // Table
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+            </motion.div>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden"
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedDestinations.length ===
+                          sortedDestinations.length &&
+                        sortedDestinations.length > 0
+                      }
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                    />
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Destination
+                  </th>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort("departure_date")}
+                  >
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      Departure
+                      {sortConfig.key === "departure_date" && (
+                        <SortAsc className={`h-3 w-3 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => handleSort("budget")}
+                  >
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" />
+                      Budget
+                      {sortConfig.key === "budget" && (
+                        <SortAsc className={`h-3 w-3 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
+                      )}
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      Duration
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {sortedDestinations.map((destination, index) => (
+                  <motion.tr
+                    key={destination.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="hover:bg-gray-50/50 transition-colors group"
+                  >
+                    {/* Checkbox */}
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
-                        checked={
-                          selectedDestinations.length ===
-                            sortedDestinations.length &&
-                          sortedDestinations.length > 0
-                        }
-                        onChange={toggleSelectAll}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={selectedDestinations.includes(destination.id)}
+                        onChange={() => toggleDestinationSelection(destination.id)}
+                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
                       />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Destination
-                    </th>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("departure_date")}
-                    >
-                      <div className="flex items-center">
-                        Departure Date
-                        {sortConfig.key === "departure_date" && (
-                          <span className="ml-1">
-                            {sortConfig.direction === "asc" ? "↑" : "↓"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort("budget")}
-                    >
-                      <div className="flex items-center">
-                        Budget
-                        {sortConfig.key === "budget" && (
-                          <span className="ml-1">
-                            {sortConfig.direction === "asc" ? "↑" : "↓"}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Duration
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedDestinations.map((destination, index) => (
-                    <motion.tr
-                      key={destination.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      {/* Checkbox */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={selectedDestinations.includes(
-                            destination.id
-                          )}
-                          onChange={() =>
-                            toggleDestinationSelection(destination.id)
-                          }
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      </td>
+                    </td>
 
-                      {/* Destination Info */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                            {destination.photo ? (
-                              <img
-                                src={destination.photo}
-                                alt={destination.title}
-                                className="h-10 w-10 rounded-lg object-cover"
-                              />
-                            ) : (
-                              <MapPin className="h-5 w-5 text-white" />
-                            )}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {destination.title}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              Created {formatDate(destination.created_at)}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Departure Date */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center text-sm text-gray-900">
-                          <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                          {formatDate(destination.departure_date)}
-                        </div>
-                      </td>
-
-                      {/* Budget */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-2 text-gray-400" />
-                          {formatCurrency(destination.budget)}
-                        </div>
-                      </td>
-
-                      {/* Duration */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                          {destination.duration_days} days
-                        </div>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() =>
-                            toggleStatus(
-                              destination.id,
-                              destination.is_achieved
-                            )
-                          }
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
-                            destination.is_achieved
-                              ? "bg-green-100 text-green-800 hover:bg-green-200"
-                              : "bg-orange-100 text-orange-800 hover:bg-orange-200"
-                          }`}
-                        >
-                          {destination.is_achieved ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Achieved
-                            </>
+                    {/* Destination Info */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-300 rounded-xl flex items-center justify-center shadow-md">
+                          {destination.photo ? (
+                            <img
+                              src={destination.photo}
+                              alt={destination.title}
+                              className="w-12 h-12 rounded-xl object-cover"
+                            />
                           ) : (
-                            <>
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Planning
-                            </>
+                            <Plane className="h-6 w-6 text-white" />
                           )}
-                        </button>
-                      </td>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {destination.title}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Created {formatDate(destination.created_at)}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
 
-                      {/* Actions */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                    {/* Departure Date */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {formatDate(destination.departure_date)}
+                      </div>
+                    </td>
+
+                    {/* Budget */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {formatCurrency(destination.budget)}
+                      </div>
+                    </td>
+
+                    {/* Duration */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {destination.duration_days} days
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <motion.button
+                        onClick={() => toggleStatus(destination.id, destination.is_achieved)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                          destination.is_achieved
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                        }`}
+                      >
+                        {destination.is_achieved ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Completed
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Planning
+                          </>
+                        )}
+                      </motion.button>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
+                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                           <Link
                             to={`/destinations/${destination.id}`}
-                            className="text-blue-600 hover:text-blue-900 transition-colors"
+                            className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View Details"
                           >
                             <Eye className="h-4 w-4" />
                           </Link>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                           <Link
                             to={`/destinations/${destination.id}/edit`}
-                            className="text-green-600 hover:text-green-900 transition-colors"
+                            className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Edit"
                           >
                             <Edit className="h-4 w-4" />
                           </Link>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                           <button
                             onClick={() => handleDelete(destination.id)}
                             disabled={operationLoading === destination.id}
-                            className="text-red-600 hover:text-red-900 transition-colors disabled:opacity-50"
+                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            title="Delete"
                           >
                             {operationLoading === destination.id ? (
-                              <div className="animate-spin h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full"></div>
+                              <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
                             ) : (
                               <Trash2 className="h-4 w-4" />
                             )}
                           </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Pagination (Optional) */}
-        {sortedDestinations.length > 0 && (
-          <div className="mt-6 flex items-center justify-between">
-            <p className="text-sm text-gray-700">
-              Showing{" "}
-              <span className="font-medium">{sortedDestinations.length}</span>{" "}
-              destinations
-            </p>
-            {/* Add pagination controls here if needed */}
+                        </motion.div>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Showing <span className="font-semibold">{sortedDestinations.length}</span> destinations
+              </p>
+              <div className="text-sm text-gray-600">
+                Total: <span className="font-semibold">{destinations.length}</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
