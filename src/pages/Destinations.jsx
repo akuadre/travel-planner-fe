@@ -19,7 +19,10 @@ import {
   Compass,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { destinationService } from "../services/destinationService";
+import {
+  STORAGE_BASE_URL,
+  destinationService,
+} from "../services/destinationService";
 
 const Destinations = () => {
   const [destinations, setDestinations] = useState([]);
@@ -214,11 +217,17 @@ const Destinations = () => {
   const getActiveButtonClass = (color) => {
     const colorMap = {
       blue: "bg-blue-500 text-white border-blue-500 shadow-md",
-      green: "bg-green-500 text-white border-green-500 shadow-md", 
+      green: "bg-green-500 text-white border-green-500 shadow-md",
       orange: "bg-orange-500 text-white border-orange-500 shadow-md",
     };
-    
+
     return colorMap[color] || colorMap.blue;
+  };
+
+  const getImageUrl = (photoPath) => {
+    if (!photoPath) return null;
+    if (photoPath.startsWith("http")) return photoPath;
+    return `${STORAGE_BASE_URL}/destinations/${photoPath}`;
   };
 
   if (loading) {
@@ -271,10 +280,7 @@ const Destinations = () => {
               <Download className="h-5 w-5 mr-2" />
               Export
             </motion.button>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/destinations/new"
                 className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl"
@@ -296,7 +302,9 @@ const Destinations = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-gray-900">{destinations.length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {destinations.length}
+              </p>
               <p className="text-sm text-gray-600 mt-1">Total</p>
             </div>
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -314,7 +322,7 @@ const Destinations = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {destinations.filter(d => d.is_achieved).length}
+                {destinations.filter((d) => d.is_achieved).length}
               </p>
               <p className="text-sm text-gray-600 mt-1">Completed</p>
             </div>
@@ -333,7 +341,7 @@ const Destinations = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {destinations.filter(d => !d.is_achieved).length}
+                {destinations.filter((d) => !d.is_achieved).length}
               </p>
               <p className="text-sm text-gray-600 mt-1">Planning</p>
             </div>
@@ -352,7 +360,9 @@ const Destinations = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(destinations.reduce((sum, d) => sum + parseFloat(d.budget), 0))}
+                {formatCurrency(
+                  destinations.reduce((sum, d) => sum + parseFloat(d.budget), 0)
+                )}
               </p>
               <p className="text-sm text-gray-600 mt-1">Total Budget</p>
             </div>
@@ -488,21 +498,16 @@ const Destinations = () => {
               <Plane className="h-10 w-10 text-blue-500" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">
-              {searchTerm || statusFilter !== "all" 
-                ? "No destinations found" 
-                : "No destinations yet"
-              }
+              {searchTerm || statusFilter !== "all"
+                ? "No destinations found"
+                : "No destinations yet"}
             </h3>
             <p className="text-gray-600 mb-6">
               {searchTerm || statusFilter !== "all"
                 ? "Try adjusting your search or filter criteria"
-                : "Start planning your first amazing journey"
-              }
+                : "Start planning your first amazing journey"}
             </p>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/destinations/new"
                 className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg"
@@ -547,7 +552,11 @@ const Destinations = () => {
                       <Calendar className="h-4 w-4" />
                       Departure
                       {sortConfig.key === "departure_date" && (
-                        <SortAsc className={`h-3 w-3 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
+                        <SortAsc
+                          className={`h-3 w-3 ${
+                            sortConfig.direction === "desc" ? "rotate-180" : ""
+                          }`}
+                        />
                       )}
                     </div>
                   </th>
@@ -559,7 +568,11 @@ const Destinations = () => {
                       <DollarSign className="h-4 w-4" />
                       Budget
                       {sortConfig.key === "budget" && (
-                        <SortAsc className={`h-3 w-3 ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
+                        <SortAsc
+                          className={`h-3 w-3 ${
+                            sortConfig.direction === "desc" ? "rotate-180" : ""
+                          }`}
+                        />
                       )}
                     </div>
                   </th>
@@ -578,135 +591,157 @@ const Destinations = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sortedDestinations.map((destination, index) => (
-                  <motion.tr
-                    key={destination.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="hover:bg-gray-50/50 transition-colors group"
-                  >
-                    {/* Checkbox */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={selectedDestinations.includes(destination.id)}
-                        onChange={() => toggleDestinationSelection(destination.id)}
-                        className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-                      />
-                    </td>
+                {sortedDestinations.map((destination, index) => {
+                  const imageUrl = getImageUrl(destination.photo);
 
-                    {/* Destination Info */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-300 rounded-xl flex items-center justify-center shadow-md">
-                          {destination.photo ? (
-                            <img
-                              src={destination.photo}
-                              alt={destination.title}
-                              className="w-12 h-12 rounded-xl object-cover"
-                            />
-                          ) : (
-                            <Plane className="h-6 w-6 text-white" />
+                  return (
+                    <motion.tr
+                      key={destination.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-gray-50/50 transition-colors group"
+                    >
+                      {/* Checkbox */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedDestinations.includes(
+                            destination.id
                           )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {destination.title}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            Created {formatDate(destination.created_at)}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+                          onChange={() =>
+                            toggleDestinationSelection(destination.id)
+                          }
+                          className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                        />
+                      </td>
 
-                    {/* Departure Date */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {formatDate(destination.departure_date)}
-                      </div>
-                    </td>
-
-                    {/* Budget */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {formatCurrency(destination.budget)}
-                      </div>
-                    </td>
-
-                    {/* Duration */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {destination.duration_days} days
-                      </div>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <motion.button
-                        onClick={() => toggleStatus(destination.id, destination.is_achieved)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                          destination.is_achieved
-                            ? "bg-green-100 text-green-800 hover:bg-green-200"
-                            : "bg-orange-100 text-orange-800 hover:bg-orange-200"
-                        }`}
-                      >
-                        {destination.is_achieved ? (
-                          <>
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Completed
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Planning
-                          </>
-                        )}
-                      </motion.button>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-2">
-                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                          <Link
-                            to={`/destinations/${destination.id}`}
-                            className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="View Details"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </motion.div>
-                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                          <Link
-                            to={`/destinations/${destination.id}/edit`}
-                            className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Edit"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                        </motion.div>
-                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                          <button
-                            onClick={() => handleDelete(destination.id)}
-                            disabled={operationLoading === destination.id}
-                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                            title="Delete"
-                          >
-                            {operationLoading === destination.id ? (
-                              <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                      {/* Destination Info */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-300 rounded-xl flex items-center justify-center shadow-md">
+                            {destination.photo ? (
+                              <img
+                                src={imageUrl}
+                                alt={destination.title}
+                                className="w-12 h-12 rounded-xl object-cover"
+                              />
                             ) : (
-                              <Trash2 className="h-4 w-4" />
+                              <Plane className="h-6 w-6 text-white" />
                             )}
-                          </button>
-                        </motion.div>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                              {destination.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              Created {formatDate(destination.created_at)}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Departure Date */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatDate(destination.departure_date)}
+                        </div>
+                      </td>
+
+                      {/* Budget */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-gray-900">
+                          {formatCurrency(destination.budget)}
+                        </div>
+                      </td>
+
+                      {/* Duration */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {destination.duration_days} days
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <motion.button
+                          onClick={() =>
+                            toggleStatus(
+                              destination.id,
+                              destination.is_achieved
+                            )
+                          }
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                            destination.is_achieved
+                              ? "bg-green-100 text-green-800 hover:bg-green-200"
+                              : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                          }`}
+                        >
+                          {destination.is_achieved ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Completed
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Planning
+                            </>
+                          )}
+                        </motion.button>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex gap-2">
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <Link
+                              to={`/destinations/${destination.id}`}
+                              className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="View Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </motion.div>
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <Link
+                              to={`/destinations/${destination.id}/edit`}
+                              className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                              title="Edit"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          </motion.div>
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <button
+                              onClick={() => handleDelete(destination.id)}
+                              disabled={operationLoading === destination.id}
+                              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                              title="Delete"
+                            >
+                              {operationLoading === destination.id ? (
+                                <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </motion.div>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -715,10 +750,15 @@ const Destinations = () => {
           <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Showing <span className="font-semibold">{sortedDestinations.length}</span> destinations
+                Showing{" "}
+                <span className="font-semibold">
+                  {sortedDestinations.length}
+                </span>{" "}
+                destinations
               </p>
               <div className="text-sm text-gray-600">
-                Total: <span className="font-semibold">{destinations.length}</span>
+                Total:{" "}
+                <span className="font-semibold">{destinations.length}</span>
               </div>
             </div>
           </div>

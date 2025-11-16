@@ -1,55 +1,81 @@
-import api from './api';
+import api from "./api";
 
 export const authService = {
-  // Login user
   login: async (email, password) => {
     try {
-      const response = await api.post('/login', {
+      const response = await api.post("/login", {
         email,
-        password
+        password,
       });
-      return response.data;
+
+      console.log("🔐 Login raw response:", response.data);
+
+      const data = response.data;
+
+      if (data.access_token && data.user) {
+        return data; // structure: { access_token, token_type, user }
+      }
+
+      throw new Error("Invalid response structure from server");
     } catch (error) {
-      console.error('Login service error:', error);
-      throw new Error(error.response?.data?.message || 'Login failed');
+      console.error("Login service error:", error);
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Login failed";
+      throw new Error(message);
     }
   },
 
-  // Register user  
   register: async (name, email, password) => {
     try {
-      const response = await api.post('/register', {
+      const response = await api.post("/register", {
         name,
         email,
         password,
-        password_confirmation: password
+        password_confirmation: password,
       });
-      return response.data;
+
+      console.log("👤 Register raw response:", response.data);
+
+      const data = response.data;
+
+      if (data.access_token && data.user) {
+        return data; // structure: { access_token, token_type, user }
+      }
+
+      throw new Error("Invalid response structure from server");
     } catch (error) {
-      console.error('Register service error:', error);
-      throw new Error(error.response?.data?.message || 'Registration failed');
+      console.error("Register service error:", error);
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Registration failed";
+      throw new Error(message);
     }
   },
 
   // Get current user
   getUser: async () => {
     try {
-      const response = await api.get('/user');
+      const response = await api.get("/user");
       return response.data;
     } catch (error) {
-      console.error('Get user service error:', error);
-      throw new Error('Failed to get user data');
+      console.error("Get user service error:", error);
+      throw new Error("Failed to get user data");
     }
   },
 
   // Logout user
   logout: async () => {
     try {
-      const response = await api.post('/logout');
+      const response = await api.post("/logout");
       return response.data;
     } catch (error) {
-      console.error('Logout service error:', error);
-      throw new Error('Logout failed');
+      console.error("Logout service error:", error);
+      throw new Error("Logout failed");
     }
-  }
+  },
 };

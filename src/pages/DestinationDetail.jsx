@@ -11,7 +11,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { destinationService } from "../services/destinationService";
+
+import {
+  STORAGE_BASE_URL,
+  destinationService,
+} from "../services/destinationService";
 
 const DestinationDetail = () => {
   const { id } = useParams();
@@ -49,6 +53,12 @@ const DestinationDetail = () => {
     }
   };
 
+  const getImageUrl = (photoPath) => {
+    if (!photoPath) return null;
+    if (photoPath.startsWith("http")) return photoPath;
+    return `${STORAGE_BASE_URL}/destinations/${photoPath}`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -74,6 +84,8 @@ const DestinationDetail = () => {
       </div>
     );
   }
+
+  const imageUrl = getImageUrl(destination.photo);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -115,7 +127,7 @@ const DestinationDetail = () => {
           <div className="h-64 bg-linear-to-br from-blue-500 to-purple-600 relative">
             {destination.photo ? (
               <img
-                src={destination.photo}
+                src={imageUrl}
                 alt={destination.title}
                 className="w-full h-full object-cover"
               />

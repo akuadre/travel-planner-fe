@@ -24,3 +24,61 @@ body {
 .text-white\/80 {
   color: rgba(255, 255, 255, 0.8);
 }
+
+/* Di file CSS global */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Scrollbar selalu visible */
+.always-visible-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+  border: 2px solid #f3f4f6;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Pastikan scrollbar track selalu terlihat */
+.always-visible-scrollbar::-webkit-scrollbar-track-piece:start {
+  background: transparent;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar-track-piece:end {
+  background: transparent;
+}

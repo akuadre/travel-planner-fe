@@ -1,5 +1,7 @@
 import api from "./api";
 
+export const STORAGE_BASE_URL = "http://localhost:8000/storage";
+
 export const destinationService = {
   // Get all destinations for current user
   getAll: async () => {
