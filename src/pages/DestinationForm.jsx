@@ -105,7 +105,7 @@ const DestinationForm = () => {
       }
     } catch (error) {
       console.error("Failed to load destination:", error);
-      setSubmitError("Failed to load destination data.");
+      setSubmitError("Gagal memuat data destinasi.");
     } finally {
       setLoading(false);
     }
@@ -147,69 +147,6 @@ const DestinationForm = () => {
     setShowDatePicker(false);
   };
 
-  // Custom Date Picker Component
-  const CustomDatePicker = () => {
-    const today = new Date();
-    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-    const days = [];
-    for (let i = 1; i <= nextMonth.getDate(); i++) {
-      days.push(i);
-    }
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 p-4"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-gray-900">Select Date</h3>
-          <button
-            onClick={() => setShowDatePicker(false)}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {["M", "T", "W", "T", "F", "S", "S"].map((day) => (
-            <div
-              key={day}
-              className="text-center text-xs font-medium text-gray-500 py-2"
-            >
-              {day}
-            </div>
-          ))}
-          {days.map((day) => {
-            const date = new Date(today.getFullYear(), today.getMonth(), day);
-            const isSelected =
-              formData.departure_date === date.toISOString().split("T")[0];
-            const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
-
-            return (
-              <button
-                key={day}
-                onClick={() => !isPast && handleDateSelect(date)}
-                disabled={isPast}
-                className={`p-2 rounded-lg text-sm font-medium transition-all ${
-                  isSelected
-                    ? "bg-blue-500 text-white"
-                    : isPast
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {day}
-              </button>
-            );
-          })}
-        </div>
-      </motion.div>
-    );
-  };
-
   // Format budget for display with thousands separators
   const formatBudgetDisplay = (budget) => {
     if (!budget) return "";
@@ -244,7 +181,7 @@ const DestinationForm = () => {
       if (!file.type.startsWith("image/")) {
         setErrors((prev) => ({
           ...prev,
-          photo: "Please select an image file",
+          photo: "Harap pilih file gambar",
         }));
         return;
       }
@@ -252,7 +189,7 @@ const DestinationForm = () => {
       if (file.size > 2 * 1024 * 1024) {
         setErrors((prev) => ({
           ...prev,
-          photo: "Image size should be less than 2MB",
+          photo: "Ukuran gambar harus kurang dari 2MB",
         }));
         return;
       }
@@ -277,27 +214,28 @@ const DestinationForm = () => {
     const newErrors = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = "Destination title is required";
+      newErrors.title = "Judul destinasi wajib diisi";
     }
 
     if (!formData.departure_date) {
-      newErrors.departure_date = "Departure date is required";
+      newErrors.departure_date = "Tanggal keberangkatan wajib diisi";
     } else {
       const selectedDate = new Date(formData.departure_date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
-        newErrors.departure_date = "Departure date cannot be in the past";
+        newErrors.departure_date =
+          "Tanggal keberangkatan tidak boleh di masa lalu";
       }
     }
 
     if (!formData.budget || parseFloat(formData.budget) <= 0) {
-      newErrors.budget = "Valid budget is required";
+      newErrors.budget = "Budget yang valid wajib diisi";
     }
 
     if (!formData.duration_days || parseInt(formData.duration_days) <= 0) {
-      newErrors.duration_days = "Valid duration is required";
+      newErrors.duration_days = "Durasi yang valid wajib diisi";
     }
 
     setErrors(newErrors);
@@ -331,7 +269,7 @@ const DestinationForm = () => {
     } catch (error) {
       console.error("Failed to save destination:", error);
       setSubmitError(
-        error.message || "Failed to save destination. Please try again."
+        error.message || "Gagal menyimpan destinasi. Silakan coba lagi."
       );
     } finally {
       setLoading(false);
@@ -349,7 +287,7 @@ const DestinationForm = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading destination...</p>
+          <p className="text-gray-600">Memuat destinasi...</p>
         </div>
       </div>
     );
@@ -375,12 +313,15 @@ const DestinationForm = () => {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {isEdit ? "Edit Destination" : "Plan New Adventure"}
+                {isEdit ? "Edit Destinasi" : "Rencanakan Petualangan Baru"}
+                <span className="ml-1 text-white">
+                  {isEdit ? "📝" : "🗺️"}
+                </span>
               </h1>
               <p className="text-gray-600">
                 {isEdit
-                  ? "Update your travel details"
-                  : "Add a new destination to your travel plans"}
+                  ? "Perbarui detail perjalanan Anda"
+                  : "Tambahkan destinasi baru ke rencana perjalanan Anda"}
               </p>
             </div>
           </div>
@@ -395,12 +336,12 @@ const DestinationForm = () => {
               {formData.is_achieved ? (
                 <>
                   <CheckCircle className="h-4 w-4" />
-                  Completed
+                  Tercapai
                 </>
               ) : (
                 <>
                   <XCircle className="h-4 w-4" />
-                  Planning
+                  Perencanaan
                 </>
               )}
             </div>
@@ -421,7 +362,7 @@ const DestinationForm = () => {
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Camera className="h-5 w-5 text-blue-500" />
-              Destination Photo
+              Foto Destinasi
             </h3>
 
             <div className="space-y-4">
@@ -447,11 +388,11 @@ const DestinationForm = () => {
                       <Camera className="h-8 w-8 text-blue-500" />
                     </div>
                     <p className="text-sm text-gray-600 mb-3">
-                      Upload destination photo
+                      Unggah foto destinasi
                     </p>
                     <label className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all cursor-pointer shadow-md hover:shadow-lg">
                       <Upload className="h-4 w-4 mr-2" />
-                      Choose File
+                      Pilih File
                       <input
                         type="file"
                         accept="image/*"
@@ -460,7 +401,7 @@ const DestinationForm = () => {
                       />
                     </label>
                     <p className="text-xs text-gray-500 mt-2">
-                      PNG, JPG up to 2MB
+                      PNG, JPG maksimal 2MB
                     </p>
                   </div>
                 )}
@@ -482,16 +423,16 @@ const DestinationForm = () => {
             className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Trip Status
+              Status Perjalanan
             </h3>
 
             <label className="flex items-center justify-between cursor-pointer group">
               <div>
                 <div className="text-sm font-medium text-gray-900">
-                  Mark as Completed
+                  Tandai sebagai Selesai
                 </div>
                 <div className="text-xs text-gray-500">
-                  This trip has been finished
+                  Perjalanan ini telah selesai
                 </div>
               </div>
               <div className="relative">
@@ -541,7 +482,7 @@ const DestinationForm = () => {
                   className="block text-sm font-medium text-gray-700 mb-3"
                 >
                   <span>
-                    Destination Title
+                    Judul Destinasi
                     <span className="ml-1 text-red-600">*</span>
                   </span>
                 </label>
@@ -554,7 +495,7 @@ const DestinationForm = () => {
                   className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 ${
                     errors.title ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder="e.g., Amazing Bali Adventure, Tokyo City Exploration..."
+                  placeholder="contoh: Petualangan Bali yang Menakjubkan, Eksplorasi Kota Tokyo..."
                 />
                 {errors.title && (
                   <p className="text-red-600 text-sm mt-2">{errors.title}</p>
@@ -571,7 +512,7 @@ const DestinationForm = () => {
                   >
                     <Calendar className="h-4 w-4 text-blue-500" />
                     <span>
-                      Departure Date
+                      Tanggal Keberangkatan
                       <span className="ml-1 text-red-600">*</span>
                     </span>
                   </label>
@@ -600,7 +541,7 @@ const DestinationForm = () => {
                               day: "numeric",
                             }
                           )
-                        : "Select departure date"}
+                        : "Pilih tanggal keberangkatan"}
                     </div>
 
                     {/* Calendar Icon */}
@@ -619,7 +560,7 @@ const DestinationForm = () => {
                       >
                         <div className="flex justify-between items-center mb-4">
                           <h3 className="font-semibold text-gray-900">
-                            Select Date
+                            Pilih Tanggal
                           </h3>
                           <button
                             onClick={() => setShowDatePicker(false)}
@@ -630,7 +571,7 @@ const DestinationForm = () => {
                         </div>
 
                         <div className="grid grid-cols-7 gap-1">
-                          {["M", "T", "W", "T", "F", "S", "S"].map((day) => (
+                          {["S", "S", "R", "K", "J", "S", "M"].map((day) => (
                             <div
                               key={day}
                               className="text-center text-xs font-medium text-gray-500 py-2"
@@ -746,7 +687,7 @@ const DestinationForm = () => {
 
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-xs text-gray-500">
-                        Adjust by 100,000
+                        Sesuaikan dengan 100.000
                       </span>
                       {formData.budget && (
                         <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
@@ -769,7 +710,7 @@ const DestinationForm = () => {
                       className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2"
                     >
                       <MapPin className="h-4 w-4 text-purple-500" />
-                      Trip Duration *
+                      Durasi Perjalanan *
                     </label>
 
                     <div className="flex gap-2">
@@ -834,7 +775,7 @@ const DestinationForm = () => {
                         {/* Days Label */}
                         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                           <span className="text-sm font-medium text-purple-600 bg-white/80 px-2 py-1 rounded-lg border border-purple-200">
-                            days
+                            hari
                           </span>
                         </div>
                       </div>
@@ -865,10 +806,10 @@ const DestinationForm = () => {
                     </div>
 
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-xs text-gray-500">1-365 days</span>
+                      <span className="text-xs text-gray-500">1-365 hari</span>
                       {formData.duration_days && (
                         <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">
-                          {formData.duration_days} days
+                          {formData.duration_days} hari
                         </span>
                       )}
                     </div>
@@ -893,17 +834,17 @@ const DestinationForm = () => {
                 >
                   <Save className="h-5 w-5 mr-2" />
                   {loading
-                    ? "Saving..."
+                    ? "Menyimpan..."
                     : isEdit
-                    ? "Update Destination"
-                    : "Create Destination"}
+                    ? "Perbarui Destinasi"
+                    : "Buat Destinasi"}
                 </motion.button>
 
                 <Link
                   to="/destinations"
                   className="inline-flex items-center px-18 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
                 >
-                  Cancel
+                  Batal
                 </Link>
               </div>
             </form>

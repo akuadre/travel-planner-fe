@@ -21,17 +21,17 @@ const Header = () => {
   const location = useLocation();
   const { logout, user } = useAuth();
 
-  // Get dynamic page titles
+  // Get dynamic page titles - BAHASA INDONESIA
   const getPageTitle = () => {
     const titles = {
-      '/home': 'Travel Dashboard',
-      '/destinations': 'My Destinations', 
-      '/itineraries': 'Trip Itineraries',
-      '/destinations/new': 'Add Destination',
+      '/home': 'Dashboard Perjalanan',
+      '/destinations': 'Destinasi Saya', 
+      '/itineraries': 'Rencana Perjalanan',
+      '/destinations/new': 'Tambah Destinasi',
     };
     
     if (location.pathname.startsWith('/destinations/') && location.pathname.includes('/edit')) {
-      return 'Edit Destination';
+      return 'Edit Destinasi';
     }
     
     return titles[location.pathname] || 'Travel Planner';
@@ -39,30 +39,26 @@ const Header = () => {
 
   const getPageDescription = () => {
     const descriptions = {
-      '/home': 'Manage and track your travel adventures',
-      '/destinations': 'Create and organize your dream destinations',
-      '/itineraries': 'Plan your trip activities and schedules',
-      '/destinations/new': 'Add a new destination to your travel plans',
+      '/home': 'Kelola dan lacak petualangan perjalananmu',
+      '/destinations': 'Buat dan atur destinasi impianmu',
+      '/itineraries': 'Rencanakan aktivitas dan jadwal perjalananmu',
+      '/destinations/new': 'Tambahkan destinasi baru ke rencana perjalananmu',
     };
     
     if (location.pathname.startsWith('/destinations/') && location.pathname.includes('/edit')) {
-      return 'Update your destination details';
+      return 'Perbarui detail destinasi Anda';
     }
     
-    return descriptions[location.pathname] || 'Your personal travel planning companion';
+    return descriptions[location.pathname] || 'Pendamping perencanaan perjalanan pribadimu';
   };
 
-  // Update clock
+  // Update clock dengan format Indonesia - FIXED
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setCurrentTime(
-        now.toLocaleTimeString("en-US", { 
-          hour: "2-digit", 
-          minute: "2-digit",
-          hour12: true 
-        })
-      );
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      setCurrentTime(`${hours}:${minutes}`);
     };
     updateTime();
     const timer = setInterval(updateTime, 1000);
@@ -87,7 +83,7 @@ const Header = () => {
   };
 
   const getInitials = (name) => {
-    if (!name) return "T";
+    if (!name) return "P";
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
@@ -121,7 +117,7 @@ const Header = () => {
 
         {/* Right Section - Time & User */}
         <div className="flex items-center gap-4">
-          {/* Time Display - Design yang berbeda */}
+          {/* Time Display - Format Indonesia FIXED */}
           <motion.div 
             className="flex items-center gap-3 bg-slate-100/80 rounded-2xl px-4 py-2.5 border border-slate-200/60"
             whileHover={{ scale: 1.02 }}
@@ -129,7 +125,7 @@ const Header = () => {
           >
             <Clock size={18} className="text-blue-500" />
             <span className="font-semibold text-slate-700 text-sm font-mono">
-              {currentTime}
+              {currentTime} WIB
             </span>
           </motion.div>
 
@@ -143,7 +139,7 @@ const Header = () => {
             {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
           </motion.button>
 
-          {/* User Profile Dropdown - Design yang berbeda */}
+          {/* User Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <motion.button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -153,10 +149,10 @@ const Header = () => {
             >
               <div className="text-right hidden sm:block">
                 <p className="font-semibold text-sm text-slate-800">
-                  {user?.name || "Traveler"}
+                  {user?.name || "Petualang"}
                 </p>
                 <p className="text-xs text-slate-500">
-                  {user?.email || "Adventurer"}
+                  {user?.email || "Penjelajah"}
                 </p>
               </div>
               
@@ -196,31 +192,31 @@ const Header = () => {
                   {/* Header dengan gradient */}
                   <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4 text-white">
                     <p className="font-semibold text-sm">
-                      {user?.name || "Traveler"}
+                      {user?.name || "Petualang"}
                     </p>
                     <p className="text-xs text-blue-100 opacity-90">
-                      {user?.email || "Adventurer"}
+                      {user?.email || "Penjelajah"}
                     </p>
                     <p className="text-xs text-blue-200 mt-1">
-                      ✈️ Travel Enthusiast
+                      ✈️ Pecinta Perjalanan
                     </p>
                   </div>
                   
                   <div className="p-2">
-                    {/* Menu Items */}
+                    {/* Menu Items - BAHASA INDONESIA */}
                     <Link
                       to="/profile"
                       className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100/80 transition-colors group"
                     >
                       <User size={18} className="mr-3 text-slate-500 group-hover:text-blue-500" /> 
-                      My Profile
+                      Profil Saya
                     </Link>
                     <Link
                       to="/settings"
                       className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100/80 transition-colors group"
                     >
                       <Settings size={18} className="mr-3 text-slate-500 group-hover:text-blue-500" /> 
-                      Settings
+                      Pengaturan
                     </Link>
                     
                     {/* Logout Button */}
@@ -230,7 +226,7 @@ const Header = () => {
                         className="flex items-center w-full px-3 py-3 text-sm text-red-600 rounded-lg hover:bg-red-50/80 transition-colors group"
                       >
                         <LogOut size={18} className="mr-3 group-hover:scale-110 transition-transform" /> 
-                        Sign Out
+                        Keluar
                       </button>
                     </div>
                   </div>

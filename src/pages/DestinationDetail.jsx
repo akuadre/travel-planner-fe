@@ -35,20 +35,20 @@ const DestinationDetail = () => {
       setDestination(data);
     } catch (error) {
       console.error("Failed to load destination:", error);
-      setError("Destination not found");
+      setError("Destinasi tidak ditemukan");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this destination?")) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus destinasi ini?")) {
       try {
         await destinationService.delete(id);
         navigate("/destinations");
       } catch (error) {
         console.error("Failed to delete destination:", error);
-        alert("Failed to delete destination");
+        alert("Gagal menghapus destinasi");
       }
     }
   };
@@ -62,7 +62,10 @@ const DestinationDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading...
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat destinasi...</p>
+        </div>
       </div>
     );
   }
@@ -72,13 +75,14 @@ const DestinationDetail = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">
-            {error || "Destination not found"}
+            {error || "Destinasi tidak ditemukan"}
           </p>
           <Link
             to="/destinations"
-            className="text-blue-600 hover:text-blue-800"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800"
           >
-            Back to Destinations
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Kembali ke Destinasi
           </Link>
         </div>
       </div>
@@ -94,25 +98,25 @@ const DestinationDetail = () => {
         <div className="flex items-center justify-between mb-6">
           <Link
             to="/destinations"
-            className="inline-flex items-center text-gray-600 hover:text-gray-900"
+            className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Destinations
+            Kembali ke Destinasi
           </Link>
           <div className="flex gap-2">
             <Link
               to={`/destinations/${id}/edit`}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
             >
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Link>
             <button
               onClick={handleDelete}
-              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-md"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              Hapus
             </button>
           </div>
         </div>
@@ -121,10 +125,10 @@ const DestinationDetail = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-sm border overflow-hidden"
+          className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
         >
           {/* Image */}
-          <div className="h-64 bg-linear-to-br from-blue-500 to-purple-600 relative">
+          <div className="h-64 bg-gradient-to-br from-blue-500 to-purple-600 relative">
             {destination.photo ? (
               <img
                 src={imageUrl}
@@ -154,12 +158,12 @@ const DestinationDetail = () => {
                 {destination.is_achieved ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-1" />
-                    Achieved
+                    Tercapai
                   </>
                 ) : (
                   <>
                     <XCircle className="h-4 w-4 mr-1" />
-                    Planning
+                    Perencanaan
                   </>
                 )}
               </span>
@@ -170,7 +174,7 @@ const DestinationDetail = () => {
               <div className="flex items-center">
                 <Calendar className="h-6 w-6 text-gray-400 mr-3" />
                 <div>
-                  <p className="text-sm text-gray-600">Departure Date</p>
+                  <p className="text-sm text-gray-600">Tanggal Keberangkatan</p>
                   <p className="font-semibold">
                     {new Date(destination.departure_date).toLocaleDateString(
                       "id-ID",
@@ -202,9 +206,9 @@ const DestinationDetail = () => {
               <div className="flex items-center">
                 <MapPin className="h-6 w-6 text-gray-400 mr-3" />
                 <div>
-                  <p className="text-sm text-gray-600">Duration</p>
+                  <p className="text-sm text-gray-600">Durasi</p>
                   <p className="font-semibold">
-                    {destination.duration_days} days
+                    {destination.duration_days} hari
                   </p>
                 </div>
               </div>
@@ -214,10 +218,10 @@ const DestinationDetail = () => {
             <div className="border-t pt-6">
               <Link
                 to={`/itineraries?destination=${destination.id}`}
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
               >
                 <MapPin className="h-5 w-5 mr-2" />
-                View Itinerary ({/* jumlah itinerary */} activities)
+                Lihat Rencana Perjalanan ({destination.itineraries?.length || 0} aktivitas)
               </Link>
             </div>
           </div>

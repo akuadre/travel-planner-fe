@@ -84,7 +84,7 @@ const Itineraries = () => {
       }
     } catch (error) {
       console.error("Failed to load data:", error);
-      setError("Failed to load data. Please try again.");
+      setError("Gagal memuat data. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,9 @@ const Itineraries = () => {
 
   const handleDelete = async (itineraryId) => {
     if (
-      window.confirm("Are you sure you want to delete this itinerary item?")
+      window.confirm(
+        "Apakah Anda yakin ingin menghapus item rencana perjalanan ini?"
+      )
     ) {
       try {
         await itineraryService.delete(itineraryId);
@@ -116,7 +118,7 @@ const Itineraries = () => {
         loadData();
       } catch (error) {
         console.error("Failed to delete itinerary:", error);
-        alert("Failed to delete itinerary item.");
+        alert("Gagal menghapus item rencana perjalanan.");
       }
     }
   };
@@ -143,7 +145,7 @@ const Itineraries = () => {
   };
 
   const formatTime = (timeString) => {
-    if (!timeString) return "All day";
+    if (!timeString) return "Sepanjang hari";
     const [hours, minutes] = timeString.split(":");
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? "PM" : "AM";
@@ -152,8 +154,8 @@ const Itineraries = () => {
   };
 
   const formatDuration = (durationDays) => {
-    if (durationDays === 1) return "1 day";
-    return `${durationDays} days`;
+    if (durationDays === 1) return "1 hari";
+    return `${durationDays} hari`;
   };
 
   const formatDate = (dateString) => {
@@ -177,31 +179,36 @@ const Itineraries = () => {
     if (
       type.includes("food") ||
       type.includes("restaurant") ||
-      type.includes("eat")
+      type.includes("eat") ||
+      type.includes("makan")
     )
       return Utensils;
     if (
       type.includes("hotel") ||
       type.includes("accommodation") ||
-      type.includes("stay")
+      type.includes("stay") ||
+      type.includes("penginapan")
     )
       return Hotel;
     if (
       type.includes("photo") ||
       type.includes("sightseeing") ||
-      type.includes("view")
+      type.includes("view") ||
+      type.includes("wisata")
     )
       return Camera;
     if (
       type.includes("hiking") ||
       type.includes("mountain") ||
-      type.includes("nature")
+      type.includes("nature") ||
+      type.includes("alam")
     )
       return Mountain;
     if (
       type.includes("flight") ||
       type.includes("travel") ||
-      type.includes("transport")
+      type.includes("transport") ||
+      type.includes("perjalanan")
     )
       return Plane;
     return Navigation;
@@ -241,7 +248,7 @@ const Itineraries = () => {
               )} shadow-lg`}
             >
               <div className="text-white font-bold text-sm">
-                Day {dayNumber}
+                Hari {dayNumber}
               </div>
             </div>
 
@@ -249,11 +256,11 @@ const Itineraries = () => {
             <div className="flex-1 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">
-                  Day {dayNumber} Adventures
+                  Petualangan Hari {dayNumber}
                 </h3>
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                    {groupedItineraries[dayNumber].length} activities
+                    {groupedItineraries[dayNumber].length} aktivitas
                   </span>
                   <button
                     onClick={() => toggleDay(parseInt(dayNumber))}
@@ -363,7 +370,7 @@ const Itineraries = () => {
         {/* Day Navigation */}
         <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Select Day to View Activities
+            Pilih Hari untuk Melihat Aktivitas
           </h3>
           <div className="flex flex-wrap gap-3">
             {allDays.map((dayNumber) => (
@@ -378,7 +385,7 @@ const Itineraries = () => {
                     : "bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50"
                 }`}
               >
-                Day {dayNumber}
+                Hari {dayNumber}
                 <span className="ml-2 text-sm opacity-80">
                   ({groupedItineraries[dayNumber].length})
                 </span>
@@ -397,17 +404,18 @@ const Itineraries = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-2">
-                Day {selectedDay} Itinerary
+                Rencana Perjalanan Hari {selectedDay}
               </h2>
               <p className="text-blue-100 opacity-90">
-                {selectedDayActivities.length} activities planned for today
+                {selectedDayActivities.length} aktivitas direncanakan untuk hari
+                ini
               </p>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold">
                 {selectedDayActivities.length}
               </div>
-              <div className="text-blue-100 text-sm">Activities</div>
+              <div className="text-blue-100 text-sm">Aktivitas</div>
             </div>
           </div>
         </motion.div>
@@ -498,7 +506,7 @@ const Itineraries = () => {
                         className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors text-sm font-medium"
                       >
                         <Trash2 className="h-3 w-3" />
-                        Delete
+                        Hapus
                       </motion.button>
                     </div>
                   </div>
@@ -516,10 +524,10 @@ const Itineraries = () => {
               <Calendar className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No Activities for Day {selectedDay}
+              Tidak Ada Aktivitas untuk Hari {selectedDay}
             </h3>
             <p className="text-gray-600 mb-4">
-              There are no activities planned for this day yet.
+              Belum ada aktivitas yang direncanakan untuk hari ini.
             </p>
             <motion.button
               onClick={() => setShowForm(true)}
@@ -528,7 +536,7 @@ const Itineraries = () => {
               className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm font-medium"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Activity
+              Tambah Aktivitas
             </motion.button>
           </motion.div>
         )}
@@ -542,14 +550,14 @@ const Itineraries = () => {
             className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Day {selectedDay} Summary
+              Ringkasan Hari {selectedDay}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-xl">
                 <div className="text-2xl font-bold text-blue-600">
                   {selectedDayActivities.length}
                 </div>
-                <div className="text-sm text-blue-800">Total Activities</div>
+                <div className="text-sm text-blue-800">Total Aktivitas</div>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-xl">
                 <div className="text-2xl font-bold text-green-600">
@@ -561,7 +569,7 @@ const Itineraries = () => {
                     ).length
                   }
                 </div>
-                <div className="text-sm text-green-800">Morning</div>
+                <div className="text-sm text-green-800">Pagi</div>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-xl">
                 <div className="text-2xl font-bold text-orange-600">
@@ -574,7 +582,7 @@ const Itineraries = () => {
                     ).length
                   }
                 </div>
-                <div className="text-sm text-orange-800">Afternoon</div>
+                <div className="text-sm text-orange-800">Siang</div>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-xl">
                 <div className="text-2xl font-bold text-purple-600">
@@ -586,7 +594,7 @@ const Itineraries = () => {
                     ).length
                   }
                 </div>
-                <div className="text-sm text-purple-800">Evening</div>
+                <div className="text-sm text-purple-800">Malam</div>
               </div>
             </div>
           </motion.div>
@@ -644,7 +652,7 @@ const Itineraries = () => {
                     : "bg-orange-500/90 text-white"
                 }`}
               >
-                {destination.is_achieved ? "Completed" : "Planning"}
+                {destination.is_achieved ? "Tercapai" : "Perencanaan"}
               </div>
 
               {/* Title Overlay */}
@@ -668,7 +676,7 @@ const Itineraries = () => {
                 <div className="flex items-center text-gray-600">
                   <MapPin className="h-4 w-4 mr-2 text-green-500" />
                   <span className="text-sm font-medium">
-                    {destination.duration_days} days
+                    {destination.duration_days} hari
                   </span>
                 </div>
 
@@ -686,13 +694,13 @@ const Itineraries = () => {
                   to={`/itineraries?destination=${destination.id}`}
                   className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 text-white py-2.5 px-4 rounded-xl text-center hover:from-blue-600 hover:to-cyan-500 transition-all font-medium text-sm shadow-lg hover:shadow-xl"
                 >
-                  Manage Itinerary
+                  Kelola Rencana
                 </Link>
                 <Link
                   to={`/destinations/${destination.id}`}
                   className="flex-1 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-xl text-center hover:bg-gray-50 transition-colors font-medium text-sm"
                 >
-                  View Details
+                  Lihat Detail
                 </Link>
               </div>
             </div>
@@ -715,8 +723,8 @@ const Itineraries = () => {
           </motion.div>
           <p className="text-gray-600 font-medium">
             {isSingleDestinationMode
-              ? "Loading itinerary..."
-              : "Loading destinations..."}
+              ? "Memuat rencana perjalanan..."
+              : "Memuat destinasi..."}
           </p>
         </div>
       </div>
@@ -736,14 +744,14 @@ const Itineraries = () => {
             className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg font-semibold mr-3"
           >
             <RefreshCw className="h-5 w-5 mr-2" />
-            Try Again
+            Coba Lagi
           </button>
           <Link
             to="/destinations"
             className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Destinations
+            Kembali ke Destinasi
           </Link>
         </div>
       </div>
@@ -768,18 +776,21 @@ const Itineraries = () => {
                 className="inline-flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-xl hover:border-gray-400 transition-all shadow-sm hover:shadow-md"
               >
                 <ArrowLeft className="h-5 w-5 mr-2" />
-                Back
+                Kembali
               </Link>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                   {isSingleDestinationMode
-                    ? selectedDestination?.title || "Itinerary"
-                    : "All Destinations Itineraries"}
+                    ? selectedDestination?.title || "Rencana Perjalanan"
+                    : "Semua Rencana Perjalanan"}
+                  <span className="ml-1 text-white">
+                    {isSingleDestinationMode ? "📍" : "🗺️"}
+                  </span>
                 </h1>
                 <p className="text-gray-600 mt-1">
                   {isSingleDestinationMode
-                    ? "Manage your trip activities and schedule"
-                    : "Manage itineraries for all your destinations"}
+                    ? "Kelola aktivitas dan jadwal perjalanan Anda"
+                    : "Kelola rencana perjalanan untuk semua destinasi Anda"}
                 </p>
               </div>
             </div>
@@ -816,7 +827,7 @@ const Itineraries = () => {
                   className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl font-semibold"
                 >
                   <Plus className="h-5 w-5 mr-2" />
-                  Add Activity
+                  Tambah Aktivitas
                 </motion.button>
               </div>
             )}
@@ -840,25 +851,25 @@ const Itineraries = () => {
                   {
                     icon: Calendar,
                     value: formatDate(selectedDestination.departure_date),
-                    label: "Departure Date",
+                    label: "Tanggal Keberangkatan",
                     color: "blue",
                   },
                   {
                     icon: Clock,
                     value: formatDuration(selectedDestination.duration_days),
-                    label: "Trip Duration",
+                    label: "Durasi Perjalanan",
                     color: "green",
                   },
                   {
                     icon: MapPin,
                     value: Object.keys(groupedItineraries).length,
-                    label: "Days Planned",
+                    label: "Hari Terencana",
                     color: "purple",
                   },
                   {
                     icon: Zap,
                     value: itineraries.length,
-                    label: "Total Activities",
+                    label: "Total Aktivitas",
                     color: "orange",
                   },
                 ].map((stat, index) => (
@@ -912,12 +923,12 @@ const Itineraries = () => {
                         <Compass className="h-12 w-12 text-blue-500" />
                       </div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                        Ready for Adventure? 🗺️
+                        Siap untuk Petualangan? 🗺️
                       </h3>
                       <p className="text-gray-600 mb-6 text-lg">
-                        Your {selectedDestination?.duration_days}-day journey to{" "}
-                        {selectedDestination?.title} awaits! Start planning your
-                        amazing experiences.
+                        Perjalanan {selectedDestination?.duration_days} hari
+                        Anda ke {selectedDestination?.title} menanti! Mulai
+                        rencanakan pengalaman menakjubkan Anda.
                       </p>
                       <motion.div
                         whileHover={{ scale: 1.05 }}
@@ -928,7 +939,7 @@ const Itineraries = () => {
                           className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl font-semibold text-lg"
                         >
                           <Plus className="h-6 w-6 mr-2" />
-                          Plan First Activity
+                          Rencanakan Aktivitas Pertama
                         </button>
                       </motion.div>
                     </div>
@@ -958,19 +969,19 @@ const Itineraries = () => {
                 {
                   icon: MapPin,
                   value: destinations.length,
-                  label: "Total Destinations",
+                  label: "Total Destinasi",
                   color: "blue",
                 },
                 {
                   icon: Calendar,
                   value: destinations.filter((d) => !d.is_achieved).length,
-                  label: "Planning",
+                  label: "Perencanaan",
                   color: "orange",
                 },
                 {
                   icon: Star,
                   value: destinations.filter((d) => d.is_achieved).length,
-                  label: "Completed",
+                  label: "Tercapai",
                   color: "green",
                 },
                 {
@@ -1021,11 +1032,11 @@ const Itineraries = () => {
                     <Compass className="h-12 w-12 text-blue-500" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                    No Destinations Yet 🗺️
+                    Belum Ada Destinasi 🗺️
                   </h3>
                   <p className="text-gray-600 mb-6 text-lg">
-                    Start by creating your first destination to plan amazing
-                    itineraries!
+                    Mulai dengan membuat destinasi pertama Anda untuk
+                    merencanakan perjalanan yang menakjubkan!
                   </p>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -1036,7 +1047,7 @@ const Itineraries = () => {
                       className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl font-semibold text-lg"
                     >
                       <Plus className="h-6 w-6 mr-2" />
-                      Create First Destination
+                      Buat Destinasi Pertama
                     </Link>
                   </motion.div>
                 </div>

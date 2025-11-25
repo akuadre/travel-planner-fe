@@ -10,6 +10,7 @@ import {
   LogOut,
   Plus,
   Compass,
+  Navigation,
 } from "lucide-react";
 import { useAuth } from "../../utils/auth";
 
@@ -34,7 +35,7 @@ const Sidebar = () => {
     setOpenMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
   };
 
-  // Navigation structure dengan exact matching
+  // Navigation structure dengan exact matching - BAHASA INDONESIA
   const navigation = [
     {
       key: "dashboard",
@@ -46,19 +47,19 @@ const Sidebar = () => {
     {
       key: "destinations",
       icon: MapPin,
-      label: "Destinations",
+      label: "Destinasi",
       sub: [
         { 
           path: "/destinations", 
-          label: "All Destinations", 
+          label: "Semua Destinasi", 
           icon: Compass,
-          exact: true // Exact match untuk /destinations
+          exact: true
         },
         { 
           path: "/destinations/new", 
-          label: "Add New", 
+          label: "Tambah Baru", 
           icon: Plus,
-          exact: true // Exact match untuk /destinations/new
+          exact: true
         },
       ],
       type: "dropdown",
@@ -66,25 +67,25 @@ const Sidebar = () => {
     {
       key: "itineraries",
       icon: Calendar,
-      label: "Itineraries", 
+      label: "Rencana Perjalanan", 
       href: "/itineraries",
       type: "single",
     },
   ];
 
-  // Styling functions
+  // Styling functions dengan warna biru yang lebih natural
   const getLinkClass = ({ isActive }) =>
     `relative flex items-center justify-between w-full p-3 px-4 rounded-xl transition-all duration-300 ease-out group border ${
       isActive
-        ? "bg-blue-500/15 text-blue-100 border-blue-400/30 shadow-lg shadow-blue-500/20"
-        : "text-gray-300 border-transparent hover:bg-white/5 hover:text-white hover:border-blue-400/20"
+        ? "bg-blue-600/20 text-white border-blue-500/30 shadow-lg shadow-blue-600/20"
+        : "text-blue-100 border-transparent hover:bg-blue-700/20 hover:text-white hover:border-blue-500/20"
     }`;
 
   const getSubLinkClass = ({ isActive }) =>
     `relative flex items-center w-full text-sm p-2.5 px-4 rounded-lg transition-all duration-200 mx-2 ${
       isActive
-        ? "text-blue-300 font-semibold bg-blue-500/20 shadow-md shadow-blue-500/10"
-        : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+        ? "text-white font-semibold bg-blue-600/30 shadow-md shadow-blue-600/20"
+        : "text-blue-200 hover:bg-blue-700/20 hover:text-blue-50"
     }`;
 
   const dropdownVariants = {
@@ -106,44 +107,75 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed top-0 left-0 w-72 h-full bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col z-40 border-r border-slate-700/50 shadow-2xl">
-      {/* App Header */}
+    <aside className="fixed top-0 left-0 w-72 h-full bg-gradient-to-b from-slate-800 via-blue-900/80 to-slate-800 flex flex-col z-40 border-r border-slate-700/50 shadow-2xl">
+      {/* App Header yang lebih natural */}
       <motion.div
-        className="flex items-center gap-4 px-6 py-6 border-b border-slate-700/50 bg-slate-800/30"
+        className="relative px-6 py-6 bg-gradient-to-r from-blue-800 to-blue-700 border-b border-blue-600/30"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <motion.div
-          className="p-3 bg-sky-200 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
-          whileHover={{
-            scale: 1.1,
-            rotate: 5,
-            transition: { type: "spring", stiffness: 300 },
-          }}
-        >
-          <img
-            src="/images/icon.png"
-            className="w-7 h-7 transition-colors duration-300 hover:brightness-125"
-          />
-        </motion.div>
+        {/* Subtle Background Elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-400 rounded-full -translate-y-10 translate-x-10"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8"></div>
+        </div>
 
-        <div>
-          <Link
-            to="/home"
-            className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent tracking-tight hover:from-blue-300 hover:to-cyan-200 transition-all"
+        <div className="relative z-10 flex items-center gap-4">
+          <motion.div
+            className="p-3 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/10"
+            whileHover={{
+              scale: 1.05,
+              transition: { type: "spring", stiffness: 300 },
+            }}
+            whileTap={{ scale: 0.95 }}
           >
-            Travel Planner
-          </Link>
-          <p className="text-xs text-slate-400 mt-1">Plan Your Adventures</p>
+            <div className="relative">
+              <img
+                src="/images/icon.png"
+                className="w-7 h-7 transition-transform duration-300"
+                alt="Travel Planner Logo"
+              />
+            </div>
+          </motion.div>
+
+          <div className="flex-1">
+            <Link
+              to="/home"
+              className="block group"
+            >
+              <motion.h1 
+                className="text-xl font-bold text-white tracking-tight mb-1"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                Travel Planner
+              </motion.h1>
+              <motion.p 
+                className="text-blue-200 text-xs"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                Rencanakan Petualanganmu
+              </motion.p>
+            </Link>
+          </div>
         </div>
       </motion.div>
 
       {/* Navigation Menu */}
       <nav className="flex-1 p-5 space-y-3 overflow-y-auto">
-        <p className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Navigation
-        </p>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <p className="px-3 py-2 text-xs font-semibold text-blue-300 uppercase tracking-wider flex items-center gap-2">
+            <Navigation className="h-3 w-3" />
+            Navigasi
+          </p>
+        </motion.div>
 
         <div className="space-y-2">
           {navigation.map((item, index) => {
@@ -156,7 +188,7 @@ const Sidebar = () => {
                   variants={itemVariants}
                   initial="hidden"
                   animate="visible"
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.1 + 0.5 }}
                 >
                   <NavLink
                     to={item.href}
@@ -167,15 +199,14 @@ const Sidebar = () => {
                         <div className="flex items-center gap-4">
                           <motion.div
                             animate={{
-                              scale: isActive ? 1.2 : 1,
-                              rotate: isActive ? 5 : 0,
+                              scale: isActive ? 1.1 : 1,
                             }}
                             transition={{ type: "spring", stiffness: 300 }}
                           >
                             <Icon
                               size={20}
                               className={
-                                isActive ? "text-blue-300" : "text-slate-400"
+                                isActive ? "text-white" : "text-blue-300"
                               }
                             />
                           </motion.div>
@@ -211,21 +242,21 @@ const Sidebar = () => {
                   variants={itemVariants}
                   initial="hidden"
                   animate="visible"
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.1 + 0.5 }}
                   className="space-y-2"
                 >
                   <button
                     onClick={() => handleMenuToggle(item.key)}
                     className={`relative flex items-center justify-between w-full p-3 px-4 rounded-xl transition-all duration-300 ease-out group border ${
                       hasActiveSubItem
-                        ? "bg-blue-500/10 text-blue-100 border-blue-400/20"
-                        : "text-gray-300 border-transparent hover:bg-white/5 hover:text-white hover:border-blue-400/20"
+                        ? "bg-blue-600/20 text-white border-blue-500/30 shadow-lg shadow-blue-600/20"
+                        : "text-blue-100 border-transparent hover:bg-blue-700/20 hover:text-white hover:border-blue-500/20"
                     }`}
                   >
                     <div className="flex items-center gap-4">
                       <Icon 
                         size={20} 
-                        className={hasActiveSubItem ? "text-blue-300" : "text-slate-400"} 
+                        className={hasActiveSubItem ? "text-white" : "text-blue-300"} 
                       />
                       <span className="font-medium">{item.label}</span>
                     </div>
@@ -235,7 +266,7 @@ const Sidebar = () => {
                     >
                       <ChevronRight 
                         size={16} 
-                        className={hasActiveSubItem ? "text-blue-300" : "text-slate-400"} 
+                        className={hasActiveSubItem ? "text-white" : "text-blue-300"} 
                       />
                     </motion.div>
                   </button>
@@ -261,7 +292,7 @@ const Sidebar = () => {
                               >
                                 <NavLink
                                   to={subItem.path}
-                                  end={subItem.exact} // 🔑 INI YANG PENTING - exact matching
+                                  end={subItem.exact}
                                   className={getSubLinkClass}
                                 >
                                   <SubIcon size={16} className="mr-3" />
@@ -285,36 +316,37 @@ const Sidebar = () => {
 
       {/* User Info & Logout */}
       <motion.div
-        className="p-5 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm"
+        className="p-5 border-t border-slate-700/50 bg-slate-800/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.7 }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <motion.div
-              className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg"
+              className="relative"
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400 }}
             >
-              {user?.name?.charAt(0).toUpperCase() || "T"}
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+                {user?.name?.charAt(0).toUpperCase() || "P"}
+              </div>
             </motion.div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">
-                {user?.name || "Traveler"}
+                {user?.name || "Petualang"}
               </p>
-              <p className="text-xs text-slate-400 truncate">
-                {user?.email || "explorer@travel.com"}
+              <p className="text-xs text-blue-300 truncate">
+                {user?.email || "petualang@travel.com"}
               </p>
             </div>
           </div>
           <motion.button
             onClick={logout}
-            className="p-2.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 border border-transparent hover:border-red-500/20"
-            title="Logout"
+            className="p-2 text-blue-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+            title="Keluar"
             whileHover={{
               scale: 1.1,
-              backgroundColor: "rgba(239, 68, 68, 0.1)",
             }}
             whileTap={{ scale: 0.9 }}
           >
