@@ -41,67 +41,65 @@ const DestinationForm = () => {
   const [submitError, setSubmitError] = useState("");
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => {
     if (isEdit) {
       loadDestination();
+    } else {
+      // Set selectedDate ke hari ini untuk form baru
+      setSelectedDate(new Date());
     }
   }, [id]);
 
+  // Di loadDestination function - MASALAH BESAR DI SINI
   const loadDestination = async () => {
     try {
       setLoading(true);
       const destination = await destinationService.getById(id);
 
-      // Robust budget formatting function
+      console.log("📥 Loaded destination data:", {
+        id: destination.id,
+        title: destination.title,
+        photo: destination.photo, // Ini cuma nama file: "abc123.jpg"
+        rawData: destination,
+      });
+
+      // FIX: Format budget sederhana
       const formatBudgetForInput = (budget) => {
         if (!budget && budget !== 0) return "";
-
-        // Convert to number first
-        const numBudget =
-          typeof budget === "string" ? parseFloat(budget) : Number(budget);
-
-        // Check if it's a whole number (no decimal places)
-        if (Number.isInteger(numBudget)) {
-          return numBudget.toString();
-        }
-
-        // If it has decimal places, check if they are just .00
-        if (numBudget % 1 === 0) {
-          return Math.floor(numBudget).toString();
-        }
-
-        // For other decimal values, return as is but remove trailing .00 if present
-        return numBudget.toString().replace(/\.00$/, "");
+        return budget.toString();
       };
 
-      // Fix departure date format for input[type="date"]
+      // FIX: Format date
       const formatDateForInput = (dateString) => {
         if (!dateString) return "";
-
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return "";
-
-        // Format to YYYY-MM-DD for input[type="date"]
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-
-        return `${year}-${month}-${day}`;
+        return date.toISOString().split("T")[0];
       };
 
       setFormData({
         title: destination.title || "",
-        departure_date: formatDateForInput(destination.departure_date), // Fixed date format
+        departure_date: formatDateForInput(destination.departure_date),
         budget: formatBudgetForInput(destination.budget),
         duration_days: destination.duration_days || "",
         is_achieved: destination.is_achieved || false,
-        photo: null,
+        photo: null, // Selalu null untuk existing photo
       });
 
+      // 🔥 TAMBAHKAN DI SINI: Set selectedDate berdasarkan departure_date yang di-load
+      if (destination.departure_date) {
+        setSelectedDate(new Date(destination.departure_date));
+      }
+
+      // FIX: Set photo preview dengan URL yang benar
       if (destination.photo) {
-        setPhotoPreview(`${destination.photo}`);
+        const previewUrl = `${STORAGE_BASE_URL}/destinations/${destination.photo}`;
+        console.log("🖼️ Setting photo preview URL:", previewUrl);
+        setPhotoPreview(previewUrl);
+      } else {
+        setPhotoPreview(null);
       }
     } catch (error) {
       console.error("Failed to load destination:", error);
@@ -140,10 +138,15 @@ const DestinationForm = () => {
     }
   };
 
-  // Custom date selection handler
+  // Custom date selection handler - FIX TIMEZONE
   const handleDateSelect = (date) => {
-    const formattedDate = date.toISOString().split("T")[0];
+    // FIX: Handle timezone issue dengan set waktu ke tengah hari
+    const fixedDate = new Date(date);
+    fixedDate.setHours(12, 0, 0, 0); // Set ke tengah hari untuk hindari timezone issue
+
+    const formattedDate = fixedDate.toISOString().split("T")[0];
     setFormData((prev) => ({ ...prev, departure_date: formattedDate }));
+    setSelectedDate(fixedDate);
     setShowDatePicker(false);
   };
 
@@ -175,6 +178,34 @@ const DestinationForm = () => {
     }
   };
 
+  // 🔥 FIX: Durasi handlers yang benar
+  const incrementDuration = () => {
+    const currentDays = parseInt(formData.duration_days || "0");
+    const newDays = currentDays + 1;
+    if (newDays <= 365) {
+      setFormData((prev) => ({
+        ...prev,
+        duration_days: newDays.toString(),
+      }));
+    }
+  };
+
+  const decrementDuration = () => {
+    const currentDays = parseInt(formData.duration_days || "0");
+    if (currentDays > 1) {
+      setFormData((prev) => ({
+        ...prev,
+        duration_days: (currentDays - 1).toString(),
+      }));
+    } else if (currentDays === 1) {
+      // Jika dari 1 dikurangi, set ke 0
+      setFormData((prev) => ({
+        ...prev,
+        duration_days: "0",
+      }));
+    }
+  };
+
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -199,7 +230,11 @@ const DestinationForm = () => {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPhotoPreview(e.target.result);
+        setPhotoPreview(e.target.result); // Ini akan menjadi data URL
+      };
+      reader.onerror = () => {
+        console.error("Failed to read file");
+        setErrors((prev) => ({ ...prev, photo: "Gagal membaca file gambar" }));
       };
       reader.readAsDataURL(file);
     }
@@ -215,14 +250,17 @@ const DestinationForm = () => {
 
     if (!formData.title.trim()) {
       newErrors.title = "Judul destinasi wajib diisi";
+    } else if (formData.title.trim().length < 3) {
+      newErrors.title = "Judul destinasi minimal 3 karakter";
     }
 
     if (!formData.departure_date) {
       newErrors.departure_date = "Tanggal keberangkatan wajib diisi";
     } else {
-      const selectedDate = new Date(formData.departure_date);
+      // FIX: Handle timezone untuk validasi
+      const selectedDate = new Date(formData.departure_date + "T12:00:00"); // Set ke tengah hari
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      today.setHours(12, 0, 0, 0); // Set ke tengah hari untuk konsisten
 
       if (selectedDate < today) {
         newErrors.departure_date =
@@ -232,14 +270,30 @@ const DestinationForm = () => {
 
     if (!formData.budget || parseFloat(formData.budget) <= 0) {
       newErrors.budget = "Budget yang valid wajib diisi";
+    } else if (parseFloat(formData.budget) > 1000000000) {
+      newErrors.budget = "Budget terlalu besar (maksimal 1 miliar)";
     }
 
     if (!formData.duration_days || parseInt(formData.duration_days) <= 0) {
       newErrors.duration_days = "Durasi yang valid wajib diisi";
+    } else if (parseInt(formData.duration_days) > 365) {
+      newErrors.duration_days = "Durasi maksimal 365 hari";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // 🔥 NEW: Check if form is complete untuk disable submit button
+  const isFormComplete = () => {
+    return (
+      formData.title.trim() &&
+      formData.departure_date &&
+      formData.budget &&
+      parseFloat(formData.budget) > 0 &&
+      formData.duration_days &&
+      parseInt(formData.duration_days) > 0
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -253,11 +307,28 @@ const DestinationForm = () => {
     setLoading(true);
 
     try {
-      const submitData = {
-        ...formData,
-        budget: parseFloat(formData.budget),
-        duration_days: parseInt(formData.duration_days),
-      };
+      // Gunakan FormData langsung, jangan object biasa
+      const submitData = new FormData();
+
+      submitData.append("title", formData.title);
+      submitData.append("departure_date", formData.departure_date);
+      submitData.append("budget", parseFloat(formData.budget));
+      submitData.append("duration_days", parseInt(formData.duration_days));
+      submitData.append("is_achieved", formData.is_achieved ? "1" : "0"); // Convert to string
+
+      // Handle photo - FIX: Check if photo is a File object
+      if (formData.photo && formData.photo instanceof File) {
+        submitData.append("photo", formData.photo);
+      }
+
+      console.log("Submitting data:", {
+        title: formData.title,
+        departure_date: formData.departure_date,
+        budget: formData.budget,
+        duration_days: formData.duration_days,
+        is_achieved: formData.is_achieved,
+        hasPhoto: !!(formData.photo && formData.photo instanceof File),
+      });
 
       if (isEdit) {
         await destinationService.update(id, submitData);
@@ -268,18 +339,37 @@ const DestinationForm = () => {
       navigate("/destinations");
     } catch (error) {
       console.error("Failed to save destination:", error);
-      setSubmitError(
-        error.message || "Gagal menyimpan destinasi. Silakan coba lagi."
-      );
+
+      // Show detailed validation errors
+      if (error.response?.data?.errors) {
+        const validationErrors = error.response.data.errors;
+        const errorMessages = Object.values(validationErrors).flat().join(", ");
+        setSubmitError(`Validasi gagal: ${errorMessages}`);
+      } else {
+        setSubmitError(
+          error.response?.data?.message ||
+            error.message ||
+            "Gagal menyimpan destinasi. Silakan coba lagi."
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const getImageUrl = (photoPath) => {
-    if (!photoPath) return null;
-    if (photoPath.startsWith("http")) return photoPath;
-    return `${STORAGE_BASE_URL}/destinations/${photoPath}`;
+  const getImageUrl = (photoFileName) => {
+    if (!photoFileName) return null;
+
+    console.log("🖼️ Processing photo file name:", photoFileName);
+
+    // Jika sudah data URL (dari FileReader), return langsung
+    if (photoFileName.startsWith("data:")) return photoFileName;
+
+    // Jika sudah full URL, return langsung
+    if (photoFileName.startsWith("http")) return photoFileName;
+
+    // SIMPLE: Langsung ke folder destinations
+    return `${STORAGE_BASE_URL}/destinations/${photoFileName}`;
   };
 
   if (loading && isEdit) {
@@ -314,9 +404,7 @@ const DestinationForm = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 {isEdit ? "Edit Destinasi" : "Rencanakan Petualangan Baru"}
-                <span className="ml-1 text-white">
-                  {isEdit ? "📝" : "🗺️"}
-                </span>
+                <span className="ml-1 text-white">{isEdit ? "📝" : "🗺️"}</span>
               </h1>
               <p className="text-gray-600">
                 {isEdit
@@ -370,9 +458,14 @@ const DestinationForm = () => {
                 {photoPreview ? (
                   <div className="relative">
                     <img
-                      src={imageUrl}
+                      src={photoPreview}
                       alt="Preview"
                       className="w-full h-48 object-cover rounded-lg mx-auto group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        console.error("❌ Failed to load image:", photoPreview);
+                        // Fallback ke placeholder
+                        e.target.style.display = "none";
+                      }}
                     />
                     <button
                       type="button"
@@ -388,11 +481,13 @@ const DestinationForm = () => {
                       <Camera className="h-8 w-8 text-blue-500" />
                     </div>
                     <p className="text-sm text-gray-600 mb-3">
-                      Unggah foto destinasi
+                      {isEdit
+                        ? "Ganti foto destinasi"
+                        : "Unggah foto destinasi"}
                     </p>
                     <label className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all cursor-pointer shadow-md hover:shadow-lg">
                       <Upload className="h-4 w-4 mr-2" />
-                      Pilih File
+                      {isEdit ? "Ganti Foto" : "Pilih File"}
                       <input
                         type="file"
                         accept="image/*"
@@ -556,37 +651,120 @@ const DestinationForm = () => {
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 p-4"
+                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 p-4 min-w-[320px]"
                       >
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="font-semibold text-gray-900">
-                            Pilih Tanggal
-                          </h3>
+                          <div className="flex gap-2">
+                            {/* Month Selector */}
+                            <select
+                              value={
+                                selectedDate
+                                  ? selectedDate.getMonth()
+                                  : new Date().getMonth()
+                              }
+                              onChange={(e) => {
+                                const newDate = selectedDate || new Date();
+                                newDate.setMonth(parseInt(e.target.value));
+                                setSelectedDate(new Date(newDate));
+                              }}
+                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              {[
+                                "Januari",
+                                "Februari",
+                                "Maret",
+                                "April",
+                                "Mei",
+                                "Juni",
+                                "Juli",
+                                "Agustus",
+                                "September",
+                                "Oktober",
+                                "November",
+                                "Desember",
+                              ].map((month, index) => (
+                                <option key={month} value={index}>
+                                  {month}
+                                </option>
+                              ))}
+                            </select>
+
+                            {/* Year Selector */}
+                            <select
+                              value={
+                                selectedDate
+                                  ? selectedDate.getFullYear()
+                                  : new Date().getFullYear()
+                              }
+                              onChange={(e) => {
+                                const newDate = selectedDate || new Date();
+                                newDate.setFullYear(parseInt(e.target.value));
+                                setSelectedDate(new Date(newDate));
+                              }}
+                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              {Array.from({ length: 10 }, (_, i) => {
+                                const year = new Date().getFullYear() + i;
+                                return (
+                                  <option key={year} value={year}>
+                                    {year}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+
                           <button
                             onClick={() => setShowDatePicker(false)}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-gray-400 hover:text-gray-600 p-1"
                           >
                             <X className="h-4 w-4" />
                           </button>
                         </div>
 
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {["M", "S", "S", "R", "K", "J", "S"].map(
+                            (day, index) => (
+                              <div
+                                key={`day-header-${index}`}
+                                className="text-center text-xs font-medium text-gray-500 py-2"
+                              >
+                                {day}
+                              </div>
+                            )
+                          )}
+                        </div>
+
                         <div className="grid grid-cols-7 gap-1">
-                          {["S", "S", "R", "K", "J", "S", "M"].map((day) => (
-                            <div
-                              key={day}
-                              className="text-center text-xs font-medium text-gray-500 py-2"
-                            >
-                              {day}
-                            </div>
-                          ))}
-                          {Array.from({ length: 31 }, (_, i) => i + 1).map(
-                            (day) => {
-                              const today = new Date();
-                              const date = new Date(
-                                today.getFullYear(),
-                                today.getMonth(),
-                                day
+                          {(() => {
+                            const currentDate = selectedDate || new Date();
+                            const year = currentDate.getFullYear();
+                            const month = currentDate.getMonth();
+
+                            // Get first day of month and total days
+                            const firstDay = new Date(year, month, 1).getDay();
+                            const daysInMonth = new Date(
+                              year,
+                              month + 1,
+                              0
+                            ).getDate();
+
+                            // Adjust for Monday first (0 = Monday, 6 = Sunday)
+                            const adjustedFirstDay =
+                              firstDay === 0 ? 6 : firstDay - 1;
+
+                            const days = [];
+
+                            // Add empty cells for days before the first day of month
+                            for (let i = 0; i < adjustedFirstDay; i++) {
+                              days.push(
+                                <div key={`empty-${i}`} className="p-2"></div>
                               );
+                            }
+
+                            // Add days of the month
+                            for (let day = 1; day <= daysInMonth; day++) {
+                              const date = new Date(year, month, day);
                               const isSelected =
                                 formData.departure_date ===
                                 date.toISOString().split("T")[0];
@@ -594,9 +772,10 @@ const DestinationForm = () => {
                                 date <
                                 new Date(new Date().setHours(0, 0, 0, 0));
 
-                              return (
+                              days.push(
                                 <button
                                   key={day}
+                                  type="button"
                                   onClick={() =>
                                     !isPast && handleDateSelect(date)
                                   }
@@ -613,7 +792,24 @@ const DestinationForm = () => {
                                 </button>
                               );
                             }
-                          )}
+
+                            return days;
+                          })()}
+                        </div>
+
+                        {/* Today Button */}
+                        <div className="flex justify-center mt-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const today = new Date();
+                              today.setHours(12, 0, 0, 0);
+                              handleDateSelect(today);
+                            }}
+                            className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            Pilih Hari Ini
+                          </button>
                         </div>
                       </motion.div>
                     )}
@@ -642,13 +838,14 @@ const DestinationForm = () => {
                     </label>
 
                     <div className="flex gap-2">
-                      {/* Minus Button */}
+                      {/* Minus Button - FIX: SEKARANG SUDAH BENAR */}
                       <motion.button
                         type="button"
                         onClick={decrementBudget}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl flex items-center justify-center hover:from-red-600 hover:to-red-700 transition-all shadow-lg flex-shrink-0 border border-red-400"
+                        disabled={parseInt(formData.budget || "0") <= 0}
+                        className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl flex items-center justify-center hover:from-red-600 hover:to-red-700 transition-all shadow-lg flex-shrink-0 border border-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Minus className="h-5 w-5" />
                       </motion.button>
@@ -673,13 +870,16 @@ const DestinationForm = () => {
                         />
                       </div>
 
-                      {/* Plus Button */}
+                      {/* Plus Button - FIX: SEKARANG SUDAH BENAR */}
                       <motion.button
                         type="button"
                         onClick={incrementBudget}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl flex items-center justify-center hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex-shrink-0 border border-green-400"
+                        disabled={
+                          parseInt(formData.budget || "0") >= 1000000000
+                        }
+                        className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl flex items-center justify-center hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex-shrink-0 border border-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Plus className="h-5 w-5" />
                       </motion.button>
@@ -714,23 +914,13 @@ const DestinationForm = () => {
                     </label>
 
                     <div className="flex gap-2">
-                      {/* Minus Button */}
+                      {/* Minus Button - FIX: SEKARANG SUDAH BENAR */}
                       <motion.button
                         type="button"
-                        onClick={() => {
-                          const currentDays = parseInt(
-                            formData.duration_days || "1"
-                          );
-                          if (currentDays > 1) {
-                            setFormData((prev) => ({
-                              ...prev,
-                              duration_days: (currentDays - 1).toString(),
-                            }));
-                          }
-                        }}
+                        onClick={decrementDuration}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        disabled={parseInt(formData.duration_days || "1") <= 1}
+                        disabled={parseInt(formData.duration_days || "0") <= 0}
                         className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg flex-shrink-0 border border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Minus className="h-5 w-5" />
@@ -747,7 +937,7 @@ const DestinationForm = () => {
                           name="duration_days"
                           value={formData.duration_days}
                           onChange={handleChange}
-                          min="1"
+                          min="0"
                           max="365"
                           className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 text-center font-medium text-gray-900 appearance-none ${
                             errors.duration_days
@@ -780,24 +970,14 @@ const DestinationForm = () => {
                         </div>
                       </div>
 
-                      {/* Plus Button */}
+                      {/* Plus Button - FIX: SEKARANG SUDAH BENAR */}
                       <motion.button
                         type="button"
-                        onClick={() => {
-                          const currentDays = parseInt(
-                            formData.duration_days || "1"
-                          );
-                          if (currentDays < 365) {
-                            setFormData((prev) => ({
-                              ...prev,
-                              duration_days: (currentDays + 1).toString(),
-                            }));
-                          }
-                        }}
+                        onClick={incrementDuration}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         disabled={
-                          parseInt(formData.duration_days || "1") >= 365
+                          parseInt(formData.duration_days || "0") >= 365
                         }
                         className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg flex-shrink-0 border border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -806,7 +986,7 @@ const DestinationForm = () => {
                     </div>
 
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-xs text-gray-500">1-365 hari</span>
+                      <span className="text-xs text-gray-500">0-365 hari</span>
                       {formData.duration_days && (
                         <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">
                           {formData.duration_days} hari
@@ -827,10 +1007,16 @@ const DestinationForm = () => {
               <div className="flex gap-3 pt-6 border-t border-gray-200">
                 <motion.button
                   type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: loading ? 1 : 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex-1 justify-center"
+                  disabled={loading || !isFormComplete()} // 🔥 Disable jika form belum lengkap
+                  whileHover={
+                    !loading && isFormComplete() ? { scale: 1.02 } : {}
+                  }
+                  whileTap={!loading && isFormComplete() ? { scale: 0.98 } : {}}
+                  className={`inline-flex items-center px-8 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-lg flex-1 justify-center ${
+                    loading || !isFormComplete()
+                      ? "bg-gray-400 text-gray-200 cursor-not-allowed" // 🔥 Warna abu ketika disabled
+                      : "bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:from-blue-600 hover:to-cyan-500 hover:shadow-xl"
+                  }`}
                 >
                   <Save className="h-5 w-5 mr-2" />
                   {loading
@@ -842,7 +1028,7 @@ const DestinationForm = () => {
 
                 <Link
                   to="/destinations"
-                  className="inline-flex items-center px-18 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
+                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
                 >
                   Batal
                 </Link>

@@ -33,6 +33,232 @@ import {
   STORAGE_BASE_URL,
 } from "../services/destinationService";
 
+// 🔥 NEW: Skeleton Loading Components - IMPROVED
+const SkeletonStats = () => (
+  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    {[1, 2, 3, 4].map((item) => (
+      <div
+        key={item}
+        className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
+      >
+        <div className="flex items-center justify-between">
+          <div className="space-y-2 flex-1">
+            <div className="h-8 bg-gray-200 rounded-lg animate-pulse w-20"></div>
+            <div className="h-4 bg-gray-100 rounded animate-pulse w-32"></div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-200 animate-pulse">
+            <div className="h-6 w-6"></div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const SkeletonTimelineView = () => (
+  <div className="relative">
+    <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400/30 via-purple-400/30 to-cyan-400/30 rounded-full"></div>
+
+    <div className="space-y-6">
+      {[1, 2, 3].map((day) => (
+        <div key={day} className="relative flex items-start gap-6">
+          {/* Timeline Dot Skeleton */}
+          <div className="relative z-10 flex-shrink-0 w-16 h-16 bg-gray-200 rounded-2xl animate-pulse"></div>
+
+          {/* Day Content Skeleton */}
+          <div className="flex-1 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-6 bg-gray-200 rounded animate-pulse w-40"></div>
+              <div className="flex items-center gap-2">
+                <div className="h-6 bg-gray-200 rounded-full animate-pulse w-20"></div>
+                <div className="h-8 w-8 bg-gray-200 rounded-lg animate-pulse"></div>
+              </div>
+            </div>
+
+            {/* Activities Skeleton */}
+            <div className="space-y-4">
+              {[1, 2].map((activity) => (
+                <div
+                  key={activity}
+                  className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200/50"
+                >
+                  <div className="flex-shrink-0">
+                    <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-20"></div>
+                  </div>
+                  <div className="flex-shrink-0 p-3 bg-gray-200 rounded-xl animate-pulse">
+                    <div className="h-5 w-5"></div>
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-5 bg-gray-200 rounded animate-pulse w-48"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-64"></div>
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-32"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const SkeletonGridView = () => (
+  <div className="space-y-6">
+    {/* Day Navigation Skeleton */}
+    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+      <div className="h-6 bg-gray-200 rounded animate-pulse w-48 mb-4"></div>
+      <div className="flex flex-wrap gap-3">
+        {[1, 2, 3].map((day) => (
+          <div
+            key={day}
+            className="h-12 bg-gray-200 rounded-xl animate-pulse w-24"
+          ></div>
+        ))}
+      </div>
+    </div>
+
+    {/* Selected Day Header Skeleton */}
+    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-2xl p-6 text-white">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="h-8 bg-blue-400/50 rounded animate-pulse w-64"></div>
+          <div className="h-4 bg-blue-400/50 rounded animate-pulse w-48"></div>
+        </div>
+        <div className="text-right space-y-1">
+          <div className="h-8 bg-blue-400/50 rounded animate-pulse w-12"></div>
+          <div className="h-4 bg-blue-400/50 rounded animate-pulse w-16"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Activities Grid Skeleton */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((activity) => (
+        <div
+          key={activity}
+          className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+        >
+          {/* Activity Header Skeleton */}
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <div className="h-5 w-5 bg-white/50 rounded animate-pulse"></div>
+                </div>
+                <div className="space-y-1">
+                  <div className="h-5 bg-white/50 rounded animate-pulse w-32"></div>
+                  <div className="h-3 bg-white/50 rounded animate-pulse w-20"></div>
+                </div>
+              </div>
+              <div className="h-5 w-5 bg-white/50 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Activity Content Skeleton */}
+          <div className="p-4 space-y-3">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+
+            {/* Tags Skeleton */}
+            <div className="flex flex-wrap gap-2">
+              <div className="h-6 bg-gray-200 rounded-full animate-pulse w-16"></div>
+              <div className="h-6 bg-gray-200 rounded-full animate-pulse w-20"></div>
+            </div>
+
+            {/* Action Buttons Skeleton */}
+            <div className="flex gap-2 pt-3 border-t border-gray-100">
+              <div className="flex-1 h-8 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div className="flex-1 h-8 bg-gray-200 rounded-xl animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const SkeletonAllDestinations = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    {[1, 2, 3, 4, 5].map((item) => (
+      <div
+        key={item}
+        className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+      >
+        {/* Destination Image Skeleton */}
+        <div className="h-48 bg-gray-200 relative overflow-hidden animate-pulse">
+          <div className="absolute top-4 right-4">
+            <div className="h-6 bg-gray-300 rounded-full animate-pulse w-20"></div>
+          </div>
+        </div>
+
+        {/* Destination Info Skeleton */}
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center">
+              <div className="h-4 w-4 bg-gray-200 rounded mr-2 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+            </div>
+            <div className="flex items-center">
+              <div className="h-4 w-4 bg-gray-200 rounded mr-2 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-16"></div>
+            </div>
+            <div className="flex items-center col-span-2">
+              <div className="h-4 w-4 bg-gray-200 rounded mr-2 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+            </div>
+          </div>
+
+          {/* Action Buttons Skeleton */}
+          <div className="flex gap-3">
+            <div className="flex-1 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+            <div className="flex-1 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    ))}
+
+    {/* Skeleton for Add Destination Card */}
+    <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden">
+      <div className="flex flex-col items-center justify-center p-8 h-full min-h-[300px] text-center">
+        <div className="w-20 h-20 bg-gray-200 rounded-2xl flex items-center justify-center mb-4 animate-pulse"></div>
+        <div className="h-6 bg-gray-200 rounded animate-pulse w-40 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-56 mb-4"></div>
+        <div className="h-12 bg-gray-200 rounded-xl animate-pulse w-32"></div>
+      </div>
+    </div>
+  </div>
+);
+
+// 🔥 NEW: Add Destination Card Component
+const AddDestinationCard = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-white rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden hover:border-blue-400 hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-2"
+  >
+    <Link
+      to="/destinations/new"
+      className="flex flex-col items-center justify-center p-8 h-full min-h-[300px] text-center"
+    >
+      <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center mb-4 group-hover:from-blue-200 group-hover:to-cyan-200 transition-all">
+        <Plus className="h-10 w-10 text-blue-500" />
+      </div>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">
+        Tambah Destinasi Baru
+      </h3>
+      <p className="text-gray-600 mb-4 leading-relaxed">
+        Mulai petualangan baru dengan merencanakan destinasi perjalanan Anda
+      </p>
+      <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all font-semibold">
+        <Plus className="h-5 w-5 mr-2" />
+        Buat Destinasi
+      </div>
+    </Link>
+  </motion.div>
+);
+
 const Itineraries = () => {
   const [searchParams] = useSearchParams();
   const destinationId = searchParams.get("destination");
@@ -280,8 +506,11 @@ const Itineraries = () => {
                   {groupedItineraries[dayNumber].map((itinerary) => {
                     const ActivityIcon = getActivityIcon(itinerary.activities);
                     return (
-                      <div
+                      <motion.div
                         key={itinerary.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
                         className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200/50 hover:border-blue-200 hover:bg-blue-50/30 transition-all group/item"
                       >
                         {/* Time Badge */}
@@ -339,7 +568,7 @@ const Itineraries = () => {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -603,7 +832,7 @@ const Itineraries = () => {
     );
   };
 
-  // MODE 2: All Destinations Grid View (for itinerary management)
+  // MODE 2: All Destinations Grid View (for itinerary management) - UPDATED
   const AllDestinationsGridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {destinations.map((destination) => {
@@ -707,25 +936,65 @@ const Itineraries = () => {
           </motion.div>
         );
       })}
+
+      {/* 🔥 NEW: Add Destination Card at the end */}
+      <AddDestinationCard />
     </div>
   );
-
+  // 🔥 NEW: Skeleton Loading State - UPDATED
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50/30 to-cyan-50/30">
-        <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-          >
-            <Compass className="h-8 w-8 text-white" />
-          </motion.div>
-          <p className="text-gray-600 font-medium">
-            {isSingleDestinationMode
-              ? "Memuat rencana perjalanan..."
-              : "Memuat destinasi..."}
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+        {/* Header Skeleton */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="w-24 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+                <div className="space-y-2">
+                  <div className="h-8 bg-gray-200 rounded animate-pulse w-64"></div>
+                  <div className="h-4 bg-gray-100 rounded animate-pulse w-48"></div>
+                </div>
+              </div>
+              {isSingleDestinationMode && (
+                <div className="flex items-center gap-4">
+                  <div className="w-32 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+                  <div className="w-40 h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Skeleton */}
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {isSingleDestinationMode ? (
+            // MODE 1: Single Destination Skeleton
+            <>
+              <SkeletonStats />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={viewMode}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {viewMode === "timeline" ? (
+                    <SkeletonTimelineView />
+                  ) : (
+                    <SkeletonGridView />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </>
+          ) : (
+            // MODE 2: All Destinations Skeleton - UPDATED
+            <>
+              <SkeletonStats />
+              <SkeletonAllDestinations />
+            </>
+          )}
         </div>
       </div>
     );

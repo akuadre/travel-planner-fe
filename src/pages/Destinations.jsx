@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Plus,
@@ -25,6 +25,164 @@ import {
   STORAGE_BASE_URL,
   destinationService,
 } from "../services/destinationService";
+
+// 🔥 IMPROVED: Realistic Skeleton Loading Components
+const SkeletonStats = () => (
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    {[1, 2, 3, 4].map((item) => (
+      <div
+        key={item}
+        className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
+      >
+        <div className="flex items-center justify-between">
+          <div className="space-y-2 flex-1">
+            <div className="h-8 bg-gray-200 rounded-lg animate-pulse w-16"></div>
+            <div className="h-4 bg-gray-100 rounded animate-pulse w-24"></div>
+          </div>
+          <div className="p-3 rounded-xl bg-gray-200 animate-pulse">
+            <div className="h-6 w-6"></div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const SkeletonSearchBar = () => (
+  <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mb-6">
+    <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+      <div className="flex-1 w-full lg:max-w-md">
+        <div className="relative">
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+            <div className="h-5 w-5 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="w-full pl-12 pr-4 py-3.5 bg-gray-100 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+        <div className="flex gap-2">
+          {[1, 2, 3].map((item) => (
+            <div
+              key={item}
+              className="w-24 h-10 bg-gray-200 rounded-xl animate-pulse"
+            ></div>
+          ))}
+        </div>
+        <div className="w-48 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const SkeletonTable = () => (
+  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200">
+          <tr>
+            {[1, 2, 3, 4, 5, 6, 7].map((item) => (
+              <th key={item} className="px-6 py-4">
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {[1, 2, 3].map((row) => (
+            <tr key={row} className="hover:bg-blue-50/30 transition-colors">
+              {/* Checkbox */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+              </td>
+
+              {/* Destination Info */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-14 h-14 bg-gray-200 rounded-xl animate-pulse"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-5 bg-gray-200 rounded animate-pulse w-32"></div>
+                    <div className="h-3 bg-gray-100 rounded animate-pulse w-24"></div>
+                  </div>
+                </div>
+              </td>
+
+              {/* Departure Date */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-28"></div>
+              </td>
+
+              {/* Budget */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+              </td>
+
+              {/* Duration */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="h-6 bg-gray-200 rounded-full animate-pulse w-16"></div>
+              </td>
+
+              {/* Status */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="h-8 bg-gray-200 rounded-xl animate-pulse w-24"></div>
+              </td>
+
+              {/* Actions */}
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="flex gap-3">
+                  <div className="h-8 bg-gray-200 rounded-xl animate-pulse w-16"></div>
+                  <div className="h-8 bg-gray-200 rounded-xl animate-pulse w-8"></div>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+      <div className="flex items-center justify-between">
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-40"></div>
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-32"></div>
+      </div>
+    </div>
+  </div>
+);
+
+// 🔥 NEW: Empty State Skeleton untuk ketika tidak ada data
+const SkeletonEmptyState = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="text-center py-20 bg-white rounded-2xl border border-gray-200 shadow-sm"
+  >
+    <div className="max-w-md mx-auto">
+      <div className="w-24 h-24 bg-gray-200 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-pulse"></div>
+      <div className="h-8 bg-gray-200 rounded animate-pulse w-64 mx-auto mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded animate-pulse w-48 mx-auto mb-8"></div>
+      <div className="h-12 bg-gray-200 rounded-2xl animate-pulse w-48 mx-auto"></div>
+    </div>
+  </motion.div>
+);
+
+// 🔥 NEW: Header Skeleton yang lebih realistis
+const SkeletonHeader = () => (
+  <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 shadow-sm">
+    <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <div className="w-32 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+          <div className="space-y-2">
+            <div className="h-8 bg-gray-200 rounded animate-pulse w-64"></div>
+            <div className="h-4 bg-gray-100 rounded animate-pulse w-48"></div>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="w-32 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+          <div className="w-40 h-12 bg-gray-200 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const Destinations = () => {
   const [destinations, setDestinations] = useState([]);
@@ -163,18 +321,41 @@ const Destinations = () => {
   };
 
   const toggleStatus = async (id, currentStatus) => {
+    console.log("🔄 Attempting to toggle status:", {
+      id,
+      currentStatus,
+      newStatus: !currentStatus,
+    });
+
     try {
-      await destinationService.update(id, {
-        is_achieved: !currentStatus,
-      });
+      setOperationLoading(id);
+
+      const formData = new FormData();
+      formData.append("is_achieved", !currentStatus ? "1" : "0");
+
+      console.log("📤 Sending update request...");
+      const response = await destinationService.update(id, formData);
+      console.log("✅ Update successful:", response);
+
       setDestinations((prev) =>
         prev.map((d) =>
           d.id === id ? { ...d, is_achieved: !currentStatus } : d
         )
       );
     } catch (error) {
-      console.error("Failed to update status:", error);
-      alert("Gagal memperbarui status");
+      console.error("❌ Update failed:", {
+        error,
+        response: error.response,
+        data: error.response?.data,
+      });
+
+      alert(
+        `Gagal memperbarui status: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    } finally {
+      setOperationLoading(null);
     }
   };
 
@@ -217,16 +398,35 @@ const Destinations = () => {
     return `${STORAGE_BASE_URL}/destinations/${photoPath}`;
   };
 
-  // Action Dropdown Component - dari kode lama yang lebih lengkap
-  const ActionDropdown = ({ destination, onAction }) => {
+  // Action Dropdown Component - FIXED VERSION
+  const ActionDropdown = ({ destination }) => {
+    const dropdownRef = useRef(null);
+
+    // Handle click outside untuk close dropdown
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (
+          dropdownRef.current &&
+          !dropdownRef.current.contains(event.target)
+        ) {
+          setActiveDropdown(null);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     return (
       <AnimatePresence>
         {activeDropdown === destination.id && (
           <motion.div
+            ref={dropdownRef}
             initial={{ opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            className="absolute right-0 top-12 z-50 w-56 bg-white rounded-xl shadow-2xl border border-gray-200/80 backdrop-blur-sm overflow-hidden"
+            className="absolute right-0 top-12 z-[9999] w-56 bg-white rounded-xl shadow-2xl border border-gray-200/80 backdrop-blur-sm overflow-hidden"
           >
             <div className="p-2 space-y-1">
               <Link
@@ -305,18 +505,23 @@ const Destinations = () => {
     );
   };
 
+  // 🔥 IMPROVED: Skeleton Loading State
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50/30 to-cyan-50/30">
-        <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-          >
-            <Compass className="h-8 w-8 text-white" />
-          </motion.div>
-          <p className="text-gray-600 font-medium">Memuat destinasi Anda...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+        <SkeletonHeader />
+
+        {/* Main Content Skeleton */}
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <SkeletonStats />
+          <SkeletonSearchBar />
+
+          {/* Conditional skeleton based on data availability */}
+          {destinations.length === 0 ? (
+            <SkeletonEmptyState />
+          ) : (
+            <SkeletonTable />
+          )}
         </div>
       </div>
     );
@@ -343,15 +548,7 @@ const Destinations = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
-      {/* Click outside to close dropdowns */}
-      {activeDropdown && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setActiveDropdown(null)}
-        />
-      )}
-
-      {/* Header - Design dari kode baru */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -411,7 +608,7 @@ const Destinations = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats Cards - Design dari kode baru */}
+        {/* Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -477,7 +674,7 @@ const Destinations = () => {
           ))}
         </motion.div>
 
-        {/* Search and Filter Section - dari kode lama yang lebih lengkap */}
+        {/* Search and Filter Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -546,7 +743,7 @@ const Destinations = () => {
             </div>
           </div>
 
-          {/* Bulk Actions - dari kode lama */}
+          {/* Bulk Actions */}
           {selectedDestinations.length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -597,7 +794,7 @@ const Destinations = () => {
           )}
         </motion.div>
 
-        {/* Destinations Table - dari kode lama yang lengkap */}
+        {/* Destinations Table */}
         {sortedDestinations.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -761,15 +958,28 @@ const Destinations = () => {
                                 destination.is_achieved
                               )
                             }
-                            whileHover={{ scale: 1.05 }}
+                            disabled={operationLoading === destination.id}
+                            whileHover={{
+                              scale:
+                                operationLoading === destination.id ? 1 : 1.05,
+                            }}
                             whileTap={{ scale: 0.95 }}
                             className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm ${
                               destination.is_achieved
                                 ? "bg-green-500 text-white hover:bg-green-600 shadow-green-500/25"
                                 : "bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/25"
+                            } ${
+                              operationLoading === destination.id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
                             }`}
                           >
-                            {destination.is_achieved ? (
+                            {operationLoading === destination.id ? (
+                              <>
+                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                                Memproses...
+                              </>
+                            ) : destination.is_achieved ? (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Tercapai
@@ -783,7 +993,7 @@ const Destinations = () => {
                           </motion.button>
                         </td>
 
-                        {/* Actions */}
+                        {/* Actions - FIXED VERSION */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex gap-3">
                             <motion.div
@@ -800,6 +1010,7 @@ const Destinations = () => {
                               </Link>
                             </motion.div>
 
+                            {/* 🔥 FIXED: Container dengan position relative */}
                             <div className="relative">
                               <motion.button
                                 onClick={() =>
@@ -815,6 +1026,8 @@ const Destinations = () => {
                               >
                                 <MoreVertical className="h-4 w-4" />
                               </motion.button>
+
+                              {/* Dropdown akan muncul tepat di bawah tombol titik tiga */}
                               <ActionDropdown destination={destination} />
                             </div>
                           </div>

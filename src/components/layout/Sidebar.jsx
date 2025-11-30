@@ -232,9 +232,10 @@ const Sidebar = () => {
 
             if (item.type === "dropdown") {
               // Check jika ada sub-item yang active
-              const hasActiveSubItem = item.sub.some(subItem => 
+              {/* const hasActiveSubItem = item.sub.some(subItem => 
                 location.pathname === subItem.path
-              );
+              ); */}
+              const hasActiveSubItem = location.pathname.startsWith(`/${item.key}`);
 
               return (
                 <motion.div

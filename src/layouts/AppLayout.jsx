@@ -11,7 +11,7 @@ const StableFooter = memo(Footer);
 
 const AppLayout = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-blue-50/30">
       {/* Sidebar - PASTI TIDAK RE-RENDER */}
       <StableSidebar />
       
@@ -21,8 +21,9 @@ const AppLayout = () => {
         <StableHeader />
         
         {/* Main content - OUTLET TANPA ANIMATION */}
-        <main className="flex-grow p-6 pt-24">
-          <div className="max-w-7xl mx-auto">
+        <main className="grow p-4 pt-24">
+          {/* <div className="max-w-7xl mx-auto"> */}
+          <div className="mx-auto">
             <Outlet /> {/* TANPA ANIMATION WRAPPER */}
           </div>
         </main>
