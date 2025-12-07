@@ -105,15 +105,29 @@ const Login = () => {
       exit="exit"
       className="min-h-screen flex relative overflow-hidden"
     >
-      {/* Background Image dengan Blue Overlay */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-        }}
-      >
+      {/* Background dengan Parallax Effect */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Background Image yang bergerak */}
+        <motion.div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: "110% 110%", // Perbesar sedikit
+          }}
+          animate={{
+            x: ["0%", "3%", "0%", "-3%", "0%"],
+            y: ["0%", "2%", "0%", "-2%", "0%"],
+            scale: [1, 1.05, 1, 1.03, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+
         {/* Blue Gradient Overlay */}
-        <div className="absolute inset-0 bg-linear-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80"></div>
 
         {/* Additional Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
@@ -365,7 +379,7 @@ const Login = () => {
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                john@example.com / password123
+                adrenalin@gmail.com / adrenalin
               </motion.span>
             </p>
           </motion.div>
