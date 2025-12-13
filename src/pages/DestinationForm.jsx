@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -20,6 +20,8 @@ import {
   STORAGE_BASE_URL,
   destinationService,
 } from "../services/destinationService";
+
+import Notification, { useNotification } from "../components/Notification";
 
 const DestinationForm = () => {
   const navigate = useNavigate();
@@ -43,6 +45,28 @@ const DestinationForm = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  const { notification, showNotification, dismissNotification } =
+    useNotification();
+
+  const calendarRef = useRef(null);
+
+  // Handle click outside calendar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setShowDatePicker(false);
+      }
+    };
+
+    if (showDatePicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDatePicker]);
+
   useEffect(() => {
     if (isEdit) {
       loadDestination();
@@ -51,6 +75,47 @@ const DestinationForm = () => {
       setSelectedDate(new Date());
     }
   }, [id]);
+
+  // Otomatis set status berdasarkan tanggal
+  useEffect(() => {
+    if (formData.departure_date) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const departureDate = new Date(formData.departure_date);
+      departureDate.setHours(0, 0, 0, 0);
+
+      // Jika pilih tanggal masa lalu (kemarin atau lebih) dan status = false
+      if (departureDate < today && !formData.is_achieved) {
+        // Auto-set ke false
+        setFormData((prev) => ({
+          ...prev,
+          is_achieved: true,
+        }));
+
+        // Optional: Show notification
+        showNotification(
+          "Perjalanan di masa lalu tidak bisa ditandai perencanaan. Status diubah ke 'Selesai'.",
+          "warning"
+        );
+      }
+
+      // Jika pilih tanggal masa depan (besok atau lebih) dan status = true
+      if (departureDate > today && formData.is_achieved) {
+        // Auto-set ke false
+        setFormData((prev) => ({
+          ...prev,
+          is_achieved: false,
+        }));
+
+        // Optional: Show notification
+        showNotification(
+          "Perjalanan di masa depan tidak bisa ditandai selesai. Status diubah ke 'Perencanaan'.",
+          "warning"
+        );
+      }
+    }
+  }, [formData.departure_date]);
 
   // Di loadDestination function - MASALAH BESAR DI SINI
   const loadDestination = async () => {
@@ -74,9 +139,24 @@ const DestinationForm = () => {
       // FIX: Format date
       const formatDateForInput = (dateString) => {
         if (!dateString) return "";
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "";
-        return date.toISOString().split("T")[0];
+
+        try {
+          // Parse dengan locale timezone
+          const date = new Date(dateString);
+
+          // Adjust for timezone offset
+          const timezoneOffset = date.getTimezoneOffset() * 60000; // offset in milliseconds
+          const localDate = new Date(date.getTime() - timezoneOffset);
+
+          const year = localDate.getFullYear();
+          const month = String(localDate.getMonth() + 1).padStart(2, "0");
+          const day = String(localDate.getDate()).padStart(2, "0");
+
+          return `${year}-${month}-${day}`;
+        } catch (error) {
+          console.error("Error formatting date:", error);
+          return "";
+        }
       };
 
       setFormData({
@@ -140,13 +220,31 @@ const DestinationForm = () => {
 
   // Custom date selection handler - FIX TIMEZONE
   const handleDateSelect = (date) => {
-    // FIX: Handle timezone issue dengan set waktu ke tengah hari
-    const fixedDate = new Date(date);
-    fixedDate.setHours(12, 0, 0, 0); // Set ke tengah hari untuk hindari timezone issue
+    // FIX TIMEZONE: Buat date baru dengan waktu lokal
+    const localDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
 
-    const formattedDate = fixedDate.toISOString().split("T")[0];
+    // Format ke YYYY-MM-DD tanpa timezone issues
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const day = String(localDate.getDate()).padStart(2, "0");
+
+    const formattedDate = `${year}-${month}-${day}`;
+
+    console.log("Selected date:", {
+      original: date,
+      localDate: localDate,
+      formattedDate: formattedDate,
+      day: day,
+      month: month,
+      year: year,
+    });
+
     setFormData((prev) => ({ ...prev, departure_date: formattedDate }));
-    setSelectedDate(fixedDate);
+    setSelectedDate(localDate);
     setShowDatePicker(false);
   };
 
@@ -301,6 +399,7 @@ const DestinationForm = () => {
     setSubmitError("");
 
     if (!validateForm()) {
+      showNotification("Harap periksa form untuk kesalahan", "error");
       return;
     }
 
@@ -330,28 +429,42 @@ const DestinationForm = () => {
         hasPhoto: !!(formData.photo && formData.photo instanceof File),
       });
 
+      let result;
       if (isEdit) {
-        await destinationService.update(id, submitData);
+        result = await destinationService.update(id, submitData);
+        // 🔥 NOTIFIKASI SUKSES
+        showNotification("Destinasi berhasil diperbarui!", "success");
       } else {
-        await destinationService.create(submitData);
+        result = await destinationService.create(submitData);
+        // 🔥 NOTIFIKASI SUKSES
+        showNotification("Destinasi berhasil dibuat!", "success");
       }
+
+      console.log("✅ Save successful:", result);
+
+      // 🔥 PERBAIKI: Delay navigate untuk show notification
+      setTimeout(() => {
+        navigate("/destinations");
+      }, 1500); // Tunggu 1.5 detik agar notification terlihat
 
       navigate("/destinations");
     } catch (error) {
       console.error("Failed to save destination:", error);
 
+      // 🔥 SHOW ERROR NOTIFICATION
+      let errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Gagal menyimpan destinasi. Silakan coba lagi.";
+
       // Show detailed validation errors
       if (error.response?.data?.errors) {
         const validationErrors = error.response.data.errors;
-        const errorMessages = Object.values(validationErrors).flat().join(", ");
-        setSubmitError(`Validasi gagal: ${errorMessages}`);
-      } else {
-        setSubmitError(
-          error.response?.data?.message ||
-            error.message ||
-            "Gagal menyimpan destinasi. Silakan coba lagi."
-        );
+        errorMessage = Object.values(validationErrors).flat().join(", ");
       }
+
+      showNotification(errorMessage, "error");
+      setSubmitError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -372,6 +485,22 @@ const DestinationForm = () => {
     return `${STORAGE_BASE_URL}/destinations/${photoFileName}`;
   };
 
+  const canMarkAsCompleted = () => {
+    if (!formData.departure_date) return true;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const departureDate = new Date(formData.departure_date);
+    departureDate.setHours(0, 0, 0, 0);
+
+    // Tidak disabled jika tanggal sudah lewat atau hari ini
+    // return departureDate <= today;
+
+    // Tidak disabled jika tanggal hari ini
+    return departureDate == today;
+  };
+
   if (loading && isEdit) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -387,6 +516,11 @@ const DestinationForm = () => {
 
   return (
     <div className="min-h-screen">
+      {/* 🔥 TAMBAHKAN NOTIFICATION COMPONENT */}
+      <Notification
+        notification={notification}
+        onDismiss={dismissNotification}
+      />
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -527,7 +661,9 @@ const DestinationForm = () => {
                   Tandai sebagai Selesai
                 </div>
                 <div className="text-xs text-gray-500">
-                  Perjalanan ini telah selesai
+                  {formData.is_achieved
+                    ? "✅ Perjalanan ini telah selesai"
+                    : "📝 Perjalanan ini dalam perencanaan"}
                 </div>
               </div>
               <div className="relative">
@@ -536,6 +672,7 @@ const DestinationForm = () => {
                   name="is_achieved"
                   checked={formData.is_achieved}
                   onChange={handleChange}
+                  disabled={!canMarkAsCompleted()}
                   className="sr-only"
                 />
                 <div
@@ -543,6 +680,8 @@ const DestinationForm = () => {
                     formData.is_achieved
                       ? "bg-green-500"
                       : "bg-gray-300 group-hover:bg-gray-400"
+                  } ${
+                    !canMarkAsCompleted() ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 ></div>
                 <div
@@ -552,6 +691,42 @@ const DestinationForm = () => {
                 ></div>
               </div>
             </label>
+
+            {/* Info tambahan */}
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-800">
+                {!formData.departure_date ? (
+                  "📅 Pilih tanggal untuk melihat status"
+                ) : (
+                  <>
+                    <span className="font-semibold">Status: </span>
+                    {(() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+
+                      const departureDate = new Date(formData.departure_date);
+                      departureDate.setHours(0, 0, 0, 0);
+
+                      const diffDays = Math.ceil(
+                        (departureDate - today) / (1000 * 60 * 60 * 24)
+                      );
+
+                      if (diffDays < 0) {
+                        return `Perjalanan ini sudah lewat ${Math.abs(
+                          diffDays
+                        )} hari yang lalu`;
+                      } else if (diffDays === 0) {
+                        return "Perjalanan berlangsung hari ini";
+                      } else if (diffDays === 1) {
+                        return "Perjalanan akan dimulai besok";
+                      } else {
+                        return `Perjalanan akan dimulai dalam ${diffDays} hari`;
+                      }
+                    })()}
+                  </>
+                )}
+              </p>
+            </div>
           </motion.div>
         </div>
 
@@ -649,6 +824,7 @@ const DestinationForm = () => {
                     {/* Custom Date Picker */}
                     {showDatePicker && (
                       <motion.div
+                        ref={calendarRef}
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 p-4 min-w-[320px]"
@@ -721,7 +897,6 @@ const DestinationForm = () => {
                             <X className="h-4 w-4" />
                           </button>
                         </div>
-
                         <div className="grid grid-cols-7 gap-1 mb-2">
                           {["M", "S", "S", "R", "K", "J", "S"].map(
                             (day, index) => (
@@ -765,12 +940,29 @@ const DestinationForm = () => {
                             // Add days of the month
                             for (let day = 1; day <= daysInMonth; day++) {
                               const date = new Date(year, month, day);
+
+                              // Format date untuk comparison
+                              const dateYear = date.getFullYear();
+                              const dateMonth = String(
+                                date.getMonth() + 1
+                              ).padStart(2, "0");
+                              const dateDay = String(date.getDate()).padStart(
+                                2,
+                                "0"
+                              );
+                              const dateFormatted = `${dateYear}-${dateMonth}-${dateDay}`;
+
                               const isSelected =
-                                formData.departure_date ===
-                                date.toISOString().split("T")[0];
-                              const isPast =
-                                date <
-                                new Date(new Date().setHours(0, 0, 0, 0));
+                                formData.departure_date === dateFormatted;
+
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              const dateForCheck = new Date(year, month, day);
+                              dateForCheck.setHours(0, 0, 0, 0);
+                              {
+                                /* const isPast = dateForCheck < today; */
+                              }
+                              const isPast = false;
 
                               days.push(
                                 <button
@@ -796,7 +988,6 @@ const DestinationForm = () => {
                             return days;
                           })()}
                         </div>
-
                         {/* Today Button */}
                         <div className="flex justify-center mt-4">
                           <button
@@ -914,7 +1105,7 @@ const DestinationForm = () => {
                     </label>
 
                     <div className="flex gap-2">
-                      {/* Minus Button - FIX: SEKARANG SUDAH BENAR */}
+                      {/* Minus Button */}
                       <motion.button
                         type="button"
                         onClick={decrementDuration}
@@ -953,15 +1144,6 @@ const DestinationForm = () => {
                           }}
                         />
 
-                        {/* Hide spinner arrows for Webkit browsers */}
-                        <style jsx>{`
-                          input[type="number"]::-webkit-outer-spin-button,
-                          input[type="number"]::-webkit-inner-spin-button {
-                            -webkit-appearance: none;
-                            margin: 0;
-                          }
-                        `}</style>
-
                         {/* Days Label */}
                         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                           <span className="text-sm font-medium text-purple-600 bg-white/80 px-2 py-1 rounded-lg border border-purple-200">
@@ -970,7 +1152,7 @@ const DestinationForm = () => {
                         </div>
                       </div>
 
-                      {/* Plus Button - FIX: SEKARANG SUDAH BENAR */}
+                      {/* Plus Button */}
                       <motion.button
                         type="button"
                         onClick={incrementDuration}

@@ -12,7 +12,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { itineraryService } from "../services/itineraryService";
 
-const ItineraryForm = ({ destinationId, itinerary, onClose, onSave }) => {
+// 🔥 UPDATE: Tambah onError prop
+  const ItineraryForm = ({
+  destinationId,
+  itinerary,
+  onClose,
+  onSave,
+  onError,
+}) => {
   const isEdit = Boolean(itinerary);
 
   const [formData, setFormData] = useState({
@@ -111,26 +118,53 @@ const ItineraryForm = ({ destinationId, itinerary, onClose, onSave }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // ItineraryForm.jsx - PERBAIKI handleSubmit untuk return data
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      if (onError) {
+        onError("Silakan periksa form untuk kesalahan");
+      }
       return;
     }
 
     setLoading(true);
 
     try {
+      let savedItinerary;
+
       if (isEdit) {
-        await itineraryService.update(itinerary.id, formData);
+        savedItinerary = await itineraryService.update(itinerary.id, formData);
       } else {
-        await itineraryService.create(formData);
+        savedItinerary = await itineraryService.create(formData);
       }
 
-      onSave();
+      // 🔥 LANGSUNG KIRIM DATA KE PARENT, JANGAN TUNGGU RELOAD
+      if (onSave) {
+        onSave(savedItinerary); // Langsung kirim data yang disimpan
+      }
+
+      // AUTO CLOSE dengan delay kecil
+      setTimeout(() => {
+        onClose();
+      }, 300);
     } catch (error) {
       console.error("Failed to save itinerary:", error);
-      alert("Failed to save itinerary. Please try again.");
+
+      // Format error message
+      let errorMessage = "Gagal menyimpan aktivitas. Silakan coba lagi.";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.errors) {
+        const errors = Object.values(error.response.data.errors).flat();
+        errorMessage = errors.join(", ");
+      }
+
+      if (onError) {
+        onError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -384,18 +418,17 @@ const ItineraryForm = ({ destinationId, itinerary, onClose, onSave }) => {
                   className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 text-white py-3 px-6 rounded-xl hover:from-blue-600 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center gap-2"
                 >
                   {loading ? (
-                    <>
+                    <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Saving...
-                    </>
+                      <span className="animate-pulse">Menyimpan...</span>
+                    </div>
                   ) : (
                     <>
                       <Star className="h-4 w-4" />
-                      {isEdit ? "Update Activity" : "Add Activity"}
+                      {isEdit ? "Perbarui Aktivitas" : "Tambah Aktivitas"}
                     </>
                   )}
                 </motion.button>
-
                 <motion.button
                   type="button"
                   onClick={onClose}

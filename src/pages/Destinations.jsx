@@ -25,8 +25,8 @@ import {
   STORAGE_BASE_URL,
   destinationService,
 } from "../services/destinationService";
+import Notification, { useNotification } from "../components/Notification";
 
-// 🔥 IMPROVED: Realistic Skeleton Loading Components
 const SkeletonStats = () => (
   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     {[1, 2, 3, 4].map((item) => (
@@ -147,7 +147,6 @@ const SkeletonTable = () => (
   </div>
 );
 
-// 🔥 NEW: Empty State Skeleton untuk ketika tidak ada data
 const SkeletonEmptyState = () => (
   <motion.div
     initial={{ opacity: 0 }}
@@ -163,7 +162,6 @@ const SkeletonEmptyState = () => (
   </motion.div>
 );
 
-// 🔥 NEW: Header Skeleton yang lebih realistis
 const SkeletonHeader = () => (
   <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 shadow-sm">
     <div className="max-w-7xl mx-auto px-6 py-6">
@@ -191,18 +189,38 @@ const Destinations = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedDestinations, setSelectedDestinations] = useState([]);
+
   const [sortConfig, setSortConfig] = useState({
     key: "departure_date",
     direction: "asc",
   });
+
   const [refreshing, setRefreshing] = useState(false);
   const [operationLoading, setOperationLoading] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  const {
+    notification,
+    notificationKey,
+    showNotification,
+    dismissNotification,
+  } = useNotification();
 
   // Load destinations from API
   useEffect(() => {
     loadDestinations();
   }, []);
+
+  // 🔥 TAMBAHKAN: Auto refresh jika baru saja submit form
+  useEffect(() => {
+    if (formSubmitted) {
+      // Refresh data dari server
+      loadDestinations();
+      setFormSubmitted(false);
+    }
+  }, [formSubmitted]);
 
   const loadDestinations = async () => {
     try {
@@ -221,10 +239,17 @@ const Destinations = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadDestinations();
-    setRefreshing(false);
+    try {
+      await loadDestinations();
+      showNotification("Data destinasi berhasil dimuat ulang", "success");
+    } catch (error) {
+      showNotification("Gagal memuat ulang data", "error");
+    } finally {
+      setRefreshing(false);
+    }
   };
 
+  // 🔥 UPDATE: handleDelete dengan better notification
   const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus destinasi ini?")) {
       setOperationLoading(id);
@@ -234,9 +259,13 @@ const Destinations = () => {
         setSelectedDestinations((prev) =>
           prev.filter((destId) => destId !== id)
         );
+
+        // 🔥 TAMBAH SUCCESS NOTIFICATION
+        showNotification("Destinasi berhasil dihapus", "success");
       } catch (error) {
         console.error("Failed to delete destination:", error);
-        alert("Gagal menghapus destinasi. Silakan coba lagi.");
+        // 🔥 TAMBAH ERROR NOTIFICATION
+        showNotification("Gagal menghapus destinasi", "error");
       } finally {
         setOperationLoading(null);
       }
@@ -257,9 +286,13 @@ const Destinations = () => {
           prev.filter((d) => !selectedDestinations.includes(d.id))
         );
         setSelectedDestinations([]);
+        showNotification(
+          `${selectedDestinations.length} destinasi berhasil dihapus`,
+          "success"
+        );
       } catch (error) {
         console.error("Failed to delete destinations:", error);
-        alert("Gagal menghapus destinasi. Silakan coba lagi.");
+        showNotification("Gagal menghapus destinasi", "error");
       }
     }
   };
@@ -279,9 +312,15 @@ const Destinations = () => {
         )
       );
       setSelectedDestinations([]);
+
+      const statusText = newStatus ? "selesai" : "perencanaan";
+      showNotification(
+        `${selectedDestinations.length} destinasi ditandai ${statusText}`,
+        "success"
+      );
     } catch (error) {
       console.error("Failed to update status:", error);
-      alert("Gagal memperbarui status");
+      showNotification("Gagal memperbarui status", "error");
     }
   };
 
@@ -342,6 +381,12 @@ const Destinations = () => {
           d.id === id ? { ...d, is_achieved: !currentStatus } : d
         )
       );
+
+      const statusText = !currentStatus ? "selesai" : "perencanaan";
+      showNotification(
+        `Status destinasi berhasil diubah menjadi ${statusText}`,
+        "success"
+      );
     } catch (error) {
       console.error("❌ Update failed:", {
         error,
@@ -349,10 +394,11 @@ const Destinations = () => {
         data: error.response?.data,
       });
 
-      alert(
+      showNotification(
         `Gagal memperbarui status: ${
           error.response?.data?.message || error.message
-        }`
+        }`,
+        "error"
       );
     } finally {
       setOperationLoading(null);
@@ -548,6 +594,13 @@ const Destinations = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+      {/* 🔥 NOTIFICATION COMPONENT */}
+      <Notification
+        notification={notification}
+        notificationKey={notificationKey}
+        onDismiss={dismissNotification}
+      />
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

@@ -1,16 +1,21 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter as Router } from 'react-router-dom'
-import './index.css'
-import App from './App.jsx'
-import { AuthProvider } from './utils/auth.jsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter as Router } from "react-router-dom";
+import "./index.css";
+import App from "./App.jsx";
+import { AuthProvider } from "./utils/auth.jsx";
 
-createRoot(document.getElementById('root')).render(
+import { NotificationProvider } from "./components/Notification";
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Router>
       <AuthProvider>
-        <App />
+        {/* 🔥 WRAP DENGAN NOTIFICATION */}
+        <NotificationProvider>
+          <App />
+        </NotificationProvider>
       </AuthProvider>
     </Router>
-  </StrictMode>,
-)
+  </StrictMode>
+);

@@ -11,6 +11,8 @@ import DestinationForm from "./pages/DestinationForm.jsx";
 import Itineraries from "./pages/Itineraries.jsx";
 import { GuestRoute, ProtectedRoute } from "./routes/AuthRoutes.jsx";
 
+import Notification, { useNotification } from "./components/Notification";
+
 // ScrollToTop Component
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -23,9 +25,20 @@ function ScrollToTop() {
 }
 
 function App() {
+  // 🔥 GLOBAL NOTIFICATION HOOK
+  const { notification, showNotification, dismissNotification } =
+    useNotification();
+
   return (
     <>
       <ScrollToTop />
+
+      {/* 🔥 GLOBAL NOTIFICATION */}
+      <Notification
+        notification={notification}
+        onDismiss={dismissNotification}
+      />
+
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
 

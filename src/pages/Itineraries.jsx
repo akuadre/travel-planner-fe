@@ -32,6 +32,7 @@ import {
   destinationService,
   STORAGE_BASE_URL,
 } from "../services/destinationService";
+import Notification, { useNotification } from "../components/Notification";
 
 // 🔥 NEW: Skeleton Loading Components - IMPROVED
 const SkeletonStats = () => (
@@ -274,12 +275,23 @@ const Itineraries = () => {
   const [viewMode, setViewMode] = useState("timeline");
   const [selectedDay, setSelectedDay] = useState(null);
 
+  // 🔥 TAMBAHKAN HOOK NOTIFICATION
+  const { notification, showNotification, dismissNotification } =
+    useNotification();
+
   // Check if we're in single destination mode or all destinations mode
   const isSingleDestinationMode = Boolean(destinationId);
 
   useEffect(() => {
     loadData();
   }, [destinationId]);
+
+  // Itineraries.jsx - TAMBAH useEffect untuk data validation
+  useEffect(() => {
+    // Log data changes untuk debugging
+    console.log("Itineraries updated:", itineraries.length);
+    console.log("Grouped:", groupItinerariesByDay(itineraries));
+  }, [itineraries]);
 
   const loadData = async () => {
     try {
@@ -311,6 +323,8 @@ const Itineraries = () => {
     } catch (error) {
       console.error("Failed to load data:", error);
       setError("Gagal memuat data. Silakan coba lagi.");
+      // 🔥 TAMBAH NOTIFIKASI ERROR
+      showNotification("Gagal memuat data", "error");
     } finally {
       setLoading(false);
     }
@@ -329,6 +343,54 @@ const Itineraries = () => {
     setSelectedDay(dayNumber);
   };
 
+  const handleCreateSuccess = (newItinerary) => {
+    // 1. Tampilkan notifikasi langsung
+    showNotification("Aktivitas berhasil ditambahkan!", "success");
+
+    // 2. Update local state
+    setItineraries((prev) => {
+      const updated = [...prev, newItinerary];
+      // Sort by day and time
+      return updated.sort((a, b) => {
+        if (a.day_number !== b.day_number) return a.day_number - b.day_number;
+        const timeA = a.schedule_time || "00:00";
+        const timeB = b.schedule_time || "00:00";
+        return timeA.localeCompare(timeB);
+      });
+    });
+
+    // 3. Auto-expand day yang baru
+    if (!expandedDays.has(newItinerary.day_number)) {
+      setExpandedDays((prev) => new Set([...prev, newItinerary.day_number]));
+    }
+
+    // 4. Tutup form
+    setShowForm(false);
+  };
+
+  const handleUpdateSuccess = (updatedItinerary) => {
+    // 1. Tampilkan notifikasi langsung
+    showNotification("Aktivitas berhasil diperbarui!", "success");
+
+    // 2. Update local state
+    setItineraries((prev) =>
+      prev
+        .map((item) =>
+          item.id === updatedItinerary.id ? updatedItinerary : item
+        )
+        .sort((a, b) => {
+          if (a.day_number !== b.day_number) return a.day_number - b.day_number;
+          const timeA = a.schedule_time || "00:00";
+          const timeB = b.schedule_time || "00:00";
+          return timeA.localeCompare(timeB);
+        })
+    );
+
+    // 3. Tutup form
+    setEditingItinerary(null);
+  };
+
+  // Itineraries.jsx - PERBAIKI handleDelete
   const handleDelete = async (itineraryId) => {
     if (
       window.confirm(
@@ -337,19 +399,27 @@ const Itineraries = () => {
     ) {
       try {
         await itineraryService.delete(itineraryId);
+
+        // 🔥 UPDATE LOCAL STATE LANGSUNG
         setItineraries((prev) =>
           prev.filter((item) => item.id !== itineraryId)
         );
-        // Refresh the data
-        loadData();
+
+        // 🔥 NOTIFIKASI LANGSUNG
+        showNotification("Aktivitas berhasil dihapus", "success");
       } catch (error) {
         console.error("Failed to delete itinerary:", error);
-        alert("Gagal menghapus item rencana perjalanan.");
+        showNotification("Gagal menghapus aktivitas", "error");
       }
     }
   };
 
+  // PERBAIKI fungsi groupItinerariesByDay untuk handle empty data
   const groupItinerariesByDay = (itineraries) => {
+    if (!itineraries || itineraries.length === 0) {
+      return {};
+    }
+
     const grouped = {};
     itineraries.forEach((item) => {
       if (!grouped[item.day_number]) {
@@ -580,7 +650,7 @@ const Itineraries = () => {
     </div>
   );
 
-  // MODE 1: Single Destination Grid View
+  // MODE 2: Single Destination Grid View
   const SingleDestinationGridView = ({ groupedItineraries }) => {
     const [selectedDay, setSelectedDay] = useState(
       Object.keys(groupedItineraries)[0] || "1"
@@ -832,7 +902,7 @@ const Itineraries = () => {
     );
   };
 
-  // MODE 2: All Destinations Grid View (for itinerary management) - UPDATED
+  // MODE 3: All Destinations Grid View (for itinerary management) - UPDATED
   const AllDestinationsGridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {destinations.map((destination) => {
@@ -941,6 +1011,7 @@ const Itineraries = () => {
       <AddDestinationCard />
     </div>
   );
+
   // 🔥 NEW: Skeleton Loading State - UPDATED
   if (loading) {
     return (
@@ -1031,6 +1102,11 @@ const Itineraries = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+      <Notification
+        notification={notification}
+        onDismiss={dismissNotification}
+      />
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -1332,16 +1408,22 @@ const Itineraries = () => {
       <AnimatePresence>
         {(showForm || editingItinerary) && (
           <ItineraryForm
-            destinationId={destinationId}
+            destinationId={destinationId || selectedDestination?.id}
             itinerary={editingItinerary}
             onClose={() => {
               setShowForm(false);
               setEditingItinerary(null);
             }}
-            onSave={() => {
-              loadData();
-              setShowForm(false);
-              setEditingItinerary(null);
+            onSave={(savedItinerary) => {
+              // 🔥 CALLBACK DENGAN DATA LANGSUNG DARI FORM
+              if (editingItinerary) {
+                handleUpdateSuccess(savedItinerary);
+              } else {
+                handleCreateSuccess(savedItinerary);
+              }
+            }}
+            onError={(errorMessage) => {
+              showNotification(errorMessage, "error");
             }}
           />
         )}

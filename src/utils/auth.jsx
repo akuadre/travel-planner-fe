@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Load user from localStorage on mount
+  // auth.jsx - Di loadUser function, tambah logging
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -23,13 +24,41 @@ export const AuthProvider = ({ children }) => {
         console.log("🔐 Loading user, token exists:", !!token);
 
         if (token) {
-          const userData = await authService.getUser();
-          console.log("✅ User loaded:", userData);
-          setUser(userData);
+          // 1. Coba dari localStorage dulu
+          const storedUser = localStorage.getItem("userData");
+          if (storedUser) {
+            console.log(
+              "📦 User found in localStorage:",
+              JSON.parse(storedUser)
+            );
+            setUser(JSON.parse(storedUser));
+            console.log("✅ User loaded from localStorage");
+          } else {
+            // 2. Jika tidak ada, fetch dari API
+            console.log("🌐 Fetching user from API...");
+            const userData = await authService.getUser();
+            console.log("👤 User data from API:", userData);
+
+            // PERIKSA FORMAT DATA
+            if (userData && typeof userData === "object") {
+              setUser(userData);
+              localStorage.setItem("userData", JSON.stringify(userData));
+              console.log("✅ User loaded from API and saved to localStorage");
+            } else {
+              console.error("❌ Invalid user data format:", userData);
+              setUser(null);
+            }
+          }
+        } else {
+          console.log("⚠️ No auth token found, user not logged in");
+          setUser(null);
         }
       } catch (error) {
         console.error("❌ Failed to load user:", error);
+        // Clear invalid data
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("userData");
+        setUser(null);
       } finally {
         setLoading(false);
         console.log("🏁 Auth loading finished");
