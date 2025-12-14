@@ -961,7 +961,7 @@ const Itineraries = () => {
             {/* Left Section */}
             <div className={`flex ${isMobile ? 'flex-col sm:flex-row' : 'items-center'} gap-3 ${isMobile ? 'sm:gap-6' : 'gap-6'}`}>
               <Link
-                to={isSingleDestinationMode ? "/destinations" : "/home"}
+                to={isSingleDestinationMode ? "/itineraries" : "/home"}
                 className="inline-flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg hover:border-gray-400 transition-all shadow-sm hover:shadow-md text-sm w-fit"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -973,7 +973,7 @@ const Itineraries = () => {
                   {isSingleDestinationMode
                     ? selectedDestination?.title || "Rencana Perjalanan"
                     : "Semua Rencana Perjalanan"}
-                  <span className="ml-1">
+                  <span className="ml-1 text-white">
                     {isSingleDestinationMode ? "📍" : "🗺️"}
                   </span>
                 </h1>
