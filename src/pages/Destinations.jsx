@@ -27,6 +27,7 @@ import {
   destinationService,
 } from "../services/destinationService";
 import Notification, { useNotification } from "../components/Notification";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 // 🔥 Mobile: 1 kolom, Tablet: 2 kolom, Desktop: 4 kolom
 const SkeletonStats = () => (
@@ -199,6 +200,11 @@ const Destinations = () => {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, title }
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const {
     notification,
     notificationKey,
@@ -212,8 +218,8 @@ const Destinations = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   // Load destinations from API
@@ -243,6 +249,74 @@ const Destinations = () => {
     }
   };
 
+  // 🔥 DELETE FUNCTIONS WITH MODAL
+  const handleDeleteClick = (destination) => {
+    setDeleteTarget({
+      id: destination.id,
+      title: destination.title,
+    });
+    setDeleteModalOpen(true);
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedDestinations.length === 0) return;
+    setBulkDeleteModalOpen(true);
+  };
+
+  const executeDelete = async (id) => {
+    setIsDeleting(true);
+    try {
+      await destinationService.delete(id);
+      setDestinations((prev) => prev.filter((d) => d.id !== id));
+      setSelectedDestinations((prev) => prev.filter((destId) => destId !== id));
+      showNotification("Destinasi berhasil dihapus", "success");
+      return true;
+    } catch (error) {
+      console.error("Failed to delete destination:", error);
+      showNotification("Gagal menghapus destinasi", "error");
+      return false;
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+      setDeleteTarget(null);
+    }
+  };
+
+  const executeBulkDelete = async () => {
+    if (selectedDestinations.length === 0) return;
+
+    setIsDeleting(true);
+    try {
+      await destinationService.bulkDelete(selectedDestinations);
+      setDestinations((prev) =>
+        prev.filter((d) => !selectedDestinations.includes(d.id))
+      );
+      showNotification(
+        `${selectedDestinations.length} destinasi berhasil dihapus`,
+        "success"
+      );
+      setSelectedDestinations([]);
+      return true;
+    } catch (error) {
+      console.error("Failed to delete destinations:", error);
+      showNotification("Gagal menghapus destinasi", "error");
+      return false;
+    } finally {
+      setIsDeleting(false);
+      setBulkDeleteModalOpen(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteTarget) {
+      await executeDelete(deleteTarget.id);
+    }
+  };
+
+  const handleConfirmBulkDelete = async () => {
+    await executeBulkDelete();
+  };
+
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
@@ -252,50 +326,6 @@ const Destinations = () => {
       showNotification("Gagal memuat ulang data", "error");
     } finally {
       setRefreshing(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus destinasi ini?")) {
-      setOperationLoading(id);
-      try {
-        await destinationService.delete(id);
-        setDestinations((prev) => prev.filter((d) => d.id !== id));
-        setSelectedDestinations((prev) =>
-          prev.filter((destId) => destId !== id)
-        );
-        showNotification("Destinasi berhasil dihapus", "success");
-      } catch (error) {
-        console.error("Failed to delete destination:", error);
-        showNotification("Gagal menghapus destinasi", "error");
-      } finally {
-        setOperationLoading(null);
-      }
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedDestinations.length === 0) return;
-
-    if (
-      window.confirm(
-        `Apakah Anda yakin ingin menghapus ${selectedDestinations.length} destinasi?`
-      )
-    ) {
-      try {
-        await destinationService.bulkDelete(selectedDestinations);
-        setDestinations((prev) =>
-          prev.filter((d) => !selectedDestinations.includes(d.id))
-        );
-        setSelectedDestinations([]);
-        showNotification(
-          `${selectedDestinations.length} destinasi berhasil dihapus`,
-          "success"
-        );
-      } catch (error) {
-        console.error("Failed to delete destinations:", error);
-        showNotification("Gagal menghapus destinasi", "error");
-      }
     }
   };
 
@@ -361,21 +391,13 @@ const Destinations = () => {
   };
 
   const toggleStatus = async (id, currentStatus) => {
-    console.log("🔄 Attempting to toggle status:", {
-      id,
-      currentStatus,
-      newStatus: !currentStatus,
-    });
-
     try {
       setOperationLoading(id);
 
       const formData = new FormData();
       formData.append("is_achieved", !currentStatus ? "1" : "0");
 
-      console.log("📤 Sending update request...");
-      const response = await destinationService.update(id, formData);
-      console.log("✅ Update successful:", response);
+      await destinationService.update(id, formData);
 
       setDestinations((prev) =>
         prev.map((d) =>
@@ -389,12 +411,7 @@ const Destinations = () => {
         "success"
       );
     } catch (error) {
-      console.error("❌ Update failed:", {
-        error,
-        response: error.response,
-        data: error.response?.data,
-      });
-
+      console.error("Update failed:", error);
       showNotification(
         `Gagal memperbarui status: ${
           error.response?.data?.message || error.message
@@ -458,7 +475,6 @@ const Destinations = () => {
           setActiveDropdown(null);
         }
       };
-
       document.addEventListener("mousedown", handleClickOutside);
       return () =>
         document.removeEventListener("mousedown", handleClickOutside);
@@ -509,7 +525,8 @@ const Destinations = () => {
                   toggleStatus(destination.id, destination.is_achieved);
                   setActiveDropdown(null);
                 }}
-                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-colors group"
+                disabled={operationLoading === destination.id}
+                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-colors group disabled:opacity-50"
               >
                 {destination.is_achieved ? (
                   <>
@@ -526,25 +543,17 @@ const Destinations = () => {
 
               <div className="border-t border-gray-200 my-1"></div>
 
+              {/* 🔥 INI YANG BENAR - panggil handleDeleteClick */}
               <button
                 onClick={() => {
-                  handleDelete(destination.id);
+                  handleDeleteClick(destination); // 🔥 GANTI INI
                   setActiveDropdown(null);
                 }}
-                disabled={operationLoading === destination.id}
+                disabled={isDeleting}
                 className="flex items-center w-full px-4 py-3 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors group disabled:opacity-50"
               >
-                {operationLoading === destination.id ? (
-                  <>
-                    <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full mr-3"></div>
-                    Menghapus...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4 mr-3" />
-                    Hapus Destinasi
-                  </>
-                )}
+                <Trash2 className="h-4 w-4 mr-3" />
+                Hapus Destinasi
               </button>
             </div>
           </motion.div>
@@ -582,7 +591,9 @@ const Destinations = () => {
           <div className="w-16 h-16 md:w-20 md:h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Compass className="h-8 w-8 md:h-10 md:w-10 text-red-600" />
           </div>
-          <div className="text-red-600 text-base md:text-lg font-medium mb-4">{error}</div>
+          <div className="text-red-600 text-base md:text-lg font-medium mb-4">
+            {error}
+          </div>
           <button
             onClick={loadDestinations}
             className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg font-semibold mr-3 text-sm md:text-base"
@@ -596,6 +607,27 @@ const Destinations = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+      {/* DELETE CONFIRMATION MODALS */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title={deleteTarget?.title}
+        isLoading={isDeleting}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={bulkDeleteModalOpen}
+        onClose={() => setBulkDeleteModalOpen(false)}
+        onConfirm={handleConfirmBulkDelete}
+        isBulk={true}
+        itemCount={selectedDestinations.length}
+        isLoading={isDeleting}
+      />
+
       {/* 🔥 NOTIFICATION COMPONENT */}
       <Notification
         notification={notification}
@@ -721,12 +753,16 @@ const Destinations = () => {
                   <p className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">
                     {stat.value}
                   </p>
-                  <p className="text-xs md:text-sm text-gray-600 mt-1">{stat.label}</p>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1">
+                    {stat.label}
+                  </p>
                 </div>
                 <div
                   className={`p-2 md:p-3 rounded-lg md:rounded-xl ${stat.bgColor} group-hover:scale-110 transition-transform`}
                 >
-                  <stat.icon className={`h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 ${stat.textColor}`} />
+                  <stat.icon
+                    className={`h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 ${stat.textColor}`}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -832,14 +868,16 @@ const Destinations = () => {
                     <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                     Tandai Perencanaan
                   </motion.button>
+                  {/* 🔥 UPDATED: Gunakan modal untuk bulk delete */}
                   <motion.button
-                    onClick={handleBulkDelete}
+                    onClick={handleBulkDeleteClick}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2.5 bg-red-500 text-white rounded-lg md:rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/25 font-medium text-xs md:text-sm"
+                    disabled={isDeleting}
+                    className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2.5 bg-red-500 text-white rounded-lg md:rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/25 font-medium text-xs md:text-sm disabled:opacity-50"
                   >
                     <Trash2 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                    Hapus
+                    {isDeleting ? "Menghapus..." : "Hapus"}
                   </motion.button>
                   <button
                     onClick={() => setSelectedDestinations([])}
@@ -1047,18 +1085,24 @@ const Destinations = () => {
                             {operationLoading === destination.id ? (
                               <>
                                 <div className="animate-spin h-3 w-3 md:h-4 md:w-4 border-2 border-white border-t-transparent rounded-full mr-1 md:mr-2"></div>
-                                <span className="hidden sm:inline">Memproses...</span>
+                                <span className="hidden sm:inline">
+                                  Memproses...
+                                </span>
                               </>
                             ) : destination.is_achieved ? (
                               <>
                                 <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                                <span className="hidden sm:inline">Tercapai</span>
+                                <span className="hidden sm:inline">
+                                  Tercapai
+                                </span>
                                 <span className="sm:hidden">✓</span>
                               </>
                             ) : (
                               <>
                                 <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                                <span className="hidden sm:inline">Perencanaan</span>
+                                <span className="hidden sm:inline">
+                                  Perencanaan
+                                </span>
                                 <span className="sm:hidden">✗</span>
                               </>
                             )}
