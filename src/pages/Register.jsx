@@ -253,19 +253,33 @@ const Register = () => {
     >
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: "110% 110%",
-          }}
-          animate={{
-            x: ["0%", "3%", "0%", "-3%", "0%"],
-            y: ["0%", "2%", "0%", "-2%", "0%"],
-            scale: [1, 1.05, 1, 1.03, 1],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        />
+        {/* Container untuk background image dengan overflow hidden */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${backgroundImage})`,
+              // Perubahan: backgroundSize dari "110% 110%" jadi "cover"
+              // dan atur scale animasi lebih kecil
+              backgroundSize: "cover",
+              minWidth: "100%",
+              minHeight: "100%",
+            }}
+            animate={{
+              // Kurangi range pergerakan agar tidak keluar frame
+              x: ["0%", "1%", "0%", "-1%", "0%"],
+              y: ["0%", "0.5%", "0%", "-0.5%", "0%"],
+              scale: [1, 1.01, 1, 1.005, 1], // Scale lebih kecil
+            }}
+            transition={{
+              duration: 30, // Durasi lebih lambat
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+        </div>
+
+        {/* Green Gradient Overlay - ubah dari blue ke green */}
         <div className="absolute inset-0 bg-gradient-to-br from-green-600/80 via-green-700/80 to-green-800/80"></div>
 
         <div className="absolute inset-0 opacity-10">
@@ -274,7 +288,7 @@ const Register = () => {
           <div className="absolute top-1/2 right-1/2 w-40 h-40 bg-white rounded-full blur-2xl"></div>
         </div>
 
-        {/* Floating Icons */}
+        {/* Floating Icons - tetap sama */}
         <motion.div
           variants={floatingAnimation}
           animate="animate"
