@@ -281,7 +281,7 @@ const QuickActionsSkeleton = () => (
 
     {/* Action items - Responsive */}
     <div className="space-y-1.5 md:space-y-2 flex-grow">
-      {[1, 2, 3, 4].map((index) => (
+      {[1, 2, 3].map((index) => (
         <div
           key={index}
           className="flex items-center justify-between p-2 md:p-2.5 lg:p-3 rounded-lg bg-gray-50 animate-pulse h-10 md:h-12 lg:h-14"
@@ -474,37 +474,150 @@ const StoryCarousel = ({ upcomingDestinations }) => {
   };
 
   if (upcomingDestinations.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative h-48 md:h-64 lg:h-80 rounded-2xl lg:rounded-3xl overflow-hidden mb-6 md:mb-8 bg-gradient-to-br from-blue-400 to-cyan-300"
-      >
-        <div className="absolute inset-0 flex items-center justify-center text-white p-4">
-          <div className="text-center">
-            {/* ICON PESAWAT - Hanya muncul di tablet ke atas */}
-            <div className="hidden sm:block mb-3 md:mb-4">
-              <Plane className="h-14 w-14 md:h-16 md:w-16 lg:h-20 lg:w-20 mx-auto opacity-80" />
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative min-h-[320px] md:min-h-[380px] rounded-3xl mb-6 md:mb-8 border-2 border-dashed border-gray-300/50 bg-gradient-to-br from-slate-50 via-white to-gray-50 shadow-lg overflow-hidden" // 🔥 ubah ke min-height
+    >
+      {/* Background pattern - subtle */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-blue-400 to-cyan-300 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tr from-purple-400 to-pink-300 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 h-full flex flex-col items-center justify-center p-6 md:p-8 text-center">
+        {/* Animated icon */}
+        <motion.div
+          animate={{
+            y: [0, -10, 0],
+            rotate: [0, 5, 0, -5, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="mb-4 md:mb-6" // 🔥 kurangi margin
+        >
+          <div className="relative">
+            {/* Outer circle - lebih kecil */}
+            <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl md:rounded-3xl flex items-center justify-center shadow-lg">
+              {/* Inner circle with plane - lebih kecil */}
+              <div className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center shadow-md">
+                <Plane className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-white" />
+              </div>
             </div>
 
-            <h3 className="text-lg md:text-xl lg:text-2xl font-bold mb-2">
-              Belum Ada Perjalanan Mendatang
-            </h3>
-            <p className="text-white/80 mb-3 md:mb-4 text-sm md:text-base">
-              Mulai rencanakan petualangan Anda berikutnya
-            </p>
-            <Link
-              to="/destinations/new"
-              className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 transition-all text-white font-semibold text-sm md:text-base"
-            >
-              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-              Rencanakan Perjalanan
-            </Link>
+            {/* Floating dots - lebih kecil */}
+            <motion.div
+              animate={{
+                x: [0, 8, 0],
+                y: [0, -8, 0],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-gradient-to-br from-blue-400 to-cyan-300 rounded-full shadow-lg"
+            />
+            <motion.div
+              animate={{
+                x: [0, -8, 0],
+                y: [0, 8, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
+              className="absolute -bottom-1 -left-1 w-3 h-3 md:w-4 md:h-4 bg-gradient-to-br from-purple-400 to-pink-300 rounded-full shadow-lg"
+            />
           </div>
-        </div>
-      </motion.div>
-    );
-  }
+        </motion.div>
+
+        {/* Text content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="max-w-xl mx-auto px-2" // 🔥 tambah padding horizontal
+        >
+          <h3 className="text-lg md:text-xl lg:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-2">
+            Siap untuk Petualangan?
+          </h3>
+
+          <p className="text-gray-600 mb-4 text-sm md:text-base">
+            Anda belum memiliki perjalanan mendatang.
+            <span className="block text-gray-500 text-xs md:text-sm mt-1">
+              Mulai rencanakan destinasi impian Anda!
+            </span>
+          </p>
+
+          {/* Call to action buttons - 1 LINE RESPONSIVE */}
+          <div className="flex flex-wrap justify-center gap-2 md:gap-3"> {/* 🔥 gap lebih kecil */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 min-w-[140px] max-w-[200px]" // 🔥 kontrol lebar
+            >
+              <Link
+                to="/destinations/new"
+                className="inline-flex items-center justify-center w-full px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-lg md:rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-md hover:shadow-lg font-medium text-xs md:text-sm whitespace-nowrap" // 🔥 text kecil
+              >
+                <Plus className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 flex-shrink-0" />
+                <span className="truncate">Rencanakan Baru</span> {/* 🔥 text lebih pendek */}
+              </Link>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex-1 min-w-[120px] max-w-[180px]" // 🔥 kontrol lebar
+            >
+              <Link
+                to="/destinations"
+                className="inline-flex items-center justify-center w-full px-3 py-2 md:px-4 md:py-2.5 border border-gray-300 text-gray-700 rounded-lg md:rounded-xl hover:bg-gray-50 transition-all font-medium text-xs md:text-sm whitespace-nowrap"
+              >
+                <Compass className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 flex-shrink-0" />
+                <span className="truncate">Lihat Semua</span> {/* 🔥 text lebih pendek */}
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Inspiring quote - lebih kecil */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200/30 max-w-xs"
+        >
+          <p className="text-gray-500 italic text-xs">
+            "Petualangan terbaik dimulai dengan satu langkah"
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Floating travel icons - lebih kecil */}
+      <div className="absolute top-2 left-2 md:top-4 md:left-4 opacity-20">
+        <MapPin className="h-5 w-5 md:h-6 md:w-6 text-blue-400" />
+      </div>
+      <div className="absolute top-2 right-2 md:top-4 md:right-4 opacity-20">
+        <Compass className="h-5 w-5 md:h-6 md:w-6 text-cyan-400" />
+      </div>
+      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 opacity-20">
+        <Calendar className="h-5 w-5 md:h-6 md:w-6 text-purple-400" />
+      </div>
+      <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 opacity-20">
+        <Globe className="h-5 w-5 md:h-6 md:w-6 text-pink-400" />
+      </div>
+    </motion.div>
+  );
+}
 
   return (
     <motion.div
@@ -1003,7 +1116,7 @@ const CompletedTripsSection = ({ trips }) => {
                     to="/destinations/new"
                     className="text-blue-500 hover:text-blue-600 text-sm font-medium"
                   >
-                    + Tambah lagi
+                    + Tambah perjalanan
                   </Link>
                 </div>
               )}
@@ -1051,17 +1164,10 @@ const QuickActions = ({ destinations = [] }) => (
         },
         {
           icon: Calendar,
-          label: "Buat Itinerary",
+          label: "Buat Rencana Perjalanan",
           link: "/itineraries",
           count: "+",
           color: "purple",
-        },
-        {
-          icon: MapPin,
-          label: "Lihat Peta Perjalanan",
-          link: "/map",
-          count: "📍",
-          color: "orange",
         },
       ].map((action, index) => (
         <motion.div
