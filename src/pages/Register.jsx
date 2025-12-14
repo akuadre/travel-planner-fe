@@ -217,7 +217,7 @@ const Register = () => {
   const getInputClasses = (fieldName) => {
     const status = getFieldStatus(fieldName);
     const baseClasses =
-      "block w-full pl-12 pr-12 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300";
+      "block w-full pl-12 pr-20 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300";
 
     switch (status) {
       case "error":
@@ -570,6 +570,8 @@ const Register = () => {
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Lock className={`h-5 w-5 ${getIconColor("password")}`} />
                   </div>
+
+                  {/* Input dengan padding yang pas */}
                   <input
                     id="password"
                     name="password"
@@ -578,14 +580,38 @@ const Register = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}
-                    className={getInputClasses("password")}
+                    className="block w-full pl-12 pr-20 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300"
                     placeholder="Create a password (min. 8 characters)"
+                    style={{
+                      borderColor:
+                        getFieldStatus("password") === "error"
+                          ? "rgba(248, 113, 113, 0.5)"
+                          : getFieldStatus("password") === "success"
+                          ? "rgba(74, 222, 128, 0.5)"
+                          : "rgba(255, 255, 255, 0.3)",
+                      boxShadow:
+                        getFieldStatus("password") === "error"
+                          ? "0 0 0 2px rgba(248, 113, 113, 0.3)"
+                          : getFieldStatus("password") === "success"
+                          ? "0 0 0 2px rgba(74, 222, 128, 0.3)"
+                          : "none",
+                    }}
                   />
 
-                  {/* Show/Hide Button */}
+                  {/* Status Icon - di tengah antara eye dan kanan */}
+                  <div className="absolute inset-y-0 right-12 pr-3 flex items-center pointer-events-none">
+                    {getFieldStatus("password") === "success" && (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    )}
+                    {getFieldStatus("password") === "error" && (
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    )}
+                  </div>
+
+                  {/* Show/Hide Button - paling kanan */}
                   <motion.button
                     type="button"
-                    className="absolute inset-y-0 right-8 pr-4 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -596,18 +622,9 @@ const Register = () => {
                       <Eye className="h-5 w-5 text-white/60 hover:text-white/80" />
                     )}
                   </motion.button>
-
-                  {/* Status Icon */}
-                  <div className="absolute inset-y-0 right-0 pr-12 flex items-center pointer-events-none">
-                    {getFieldStatus("password") === "success" && (
-                      <CheckCircle className="h-5 w-5 text-green-400" />
-                    )}
-                    {getFieldStatus("password") === "error" && (
-                      <XCircle className="h-5 w-5 text-red-400" />
-                    )}
-                  </div>
                 </motion.div>
 
+                {/* Validation messages dan password strength indicator TETAP SAMA */}
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     {!formData.password && touched.password && (
@@ -671,6 +688,7 @@ const Register = () => {
                       className={`h-5 w-5 ${getIconColor("confirmPassword")}`}
                     />
                   </div>
+
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -679,14 +697,38 @@ const Register = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}
-                    className={getInputClasses("confirmPassword")}
+                    className="block w-full pl-12 pr-20 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300"
                     placeholder="Confirm your password"
+                    style={{
+                      borderColor:
+                        getFieldStatus("confirmPassword") === "error"
+                          ? "rgba(248, 113, 113, 0.5)"
+                          : getFieldStatus("confirmPassword") === "success"
+                          ? "rgba(74, 222, 128, 0.5)"
+                          : "rgba(255, 255, 255, 0.3)",
+                      boxShadow:
+                        getFieldStatus("confirmPassword") === "error"
+                          ? "0 0 0 2px rgba(248, 113, 113, 0.3)"
+                          : getFieldStatus("confirmPassword") === "success"
+                          ? "0 0 0 2px rgba(74, 222, 128, 0.3)"
+                          : "none",
+                    }}
                   />
+
+                  {/* Status Icon */}
+                  <div className="absolute inset-y-0 right-12 pr-3 flex items-center pointer-events-none">
+                    {getFieldStatus("confirmPassword") === "success" && (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    )}
+                    {getFieldStatus("confirmPassword") === "error" && (
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    )}
+                  </div>
 
                   {/* Show/Hide Button */}
                   <motion.button
                     type="button"
-                    className="absolute inset-y-0 right-8 pr-4 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -697,16 +739,6 @@ const Register = () => {
                       <Eye className="h-5 w-5 text-white/60 hover:text-white/80" />
                     )}
                   </motion.button>
-
-                  {/* Status Icon */}
-                  <div className="absolute inset-y-0 right-0 pr-12 flex items-center pointer-events-none">
-                    {getFieldStatus("confirmPassword") === "success" && (
-                      <CheckCircle className="h-5 w-5 text-green-400" />
-                    )}
-                    {getFieldStatus("confirmPassword") === "error" && (
-                      <XCircle className="h-5 w-5 text-red-400" />
-                    )}
-                  </div>
                 </motion.div>
 
                 <div className="mt-2 flex items-center justify-between">
