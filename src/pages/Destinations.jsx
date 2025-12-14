@@ -234,6 +234,20 @@ const Destinations = () => {
     }
   }, [formSubmitted]);
 
+  // Helper function untuk cek apakah destinasi sudah lewat
+  const isPastDestination = (destination) => {
+    const departureDate = new Date(destination.departure_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return departureDate < today;
+  };
+
+  // Helper function untuk cek apakah bisa diubah ke perencanaan
+  const canChangeToPlanning = (destination) => {
+    if (!destination.is_achieved) return true; // Sudah perencanaan
+    return !isPastDestination(destination); // Hanya bisa jika belum lewat
+  };
+
   const loadDestinations = async () => {
     try {
       setLoading(true);
@@ -333,6 +347,29 @@ const Destinations = () => {
     if (selectedDestinations.length === 0) return;
 
     try {
+      // 🔥 Cek untuk bulk update dari "selesai" ke "perencanaan" (newStatus = false)
+      if (!newStatus) {
+        const selectedDests = destinations.filter(
+          (d) => selectedDestinations.includes(d.id) && d.is_achieved
+        );
+
+        // 🔥 Cari yang tanggalnya sudah lewat
+        const pastDests = selectedDests.filter((dest) => {
+          const departureDate = new Date(dest.departure_date);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return departureDate < today;
+        });
+
+        if (pastDests.length > 0) {
+          showNotification(
+            `Tidak dapat mengubah ${pastDests.length} destinasi masa lalu menjadi perencanaan`,
+            "error"
+          );
+          return;
+        }
+      }
+
       await destinationService.bulkUpdate(selectedDestinations, {
         is_achieved: newStatus,
       });
@@ -392,6 +429,38 @@ const Destinations = () => {
 
   const toggleStatus = async (id, currentStatus) => {
     try {
+      // 🔥 Cari destinasi yang akan diupdate
+      const destination = destinations.find((d) => d.id === id);
+      if (!destination) return;
+
+      const departureDate = new Date(destination.departure_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // 🔥 SKENARIO 1: Ingin mengubah dari "selesai" ke "perencanaan"
+      if (currentStatus) {
+        // Jika tanggal sudah lewat, TIDAK BOLEH diubah
+        if (departureDate < today) {
+          showNotification(
+            "Tidak dapat mengubah status destinasi masa lalu menjadi perencanaan",
+            "error"
+          );
+          return;
+        }
+      }
+      // 🔥 SKENARIO 2: Ingin mengubah dari "perencanaan" ke "selesai"
+      else {
+        // Jika tanggal belum lewat, TIDAK BOLEH diubah otomatis
+        // (optional: bisa ditambahkan konfirmasi)
+        if (departureDate > today) {
+          // Boleh tetap lanjut, tapi mungkin tambahkan konfirmasi
+          // showNotification(
+          //   "Mengubah status destinasi masa depan menjadi selesai",
+          //   "warning"
+          // );
+        }
+      }
+
       setOperationLoading(id);
 
       const formData = new FormData();
@@ -525,8 +594,13 @@ const Destinations = () => {
                   toggleStatus(destination.id, destination.is_achieved);
                   setActiveDropdown(null);
                 }}
-                disabled={operationLoading === destination.id}
-                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-colors group disabled:opacity-50"
+                disabled={
+                  operationLoading === destination.id ||
+                  (destination.is_achieved &&
+                    new Date(destination.departure_date) <
+                      new Date(new Date().setHours(0, 0, 0, 0)))
+                }
+                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {destination.is_achieved ? (
                   <>
@@ -863,7 +937,16 @@ const Destinations = () => {
                     onClick={() => handleBulkStatusUpdate(false)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2.5 bg-orange-500 text-white rounded-lg md:rounded-xl hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/25 font-medium text-xs md:text-sm"
+                    disabled={selectedDestinations.some((id) => {
+                      const dest = destinations.find((d) => d.id === id);
+                      return (
+                        dest &&
+                        dest.is_achieved &&
+                        new Date(dest.departure_date) <
+                          new Date(new Date().setHours(0, 0, 0, 0))
+                      );
+                    })}
+                    className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2.5 bg-orange-500 text-white rounded-lg md:rounded-xl hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/25 font-medium text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                     Tandai Perencanaan
@@ -1059,54 +1142,84 @@ const Destinations = () => {
 
                         {/* Status */}
                         <td className="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap">
-                          <motion.button
-                            onClick={() =>
-                              toggleStatus(
-                                destination.id,
+                          <div className="flex items-center gap-2">
+                            <motion.button
+                              onClick={() =>
+                                toggleStatus(
+                                  destination.id,
+                                  destination.is_achieved
+                                )
+                              }
+                              disabled={
+                                operationLoading === destination.id ||
+                                (destination.is_achieved &&
+                                  new Date(destination.departure_date) <
+                                    new Date(new Date().setHours(0, 0, 0, 0)))
+                              }
+                              whileHover={{
+                                scale:
+                                  operationLoading === destination.id
+                                    ? 1
+                                    : 1.05,
+                              }}
+                              whileTap={{ scale: 0.95 }}
+                              className={`inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm ${
                                 destination.is_achieved
-                              )
-                            }
-                            disabled={operationLoading === destination.id}
-                            whileHover={{
-                              scale:
-                                operationLoading === destination.id ? 1 : 1.05,
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                            className={`inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm ${
-                              destination.is_achieved
-                                ? "bg-green-500 text-white hover:bg-green-600 shadow-green-500/25"
-                                : "bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/25"
-                            } ${
-                              operationLoading === destination.id
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            }`}
-                          >
-                            {operationLoading === destination.id ? (
-                              <>
-                                <div className="animate-spin h-3 w-3 md:h-4 md:w-4 border-2 border-white border-t-transparent rounded-full mr-1 md:mr-2"></div>
-                                <span className="hidden sm:inline">
-                                  Memproses...
-                                </span>
-                              </>
-                            ) : destination.is_achieved ? (
-                              <>
-                                <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                                <span className="hidden sm:inline">
-                                  Tercapai
-                                </span>
-                                <span className="sm:hidden">✓</span>
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                                <span className="hidden sm:inline">
-                                  Perencanaan
-                                </span>
-                                <span className="sm:hidden">✗</span>
-                              </>
+                                  ? "bg-green-500 text-white hover:bg-green-600 shadow-green-500/25"
+                                  : "bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/25"
+                              } ${
+                                operationLoading === destination.id ||
+                                (destination.is_achieved &&
+                                  new Date(destination.departure_date) <
+                                    new Date(new Date().setHours(0, 0, 0, 0)))
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              title={
+                                destination.is_achieved &&
+                                new Date(destination.departure_date) <
+                                  new Date(new Date().setHours(0, 0, 0, 0))
+                                  ? "Destinasi masa lalu tidak dapat diubah ke perencanaan"
+                                  : ""
+                              }
+                            >
+                              {operationLoading === destination.id ? (
+                                <>
+                                  <div className="animate-spin h-3 w-3 md:h-4 md:w-4 border-2 border-white border-t-transparent rounded-full mr-1 md:mr-2"></div>
+                                  <span className="hidden sm:inline">
+                                    Memproses...
+                                  </span>
+                                </>
+                              ) : destination.is_achieved ? (
+                                <>
+                                  <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                                  <span className="hidden sm:inline">
+                                    Tercapai
+                                  </span>
+                                  <span className="sm:hidden">✓</span>
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                                  <span className="hidden sm:inline">
+                                    Perencanaan
+                                  </span>
+                                  <span className="sm:hidden">✗</span>
+                                </>
+                              )}
+                            </motion.button>
+
+                            {/* 🔥 TAMBAHKAN INDIKATOR JIKA SUDAH LEWAT */}
+                            {new Date(destination.departure_date) <
+                              new Date(new Date().setHours(0, 0, 0, 0)) && (
+                              <span
+                                className="text-xs text-gray-500 italic"
+                                title="Destinasi masa lalu"
+                              >
+                                (lalu)
+                              </span>
                             )}
-                          </motion.button>
+                          </div>
                         </td>
 
                         {/* Actions - FIXED VERSION */}
