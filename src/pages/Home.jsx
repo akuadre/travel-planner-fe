@@ -77,18 +77,15 @@ const cardVariants = {
 const HomeSkeleton = () => (
   <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
     <HeaderSkeleton />
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 lg:py-8">
       <StoryCarouselSkeleton />
       <QuickStatsSkeleton />
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
         <div className="xl:col-span-2">
-          {/* Height yang sama dengan QuickActions */}
           <TripSectionSkeleton />
         </div>
-
         <div>
-          {/* Height yang sama dengan TripSection */}
           <QuickActionsSkeleton />
         </div>
       </div>
@@ -101,51 +98,20 @@ const StoryCarouselSkeleton = () => (
   <motion.div
     initial={{ opacity: 0, y: 30 }}
     animate={{ opacity: 1, y: 0 }}
-    className="relative h-80 rounded-3xl overflow-hidden mb-8 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"
+    className="relative h-48 md:h-64 lg:h-80 rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden mb-4 md:mb-6 lg:mb-8 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"
   >
-    {/* Gradient overlay untuk match asli */}
     <div className="absolute inset-0 bg-gradient-to-t from-gray-300/50 via-transparent to-gray-400/30"></div>
-
-    {/* Content area untuk match dengan StoryCarousel asli */}
-    <div className="absolute bottom-0 left-0 right-0 p-8">
-      {/* Status badge dan tanggal */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-20 h-6 bg-gray-300 rounded-full"></div>
+    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2 md:mb-3 lg:mb-4">
+        <div className="w-16 md:w-20 h-4 md:h-5 bg-gray-300 rounded-full"></div>
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-gray-300 rounded mr-2"></div>
-          <div className="w-24 h-4 bg-gray-300 rounded"></div>
+          <div className="w-3 md:w-4 h-3 md:h-4 bg-gray-300 rounded mr-1 md:mr-2"></div>
+          <div className="w-20 md:w-24 h-3 md:h-4 bg-gray-300 rounded"></div>
         </div>
       </div>
-
-      {/* Title dan description */}
-      <div className="w-3/4 h-8 bg-gray-300 rounded-lg mb-3"></div>
-      <div className="w-1/2 h-5 bg-gray-300 rounded-lg mb-6"></div>
-
-      {/* Button */}
-      <div className="w-32 h-10 bg-gray-300 rounded-xl"></div>
-    </div>
-
-    {/* Navigation dots dan buttons - lebih realistik */}
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-6">
-      <div className="flex gap-2">
-        {[1, 2, 3].map((index) => (
-          <div
-            key={index}
-            className={`w-8 h-2 rounded-full ${
-              index === 1 ? "bg-gray-400" : "bg-gray-300"
-            }`}
-          ></div>
-        ))}
-      </div>
-
-      <div className="flex gap-2">
-        <div className="w-10 h-10 bg-gray-300/80 backdrop-blur-sm rounded-full flex items-center justify-center">
-          <div className="w-4 h-4 bg-gray-400 rounded-full rotate-180"></div>
-        </div>
-        <div className="w-10 h-10 bg-gray-300/80 backdrop-blur-sm rounded-full flex items-center justify-center">
-          <div className="w-4 h-4 bg-gray-400 rounded-full"></div>
-        </div>
-      </div>
+      <div className="w-3/4 h-5 md:h-6 lg:h-8 bg-gray-300 rounded-lg mb-2 md:mb-3"></div>
+      <div className="w-1/2 h-4 md:h-5 bg-gray-300 rounded-lg mb-3 md:mb-4 lg:mb-6"></div>
+      <div className="w-24 md:w-28 lg:w-32 h-8 md:h-9 lg:h-10 bg-gray-300 rounded-xl"></div>
     </div>
   </motion.div>
 );
@@ -155,25 +121,21 @@ const QuickStatsSkeleton = () => (
     variants={containerVariants}
     initial="hidden"
     animate="visible"
-    className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8"
+    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-5 mb-4 md:mb-6 lg:mb-8"
   >
     {[1, 2, 3, 4].map((index) => (
       <motion.div
         key={index}
         variants={itemVariants}
-        className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
+        className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6 border border-gray-200 shadow-sm"
       >
         <div className="flex items-center justify-between">
-          <div className="space-y-3">
-            {/* Large number */}
-            <div className="w-16 h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
-            {/* Label */}
-            <div className="w-20 h-4 bg-gray-200 rounded-lg animate-pulse"></div>
+          <div className="space-y-2 md:space-y-3">
+            <div className="w-12 md:w-14 lg:w-16 h-5 md:h-6 lg:h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
+            <div className="w-16 md:w-18 lg:w-20 h-3 md:h-4 bg-gray-200 rounded-lg animate-pulse"></div>
           </div>
-
-          {/* Icon container - match dengan asli */}
           <div
-            className={`p-3 rounded-xl bg-gradient-to-br ${
+            className={`p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl bg-gradient-to-br ${
               index === 1
                 ? "from-green-100 to-green-50"
                 : index === 2
@@ -184,7 +146,7 @@ const QuickStatsSkeleton = () => (
             } animate-pulse`}
           >
             <div
-              className={`w-6 h-6 ${
+              className={`w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 ${
                 index === 1
                   ? "bg-green-200"
                   : index === 2
@@ -196,19 +158,6 @@ const QuickStatsSkeleton = () => (
             ></div>
           </div>
         </div>
-
-        {/* Progress bar untuk beberapa stat */}
-        {index === 4 && (
-          <div className="mt-4 space-y-2">
-            <div className="flex justify-between">
-              <div className="w-16 h-3 bg-gray-200 rounded"></div>
-              <div className="w-8 h-3 bg-gray-200 rounded"></div>
-            </div>
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full w-3/4 bg-gradient-to-r from-gray-300 to-gray-400 animate-pulse"></div>
-            </div>
-          </div>
-        )}
       </motion.div>
     ))}
   </motion.div>
@@ -219,96 +168,93 @@ const TripSectionSkeleton = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm h-full flex flex-col"
+      className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6 border border-gray-200 shadow-sm h-full flex flex-col"
     >
-      {/* Header Skeleton */}
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl animate-pulse">
-            <div className="w-5 h-5 bg-gray-300 rounded"></div>
+      {/* Header Skeleton - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 md:mb-4 lg:mb-6 flex-shrink-0">
+        <div className="flex items-center gap-2 md:gap-3 mb-2 sm:mb-0">
+          <div className="p-1.5 md:p-2 lg:p-2.5 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg md:rounded-xl animate-pulse">
+            <div className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 bg-gray-300 rounded"></div>
           </div>
-          <div className="space-y-2">
-            <div className="w-40 h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-5 bg-gray-200 rounded-full animate-pulse"></div>
-              <div className="w-32 h-5 bg-gray-200 rounded animate-pulse"></div>
+          <div className="space-y-1.5 md:space-y-2">
+            <div className="w-28 md:w-32 lg:w-40 h-4 md:h-5 lg:h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-14 md:w-16 lg:w-20 h-3 md:h-4 lg:h-5 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="w-20 md:w-24 lg:w-32 h-3 md:h-4 lg:h-5 bg-gray-200 rounded animate-pulse"></div>
             </div>
           </div>
         </div>
-        <div className="w-28 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
+        <div className="w-16 md:w-20 lg:w-28 h-5 md:h-6 lg:h-8 bg-gray-200 rounded-lg animate-pulse"></div>
       </div>
 
-      {/* Content Skeleton - 2 Trip Items */}
+      {/* Content Skeleton - Responsive */}
       <div className="flex-grow">
         <div className="h-full flex flex-col">
           {/* Month Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2 md:mb-3 lg:mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-200 rounded"></div>
-              <div className="w-28 h-4 bg-gray-200 rounded"></div>
+              <div className="w-3 h-3 md:w-4 md:h-4 bg-gray-200 rounded"></div>
+              <div className="w-20 md:w-24 lg:w-28 h-3 md:h-4 bg-gray-200 rounded"></div>
             </div>
-            <div className="w-16 h-4 bg-gray-200 rounded-full"></div>
+            <div className="w-12 md:w-14 lg:w-16 h-3 md:h-4 bg-gray-200 rounded-full"></div>
           </div>
 
-          {/* Trip Cards (2 items) */}
-          <div className="space-y-3 flex-grow">
+          {/* Trip Cards (2 items) - Responsive */}
+          <div className="space-y-2 md:space-y-3 flex-grow">
             {[1, 2].map((index) => (
               <div
                 key={index}
-                className="relative rounded-xl border border-gray-300 animate-pulse overflow-hidden"
+                className="relative rounded-lg md:rounded-xl border border-gray-300 animate-pulse overflow-hidden"
               >
-                {/* Gradient accent */}
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-gray-300 to-gray-400"></div>
-
-                <div className="flex items-center gap-4 p-4 pl-5">
-                  {/* Avatar */}
+                <div className="flex items-center gap-2 md:gap-3 lg:gap-4 p-2 md:p-3 lg:p-4 pl-3 md:pl-4 lg:pl-5">
+                  {/* Avatar - Responsive */}
                   <div className="flex-shrink-0 relative">
-                    <div className="w-12 h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl"></div>
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
+                    <div className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg md:rounded-xl"></div>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1 space-y-2">
+                  {/* Content - Responsive */}
+                  <div className="flex-1 space-y-1.5 md:space-y-2">
                     <div className="flex items-start justify-between">
-                      <div className="w-36 h-4 bg-gray-200 rounded"></div>
+                      <div className="w-24 md:w-28 lg:w-36 h-3 md:h-4 bg-gray-200 rounded"></div>
                       <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                        <div className="w-8 h-3 bg-gray-200 rounded"></div>
+                        <div className="w-2 h-2 md:w-3 md:h-3 bg-gray-300 rounded"></div>
+                        <div className="w-6 md:w-8 h-2 md:h-3 bg-gray-200 rounded"></div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-1 md:gap-2 lg:gap-3">
                       <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                        <div className="w-24 h-3 bg-gray-200 rounded"></div>
+                        <div className="w-2 h-2 md:w-3 md:h-3 bg-gray-300 rounded"></div>
+                        <div className="w-16 md:w-20 lg:w-24 h-2 md:h-3 bg-gray-200 rounded"></div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                        <div className="w-20 h-3 bg-gray-200 rounded"></div>
+                        <div className="w-2 h-2 md:w-3 md:h-3 bg-gray-300 rounded"></div>
+                        <div className="w-12 md:w-16 lg:w-20 h-2 md:h-3 bg-gray-200 rounded"></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Chevron */}
-                  <div className="w-4 h-4 bg-gray-300 rounded-full"></div>
+                  <div className="w-3 h-3 md:w-4 md:h-4 bg-gray-300 rounded-full"></div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Stats Footer Skeleton */}
-          <div className="mt-4 pt-4 border-t border-gray-200 flex-shrink-0">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg animate-pulse">
-                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
+          {/* Stats Footer Skeleton - Responsive */}
+          <div className="mt-2 md:mt-3 lg:mt-4 pt-2 md:pt-3 lg:pt-4 border-t border-gray-200 flex-shrink-0">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg md:rounded-xl p-2 md:p-3 lg:p-4 border border-gray-200">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg animate-pulse">
+                  <div className="w-3 h-3 md:w-4 md:h-4 bg-gray-400 rounded"></div>
                 </div>
-                <div className="space-y-2">
-                  <div className="w-40 h-4 bg-gray-200 rounded"></div>
-                  <div className="w-48 h-3 bg-gray-200 rounded"></div>
+                <div className="space-y-1.5 md:space-y-2">
+                  <div className="w-28 md:w-32 lg:w-40 h-3 md:h-4 bg-gray-200 rounded"></div>
+                  <div className="w-32 md:w-40 lg:w-48 h-2 md:h-3 bg-gray-200 rounded"></div>
                 </div>
               </div>
-              <div className="mt-3">
-                <div className="w-28 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div className="mt-2 md:mt-3">
+                <div className="w-20 md:w-24 lg:w-28 h-6 md:h-7 lg:h-8 bg-gray-200 rounded-lg animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -322,28 +268,28 @@ const QuickActionsSkeleton = () => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm h-full flex flex-col"
+    className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6 border border-gray-200 shadow-sm h-full flex flex-col"
   >
     {/* Header */}
-    <div className="mb-6 flex-shrink-0">
-      <div className="w-32 h-6 bg-gray-200 rounded-lg mb-2 animate-pulse"></div>
+    <div className="mb-3 md:mb-4 lg:mb-6 flex-shrink-0">
+      <div className="w-20 md:w-24 lg:w-32 h-4 md:h-5 lg:h-6 bg-gray-200 rounded-lg mb-1.5 md:mb-2 animate-pulse"></div>
       <div className="flex items-center gap-2">
-        <div className="w-4 h-4 bg-gray-200 rounded"></div>
-        <div className="w-40 h-3 bg-gray-200 rounded"></div>
+        <div className="w-3 h-3 md:w-4 md:h-4 bg-gray-200 rounded"></div>
+        <div className="w-24 md:w-28 lg:w-40 h-2 md:h-3 bg-gray-200 rounded"></div>
       </div>
     </div>
 
-    {/* Action items - Flex grow */}
-    <div className="space-y-2 flex-grow">
+    {/* Action items - Responsive */}
+    <div className="space-y-1.5 md:space-y-2 flex-grow">
       {[1, 2, 3, 4].map((index) => (
         <div
           key={index}
-          className="flex items-center justify-between p-3 rounded-lg bg-gray-50 animate-pulse h-16"
+          className="flex items-center justify-between p-2 md:p-2.5 lg:p-3 rounded-lg bg-gray-50 animate-pulse h-10 md:h-12 lg:h-14"
         >
-          <div className="flex items-center gap-3">
-            {/* Icon */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Icon - Responsive */}
             <div
-              className={`w-10 h-10 ${
+              className={`w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 ${
                 index === 1
                   ? "bg-blue-100"
                   : index === 2
@@ -354,17 +300,17 @@ const QuickActionsSkeleton = () => (
               } rounded-lg`}
             ></div>
 
-            {/* Text */}
-            <div className="space-y-2">
-              <div className="w-32 h-4 bg-gray-200 rounded-lg"></div>
-              <div className="w-24 h-3 bg-gray-200 rounded"></div>
+            {/* Text - Responsive */}
+            <div className="space-y-1.5">
+              <div className="w-20 md:w-24 lg:w-32 h-3 md:h-4 bg-gray-200 rounded-lg"></div>
+              <div className="w-14 md:w-16 lg:w-24 h-2 md:h-3 bg-gray-200 rounded"></div>
             </div>
           </div>
 
-          {/* Right side */}
-          <div className="flex items-center gap-2">
+          {/* Right side - Responsive */}
+          <div className="flex items-center gap-1.5 md:gap-2">
             <div
-              className={`w-8 h-6 ${
+              className={`w-4 h-3 md:w-6 md:h-4 lg:w-8 lg:h-6 ${
                 index === 1
                   ? "bg-blue-200"
                   : index === 2
@@ -374,19 +320,19 @@ const QuickActionsSkeleton = () => (
                   : "bg-orange-200"
               } rounded-full`}
             ></div>
-            <div className="w-4 h-4 bg-gray-200 rounded-full"></div>
+            <div className="w-3 h-3 md:w-4 md:h-4 bg-gray-200 rounded-full"></div>
           </div>
         </div>
       ))}
     </div>
 
-    {/* Stats bar */}
-    <div className="mt-6 pt-6 border-t border-gray-100 flex-shrink-0">
-      <div className="grid grid-cols-3 gap-4">
+    {/* Stats bar - Responsive */}
+    <div className="mt-3 md:mt-4 lg:mt-6 pt-3 md:pt-4 lg:pt-6 border-t border-gray-100 flex-shrink-0">
+      <div className="grid grid-cols-3 gap-2 md:gap-3 lg:gap-4">
         {[1, 2, 3].map((index) => (
           <div key={index} className="text-center">
-            <div className="w-8 h-6 bg-gray-200 rounded mx-auto mb-1 animate-pulse"></div>
-            <div className="w-16 h-3 bg-gray-200 rounded mx-auto"></div>
+            <div className="w-6 h-4 md:w-7 md:h-5 lg:w-8 lg:h-6 bg-gray-200 rounded mx-auto mb-0.5 md:mb-1 animate-pulse"></div>
+            <div className="w-12 md:w-14 lg:w-16 h-2 md:h-3 bg-gray-200 rounded mx-auto"></div>
           </div>
         ))}
       </div>
@@ -400,24 +346,24 @@ const HeaderSkeleton = () => (
     animate={{ opacity: 1, y: 0 }}
     className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 shadow-sm"
   >
-    <div className="max-w-7xl mx-auto px-6 py-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 lg:py-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4">
         {/* Left side - title & description */}
-        <div className="flex items-center gap-6">
-          <div className="space-y-3">
+        <div className="flex items-center gap-3 md:gap-4 lg:gap-6">
+          <div className="space-y-1.5 md:space-y-2 lg:space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-48 h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
-              <div className="w-6 h-6 bg-gray-300 rounded"></div>
+              <div className="w-28 md:w-36 lg:w-48 h-5 md:h-6 lg:h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
+              <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 bg-gray-300 rounded"></div>
             </div>
-            <div className="w-64 h-4 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="w-40 md:w-52 lg:w-64 h-3 md:h-4 bg-gray-200 rounded-lg animate-pulse"></div>
           </div>
         </div>
 
-        {/* Right side - button */}
-        <div className="flex items-center gap-4">
-          <div className="w-40 h-12 bg-gradient-to-r from-gray-300 to-gray-400 rounded-xl animate-pulse flex items-center justify-center">
-            <div className="w-5 h-5 bg-gray-400/80 rounded mr-2"></div>
-            <div className="w-24 h-4 bg-gray-400/80 rounded"></div>
+        {/* Right side - button (hidden di mobile) */}
+        <div className="hidden sm:flex items-center gap-3 md:gap-4">
+          <div className="w-24 md:w-32 lg:w-40 h-8 md:h-10 lg:h-12 bg-gradient-to-r from-gray-300 to-gray-400 rounded-lg md:rounded-xl animate-pulse flex items-center justify-center">
+            <div className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 bg-gray-400/80 rounded mr-1 md:mr-2"></div>
+            <div className="w-16 md:w-20 lg:w-24 h-3 md:h-4 bg-gray-400/80 rounded"></div>
           </div>
         </div>
       </div>
