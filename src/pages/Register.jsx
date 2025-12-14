@@ -242,7 +242,15 @@ const Register = () => {
   };
 
   // Background image
-  const backgroundImage = "/images/bg5.png";
+
+  const baseUrl =
+    import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
+      ? import.meta.env.BASE_URL
+      : "/";
+
+  // const backgroundImage = "/images/bg5.png";
+  // const backgroundImage = `${import.meta.env.BASE_URL}images/bg5.png`;
+  const backgroundImage = `${baseUrl}images/bg5.png`;
 
   return (
     <motion.div

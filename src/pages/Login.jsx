@@ -215,7 +215,14 @@ const Login = () => {
     }
   };
 
-  const backgroundImage = "/images/bg3.png";
+  const baseUrl =
+    import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
+      ? import.meta.env.BASE_URL
+      : "/";
+
+  // const backgroundImage = "/images/bg3.png";
+  // const backgroundImage = `${import.meta.env.BASE_URL}images/bg3.png`;
+  const backgroundImage = `${baseUrl}images/bg3.png`;
 
   return (
     <motion.div
