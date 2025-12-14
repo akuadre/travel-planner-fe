@@ -532,22 +532,26 @@ const StoryCarousel = ({ upcomingDestinations }) => {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative h-80 rounded-3xl overflow-hidden mb-8 bg-gradient-to-br from-blue-400 to-cyan-300"
+        className="relative h-48 md:h-64 lg:h-80 rounded-2xl lg:rounded-3xl overflow-hidden mb-6 md:mb-8 bg-gradient-to-br from-blue-400 to-cyan-300"
       >
-        <div className="absolute inset-0 flex items-center justify-center text-white">
+        <div className="absolute inset-0 flex items-center justify-center text-white p-4">
           <div className="text-center">
-            <Plane className="h-20 w-20 mx-auto mb-4 opacity-80" />
-            <h3 className="text-2xl font-bold mb-2">
+            {/* ICON PESAWAT - Hanya muncul di tablet ke atas */}
+            <div className="hidden sm:block mb-3 md:mb-4">
+              <Plane className="h-14 w-14 md:h-16 md:w-16 lg:h-20 lg:w-20 mx-auto opacity-80" />
+            </div>
+
+            <h3 className="text-lg md:text-xl lg:text-2xl font-bold mb-2">
               Belum Ada Perjalanan Mendatang
             </h3>
-            <p className="text-white/80 mb-4">
+            <p className="text-white/80 mb-3 md:mb-4 text-sm md:text-base">
               Mulai rencanakan petualangan Anda berikutnya
             </p>
             <Link
               to="/destinations/new"
-              className="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 transition-all text-white font-semibold"
+              className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 transition-all text-white font-semibold text-sm md:text-base"
             >
-              <Plus className="h-5 w-5 mr-2" />
+              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               Rencanakan Perjalanan
             </Link>
           </div>
@@ -719,7 +723,6 @@ const StoryCarousel = ({ upcomingDestinations }) => {
 
 // 🔥 QuickStats Component
 const QuickStats = ({ stats }) => {
-  // Color mapping untuk menghindari dynamic class names
   const getColorClasses = (color) => {
     switch (color) {
       case "blue":
@@ -740,7 +743,7 @@ const QuickStats = ({ stats }) => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 md:mb-8" // 👈 Mobile: 1 kolom, tablet: 2 kolom, desktop: 4 kolom
     >
       {[
         {
@@ -774,12 +777,12 @@ const QuickStats = ({ stats }) => {
           <motion.div
             key={stat.label}
             variants={itemVariants}
-            whileHover={{ y: -5, scale: 1.02 }}
-            className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all group"
+            whileHover={{ y: -3, scale: 1.02 }}
+            className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all group"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-gray-900 mb-1">
+                <p className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-1">
                   {stat.value}
                 </p>
                 <p className="text-sm font-semibold text-gray-600">
@@ -849,43 +852,40 @@ const CompletedTripsSection = ({ trips }) => {
       className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm h-full flex flex-col"
     >
       {/* Header dengan gradient */}
-      <div className="flex items-center justify-between mb-6 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-            <Award className="h-5 w-5 text-green-600" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 flex-shrink-0">
+        <div className="flex items-center gap-3 mb-3 sm:mb-0">
+          <div className="p-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+            <Award className="h-4 w-4 md:h-5 md:w-5 text-green-600" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-base md:text-lg lg:text-xl font-bold text-gray-900">
               Perjalanan Selesai
             </h2>
-            <div className="flex items-center gap-3 mt-1">
-              <p className="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <p className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
                 {trips.length} tercapai
               </p>
-              {trips.length > 0 && (
-                <p className="text-sm text-gray-500">
-                  {formatCurrency(
-                    trips.reduce((sum, trip) => sum + parseFloat(trip.budget || 0), 0)
-                  )}
-                </p>
-              )}
             </div>
           </div>
         </div>
 
+        {/* Hanya muncul di tablet ke atas */}
         {hasMoreTrips && (
-          <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
+          <motion.div
+            whileHover={{ x: 5 }}
+            whileTap={{ scale: 0.95 }}
+            className="hidden sm:block" // 👈 HILANG DI MOBILE
+          >
             <Link
               to="/destinations?status=completed"
-              className="text-blue-500 hover:text-blue-600 font-semibold text-sm flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg"
+              className="text-blue-500 hover:text-blue-600 font-semibold text-xs md:text-sm flex items-center gap-1 bg-blue-50 px-2 py-1 md:px-3 md:py-1.5 rounded-lg"
             >
               Lihat {trips.length - 2} lainnya
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
             </Link>
           </motion.div>
         )}
       </div>
-
       {/* Content */}
       <div className="flex-grow overflow-hidden">
         {isEmpty ? (
@@ -909,7 +909,8 @@ const CompletedTripsSection = ({ trips }) => {
               Mulai Perjalanan Pertama
             </h3>
             <p className="text-sm text-gray-600 mb-6 max-w-xs">
-              Rencanakan perjalanan Anda dan tandai sebagai selesai untuk melihat pencapaian di sini
+              Rencanakan perjalanan Anda dan tandai sebagai selesai untuk
+              melihat pencapaian di sini
             </p>
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -950,54 +951,42 @@ const CompletedTripsSection = ({ trips }) => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        whileHover={{ 
-                          y: -2,
-                          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)"
-                        }}
+                        whileHover={{ y: -2 }}
                         className="relative bg-white rounded-xl border border-gray-200 hover:border-green-300 transition-all group cursor-pointer overflow-hidden"
                       >
-                        {/* Gradient accent */}
                         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-green-500 to-emerald-400"></div>
-                        
                         <Link
                           to={`/destinations/${trip.id}`}
-                          className="flex items-center gap-4 p-4 pl-5"
+                          className="flex items-center gap-3 p-3 md:p-4 pl-4 md:pl-5"
                         >
-                          {/* Avatar dengan bulan */}
-                          <div className="flex-shrink-0 relative">
-                            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-400 rounded-xl flex items-center justify-center text-white">
-                              <Award className="h-6 w-6" />
-                            </div>
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-white border border-green-300 rounded-full flex items-center justify-center">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          {/* Icon Award */}
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-500 to-emerald-400 rounded-xl flex items-center justify-center text-white">
+                              <Award className="h-4 w-4 md:h-6 md:w-6" />
                             </div>
                           </div>
 
-                          {/* Content */}
+                          {/* Content - Hanya title dan tanggal */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-1">
-                              <h3 className="font-semibold text-gray-900 group-hover:text-green-600 transition-colors truncate">
-                                {trip.title}
-                              </h3>
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3 text-gray-400" />
-                                <span className="text-xs text-gray-500">{trip.duration_days}h</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                <span>{formatDate(trip.departure_date)}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <DollarSign className="h-3 w-3" />
-                                <span>{formatCurrency(trip.budget)}</span>
-                              </div>
+                            {/* Title - tidak ada truncate, biar wrap natural */}
+                            <h3 className="font-semibold text-gray-900 group-hover:text-green-600 transition-colors text-sm md:text-base leading-tight mb-1">
+                              {trip.title}
+                            </h3>
+
+                            {/* Hanya tanggal saja */}
+                            <div className="flex items-center gap-1 text-xs md:text-sm text-gray-600">
+                              <Calendar className="h-3 w-3 flex-shrink-0" />
+                              <span>{formatDate(trip.departure_date)}</span>
+                              {/* Duration - hanya muncul di tablet+ */}
+                              <span className="hidden sm:inline-flex items-center gap-1 ml-2">
+                                <Clock className="h-3 w-3" />
+                                <span>{trip.duration_days} hari</span>
+                              </span>
                             </div>
                           </div>
 
-                          {/* Chevron */}
-                          <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-green-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                          {/* Arrow Right */}
+                          <ChevronRight className="h-3 w-3 md:h-4 md:w-4 text-gray-400 group-hover:text-green-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
                         </Link>
                       </motion.div>
                     ))}
@@ -1019,7 +1008,8 @@ const CompletedTripsSection = ({ trips }) => {
                         Perjalanan pertama sukses! 🎉
                       </p>
                       <p className="text-xs text-gray-600 mt-1">
-                        Tambahkan perjalanan berikutnya untuk mengumpulkan lebih banyak pencapaian
+                        Tambahkan perjalanan berikutnya untuk mengumpulkan lebih
+                        banyak pencapaian
                       </p>
                     </div>
                   </div>
@@ -1341,7 +1331,8 @@ const Home = () => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
+                  className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
+                  // className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
                 >
                   Travel Dashboard
                   <span className="ml-1 text-white">🚞</span>
@@ -1350,7 +1341,8 @@ const Home = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="text-gray-600 mt-1"
+                  className="text-gray-600 mt-1 text-sm lg:text-base"
+                  // className="text-gray-600 mt-1"
                 >
                   Ringkasan perjalanan dan rencana Anda
                 </motion.p>
@@ -1358,18 +1350,20 @@ const Home = () => {
             </div>
 
             <div className="flex items-center gap-4">
+              {/* Button hanya muncul di tablet ke atas */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                className="hidden sm:block"
               >
                 <Link
                   to="/destinations/new"
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl font-semibold"
+                  className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl font-semibold text-sm md:text-base"
                 >
-                  <Plus className="h-5 w-5 mr-2" />
+                  <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   Tambah Destinasi
                 </Link>
               </motion.div>
