@@ -8,12 +8,13 @@ import {
   Zap,
   Plus,
   Star,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { itineraryService } from "../services/itineraryService";
 
-// 🔥 UPDATE: Tambah onError prop
-  const ItineraryForm = ({
+const ItineraryForm = ({
   destinationId,
   itinerary,
   onClose,
@@ -21,6 +22,7 @@ import { itineraryService } from "../services/itineraryService";
   onError,
 }) => {
   const isEdit = Boolean(itinerary);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [formData, setFormData] = useState({
     destination_id: destinationId,
@@ -35,7 +37,6 @@ import { itineraryService } from "../services/itineraryService";
   const [errors, setErrors] = useState({});
   const [showActivitySuggestions, setShowActivitySuggestions] = useState(false);
 
-  // Activity suggestions untuk auto-complete
   const activitySuggestions = [
     "Hotel Check-in",
     "Breakfast",
@@ -54,6 +55,13 @@ import { itineraryService } from "../services/itineraryService";
     "Food Tour",
     "Adventure",
   ];
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (isEdit) {
@@ -118,7 +126,6 @@ import { itineraryService } from "../services/itineraryService";
     return Object.keys(newErrors).length === 0;
   };
 
-  // ItineraryForm.jsx - PERBAIKI handleSubmit untuk return data
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -140,19 +147,16 @@ import { itineraryService } from "../services/itineraryService";
         savedItinerary = await itineraryService.create(formData);
       }
 
-      // 🔥 LANGSUNG KIRIM DATA KE PARENT, JANGAN TUNGGU RELOAD
       if (onSave) {
-        onSave(savedItinerary); // Langsung kirim data yang disimpan
+        onSave(savedItinerary);
       }
 
-      // AUTO CLOSE dengan delay kecil
       setTimeout(() => {
         onClose();
       }, 300);
     } catch (error) {
       console.error("Failed to save itinerary:", error);
 
-      // Format error message
       let errorMessage = "Gagal menyimpan aktivitas. Silakan coba lagi.";
 
       if (error.response?.data?.message) {
@@ -170,7 +174,6 @@ import { itineraryService } from "../services/itineraryService";
     }
   };
 
-  // ItineraryForm.jsx - FULL VERSION DENGAN FIX
   return (
     <AnimatePresence>
       <motion.div
@@ -183,23 +186,21 @@ import { itineraryService } from "../services/itineraryService";
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col border border-gray-200/60"
+          className={`bg-white rounded-xl ${isMobile ? 'rounded-xl' : 'rounded-2xl'} shadow-2xl ${isMobile ? 'w-full max-h-[85vh]' : 'max-w-lg w-full max-h-[90vh]'} flex flex-col border border-gray-200/60`}
         >
-          {/* 🔥 FIX 2: Header dengan rounded top */}
-          <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-6 text-white flex-shrink-0 rounded-t-2xl">
+          {/* 🔥 HEADER - Mobile compact */}
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4 sm:p-6 text-white flex-shrink-0 rounded-t-xl sm:rounded-t-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <Calendar className="h-6 w-6" />
+                <div className="p-2 bg-white/20 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold">
+                  <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold`}>
                     {isEdit ? "Edit Activity" : "Plan New Activity"}
                   </h2>
-                  <p className="text-blue-100 text-sm opacity-90">
-                    {isEdit
-                      ? "Update your travel plan"
-                      : "Add to your adventure"}
+                  <p className="text-blue-100 text-xs sm:text-sm opacity-90">
+                    {isEdit ? "Update your travel plan" : "Add to your adventure"}
                   </p>
                 </div>
               </div>
@@ -207,23 +208,20 @@ import { itineraryService } from "../services/itineraryService";
                 onClick={onClose}
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-2 hover:bg-white/20 rounded-xl transition-all"
+                className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg sm:rounded-xl transition-all"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </motion.button>
             </div>
           </div>
 
-          {/* 🔥 FIX 1: Form dengan scrollbar selalu visible */}
+          {/* 🔥 FORM - Mobile friendly */}
           <div className="flex-1 overflow-y-auto always-visible-scrollbar">
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Day Number */}
               <div className="space-y-2">
-                <label
-                  htmlFor="day_number"
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-700"
-                >
-                  <Calendar className="h-4 w-4 text-blue-500" />
+                <label htmlFor="day_number" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
                   Day Number *
                 </label>
                 <div className="relative">
@@ -235,17 +233,15 @@ import { itineraryService } from "../services/itineraryService";
                     onChange={handleChange}
                     min="1"
                     max="30"
-                    className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
-                      errors.day_number
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-200 hover:border-gray-300 focus:border-blue-500"
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
+                      errors.day_number ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300 focus:border-blue-500"
                     }`}
                   />
                   {errors.day_number && (
                     <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-red-600 text-sm mt-2 flex items-center gap-1"
+                      className="text-red-600 text-xs sm:text-sm mt-1 sm:mt-2 flex items-center gap-1"
                     >
                       ⚠️ {errors.day_number}
                     </motion.p>
@@ -255,11 +251,8 @@ import { itineraryService } from "../services/itineraryService";
 
               {/* Location */}
               <div className="space-y-2">
-                <label
-                  htmlFor="location"
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-700"
-                >
-                  <MapPin className="h-4 w-4 text-green-500" />
+                <label htmlFor="location" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                   Location *
                 </label>
                 <div className="relative">
@@ -269,10 +262,8 @@ import { itineraryService } from "../services/itineraryService";
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
-                      errors.location
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-200 hover:border-gray-300 focus:border-blue-500"
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
+                      errors.location ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300 focus:border-blue-500"
                     }`}
                     placeholder="Where will this activity take place?"
                   />
@@ -280,7 +271,7 @@ import { itineraryService } from "../services/itineraryService";
                     <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-red-600 text-sm mt-2 flex items-center gap-1"
+                      className="text-red-600 text-xs sm:text-sm mt-1 sm:mt-2 flex items-center gap-1"
                     >
                       ⚠️ {errors.location}
                     </motion.p>
@@ -290,11 +281,8 @@ import { itineraryService } from "../services/itineraryService";
 
               {/* Schedule Time */}
               <div className="space-y-2">
-                <label
-                  htmlFor="schedule_time"
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-700"
-                >
-                  <Clock className="h-4 w-4 text-purple-500" />
+                <label htmlFor="schedule_time" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
                   Schedule Time
                 </label>
                 <input
@@ -303,17 +291,14 @@ import { itineraryService } from "../services/itineraryService";
                   name="schedule_time"
                   value={formData.schedule_time}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <label
-                  htmlFor="description"
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-700"
-                >
-                  <FileText className="h-4 w-4 text-orange-500" />
+                <label htmlFor="description" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />
                   Description *
                 </label>
                 <div className="relative">
@@ -322,19 +307,17 @@ import { itineraryService } from "../services/itineraryService";
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    rows="3"
-                    className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none ${
-                      errors.description
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-200 hover:border-gray-300 focus:border-blue-500"
+                    rows={isMobile ? "2" : "3"}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none ${
+                      errors.description ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-gray-300 focus:border-blue-500"
                     }`}
-                    placeholder="Describe what you'll be doing at this location..."
+                    placeholder="Describe what you'll be doing..."
                   />
                   {errors.description && (
                     <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-red-600 text-sm mt-2 flex items-center gap-1"
+                      className="text-red-600 text-xs sm:text-sm mt-1 sm:mt-2 flex items-center gap-1"
                     >
                       ⚠️ {errors.description}
                     </motion.p>
@@ -344,15 +327,10 @@ import { itineraryService } from "../services/itineraryService";
 
               {/* Activities */}
               <div className="space-y-2">
-                <label
-                  htmlFor="activities"
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-700"
-                >
-                  <Zap className="h-4 w-4 text-yellow-500" />
+                <label htmlFor="activities" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
                   Activities
-                  <span className="text-xs text-gray-500 font-normal">
-                    (Optional)
-                  </span>
+                  <span className="text-xs text-gray-500 font-normal">(Optional)</span>
                 </label>
 
                 <div className="relative">
@@ -361,20 +339,23 @@ import { itineraryService } from "../services/itineraryService";
                     name="activities"
                     value={formData.activities}
                     onChange={handleChange}
-                    rows="2"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
-                    placeholder="Add specific activities or click + for suggestions"
+                    rows={isMobile ? "1" : "2"}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg sm:rounded-xl hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                    placeholder="Add activities or click + for suggestions"
                     onFocus={() => setShowActivitySuggestions(true)}
                   />
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowActivitySuggestions(!showActivitySuggestions)
-                    }
-                    className="absolute right-3 top-3 p-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    onClick={() => setShowActivitySuggestions(!showActivitySuggestions)}
+                    className="absolute right-2 top-2 sm:right-3 sm:top-3 p-1 sm:p-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    title="Show suggestions"
                   >
-                    <Plus className="h-4 w-4" />
+                    {showActivitySuggestions ? (
+                      <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                    ) : (
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    )}
                   </button>
                 </div>
 
@@ -384,12 +365,10 @@ import { itineraryService } from "../services/itineraryService";
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="bg-gray-50 rounded-xl p-3 border border-gray-200"
+                      className="bg-gray-50 rounded-lg sm:rounded-xl p-3 border border-gray-200"
                     >
-                      <p className="text-xs text-gray-600 mb-2 font-medium">
-                        Quick Add:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
+                      <p className="text-xs text-gray-600 mb-2 font-medium">Quick Add:</p>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {activitySuggestions.map((activity) => (
                           <motion.button
                             key={activity}
@@ -397,7 +376,7 @@ import { itineraryService } from "../services/itineraryService";
                             onClick={() => addActivitySuggestion(activity)}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all"
+                            className="px-2 py-1 sm:px-3 sm:py-1.5 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all"
                           >
                             + {activity}
                           </motion.button>
@@ -408,14 +387,14 @@ import { itineraryService } from "../services/itineraryService";
                 </AnimatePresence>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="flex gap-3 pt-4 pb-2 sticky bottom-0 bg-white">
+              {/* 🔥 SUBMIT BUTTONS - Mobile stacked, Desktop side by side */}
+              <div className={`flex ${isMobile ? 'flex-col' : 'gap-3'} pt-4 pb-2 sticky bottom-0 bg-white`}>
                 <motion.button
                   type="submit"
                   disabled={loading}
                   whileHover={{ scale: loading ? 1 : 1.02 }}
                   whileTap={{ scale: loading ? 1 : 0.98 }}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-400 text-white py-3 px-6 rounded-xl hover:from-blue-600 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center gap-2"
+                  className={`${isMobile ? 'mb-2' : 'flex-1'} bg-gradient-to-r from-blue-500 to-cyan-400 text-white py-3 px-6 rounded-xl hover:from-blue-600 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl font-semibold flex items-center justify-center gap-2`}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -434,7 +413,7 @@ import { itineraryService } from "../services/itineraryService";
                   onClick={onClose}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 border-2 border-gray-300 text-gray-700 py-3 px-6 rounded-xl hover:border-gray-400 hover:bg-gray-50 transition-all font-semibold"
+                  className={`${isMobile ? '' : 'flex-1'} border-2 border-gray-300 text-gray-700 py-3 px-6 rounded-xl hover:border-gray-400 hover:bg-gray-50 transition-all font-semibold`}
                 >
                   Cancel
                 </motion.button>
