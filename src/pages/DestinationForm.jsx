@@ -67,7 +67,7 @@ const DestinationForm = () => {
   };
 
   const dateStatus = getDateStatus();
-  
+
   // const isToggleDisabled = dateStatus === "PAST" || dateStatus === "FUTURE";
   const isToggleDisabled = dateStatus === "PAST";
 
@@ -409,9 +409,11 @@ const DestinationForm = () => {
         showNotification("Destinasi berhasil dibuat!", "success");
       }
 
-      setTimeout(() => {
-        navigate("/destinations");
-      }, 1500);
+      // setTimeout(() => {
+      //   navigate("/destinations");
+      // }, 1500);
+
+      navigate("/destinations");
     } catch (error) {
       let errorMessage =
         error.response?.data?.message ||
@@ -694,8 +696,7 @@ const DestinationForm = () => {
                     {dateStatus === "PAST" &&
                       "🔒 Status terkunci karena perjalanan sudah lewat"}
                     {dateStatus === "FUTURE" &&
-                      "📝 Perjalanan dijadwalkan di masa mendatang"
-                      }
+                      "📝 Perjalanan dijadwalkan di masa mendatang"}
                     {dateStatus === "TODAY" &&
                       (formData.is_achieved
                         ? "✅ Perjalanan ini telah selesai"
