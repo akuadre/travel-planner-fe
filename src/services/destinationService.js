@@ -1,6 +1,7 @@
 import api from "./api";
 
-export const STORAGE_BASE_URL = "http://localhost:8000/storage";
+// export const STORAGE_BASE_URL = "http://localhost:8000/storage";
+export const STORAGE_BASE_URL = import.meta.env.VITE_STORAGE_BASE_URL || "http://localhost:8000/storage";
 
 // 🔥 CACHING SYSTEM
 let destinationsCache = null;
