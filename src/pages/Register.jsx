@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../utils/auth";
 import {
@@ -11,6 +11,9 @@ import {
   Mountain,
   Sun,
   MapPin,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -66,27 +69,118 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+  // 🔥 VALIDATION RULES
+  const validationRules = {
+    name: (value) => {
+      if (!value.trim()) return "Full name is required";
+      if (value.trim().length < 6)
+        return "Full name must be at least 6 characters";
+      return "";
+    },
+    email: (value) => {
+      if (!value.trim()) return "Email is required";
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return "Please enter a valid email address";
+      return "";
+    },
+    password: (value) => {
+      if (!value.trim()) return "Password is required";
+      if (value.length < 8) return "Password must be at least 8 characters";
+      return "";
+    },
+    confirmPassword: (value) => {
+      if (!value.trim()) return "Please confirm your password";
+      if (value !== formData.password) return "Passwords do not match";
+      return "";
+    },
+  };
+
+  // 🔥 REAL-TIME VALIDATION
+  useEffect(() => {
+    const newErrors = {};
+    Object.keys(formData).forEach((field) => {
+      if (touched[field] || formData[field]) {
+        const error = validationRules[field](formData[field]);
+        newErrors[field] = error;
+      }
     });
+    setErrors(newErrors);
+  }, [formData, touched]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
     setError("");
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched((prev) => ({
+      ...prev,
+      [name]: true,
+    }));
+  };
+
+  const handleFocus = (e) => {
+    const { name } = e.target;
+    if (!touched[name]) {
+      setTouched((prev) => ({
+        ...prev,
+        [name]: true,
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach((field) => {
+      const error = validationRules[field](formData[field]);
+      newErrors[field] = error;
+      if (error) isValid = false;
+    });
+
+    setErrors(newErrors);
+    setTouched({
+      name: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    });
+
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+    if (!validateForm()) {
+      setError("Please fix the errors in the form");
       return;
     }
 
@@ -108,8 +202,46 @@ const Register = () => {
     setLoading(false);
   };
 
-  // Background image URL - ganti dengan gambar lu nanti
-  //   const backgroundImage = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80";
+  // Helper functions
+  const getFieldStatus = (fieldName) => {
+    const value = formData[fieldName];
+    const isTouched = touched[fieldName];
+    const error = errors[fieldName];
+
+    if (!isTouched && !value) return "neutral";
+    if (error) return "error";
+    if (value && !error) return "success";
+    return "neutral";
+  };
+
+  const getInputClasses = (fieldName) => {
+    const status = getFieldStatus(fieldName);
+    const baseClasses =
+      "block w-full pl-12 pr-12 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300";
+
+    switch (status) {
+      case "error":
+        return `${baseClasses} border-red-400/50 focus:ring-red-500/50 focus:border-red-400`;
+      case "success":
+        return `${baseClasses} border-green-400/50 focus:ring-green-500/50 focus:border-green-400`;
+      default:
+        return `${baseClasses} border-white/30 focus:ring-white/50 focus:border-white/40`;
+    }
+  };
+
+  const getIconColor = (fieldName) => {
+    const status = getFieldStatus(fieldName);
+    switch (status) {
+      case "error":
+        return "text-red-400";
+      case "success":
+        return "text-green-400";
+      default:
+        return "text-white/60";
+    }
+  };
+
+  // Background image
   const backgroundImage = "/images/bg5.png";
 
   return (
@@ -119,31 +251,23 @@ const Register = () => {
       exit="exit"
       className="min-h-screen flex relative overflow-hidden"
     >
-      {/* Background dengan Parallax Effect */}
+      {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Background Image yang bergerak */}
         <motion.div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${backgroundImage})`,
-            backgroundSize: "110% 110%", // Perbesar sedikit
+            backgroundSize: "110% 110%",
           }}
           animate={{
             x: ["0%", "3%", "0%", "-3%", "0%"],
             y: ["0%", "2%", "0%", "-2%", "0%"],
             scale: [1, 1.05, 1, 1.03, 1],
           }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear",
-          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
         />
-
-        {/* Green Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-green-600/80 via-green-700/80 to-green-800/80"></div>
 
-        {/* Additional Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-white rounded-full blur-xl"></div>
           <div className="absolute top-3/4 left-1/4 w-24 h-24 bg-white rounded-full blur-lg"></div>
@@ -275,24 +399,12 @@ const Register = () => {
           <motion.div variants={itemVariants} className="text-center">
             <motion.div
               className="flex justify-center"
-              whileHover={{
-                scale: 1.1,
-                rotate: [0, -5, 5, 0],
-                transition: { duration: 0.5 },
-              }}
+              whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
               whileTap={{ scale: 0.95 }}
             >
               <motion.div
                 className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30"
-                whileHover={{
-                  boxShadow: "0 20px 40px rgba(34, 197, 94, 0.3)",
-                  background: [
-                    "rgba(255,255,255,0.2)",
-                    "rgba(255,255,255,0.3)",
-                    "rgba(255,255,255,0.2)",
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
+                whileHover={{ boxShadow: "0 20px 40px rgba(34, 197, 94, 0.3)" }}
               >
                 <Plane className="h-12 w-12 text-white" />
               </motion.div>
@@ -321,119 +433,263 @@ const Register = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, y: -20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 text-red-100 px-4 py-3 rounded-xl text-sm"
+                className="bg-red-500/20 backdrop-blur-sm border border-red-400/30 text-red-100 px-4 py-3 rounded-xl text-sm flex items-center gap-2"
               >
-                {error}
+                <AlertCircle className="h-4 w-4" />
+                <span>{error}</span>
               </motion.div>
             )}
 
             <div className="space-y-6">
               {/* Name Input */}
-              <motion.div variants={itemVariants}>
+              <div>
                 <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-white/60" />
+                    <User className={`h-5 w-5 ${getIconColor("name")}`} />
                   </div>
                   <input
                     id="name"
                     name="name"
                     type="text"
-                    required
                     value={formData.name}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-4 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
+                    className={getInputClasses("name")}
                     placeholder="Enter your full name"
                   />
+
+                  {/* Status Icon */}
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    {getFieldStatus("name") === "success" && (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    )}
+                    {getFieldStatus("name") === "error" && (
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    )}
+                  </div>
                 </motion.div>
-              </motion.div>
+
+                {/* 🔥 CUSTOM REQUIRED INDICATOR + VALIDATION MESSAGE */}
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {!formData.name && touched.name && (
+                      <>
+                        <span className="text-xs text-red-300">•</span>
+                        <span className="text-xs text-red-300">Required</span>
+                      </>
+                    )}
+                  </div>
+                  {errors.name && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-xs text-red-300 text-right"
+                    >
+                      {errors.name}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Character counter */}
+                {formData.name && (
+                  <div className="mt-1 text-xs text-white/60 text-right">
+                    {formData.name.length}/6 characters minimum
+                  </div>
+                )}
+              </div>
 
               {/* Email Input */}
-              <motion.div variants={itemVariants}>
+              <div>
                 <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-white/60" />
+                    <Mail className={`h-5 w-5 ${getIconColor("email")}`} />
                   </div>
                   <input
                     id="email"
                     name="email"
                     type="email"
-                    required
                     value={formData.email}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-4 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
+                    className={getInputClasses("email")}
                     placeholder="Enter your email"
                   />
+
+                  {/* Status Icon */}
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    {getFieldStatus("email") === "success" && (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    )}
+                    {getFieldStatus("email") === "error" && (
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    )}
+                  </div>
                 </motion.div>
-              </motion.div>
+
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {!formData.email && touched.email && (
+                      <>
+                        <span className="text-xs text-red-300">•</span>
+                        <span className="text-xs text-red-300">Required</span>
+                      </>
+                    )}
+                  </div>
+                  {errors.email && (
+                    <motion.p className="text-xs text-red-300 text-right">
+                      {errors.email}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Email format hint */}
+                {formData.email && !errors.email && (
+                  <div className="mt-1 text-xs text-green-300 text-right">
+                    ✓ Valid email format
+                  </div>
+                )}
+              </div>
 
               {/* Password Input */}
-              <motion.div variants={itemVariants}>
+              <div>
                 <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-white/60" />
+                    <Lock className={`h-5 w-5 ${getIconColor("password")}`} />
                   </div>
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    required
                     value={formData.password}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-12 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
-                    placeholder="Create a password"
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
+                    className={getInputClasses("password")}
+                    placeholder="Create a password (min. 8 characters)"
                   />
+
+                  {/* Show/Hide Button */}
                   <motion.button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                    className="absolute inset-y-0 right-8 pr-4 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-white/60 hover:text-white/80 transition-colors" />
+                      <EyeOff className="h-5 w-5 text-white/60 hover:text-white/80" />
                     ) : (
-                      <Eye className="h-5 w-5 text-white/60 hover:text-white/80 transition-colors" />
+                      <Eye className="h-5 w-5 text-white/60 hover:text-white/80" />
                     )}
                   </motion.button>
+
+                  {/* Status Icon */}
+                  <div className="absolute inset-y-0 right-0 pr-12 flex items-center pointer-events-none">
+                    {getFieldStatus("password") === "success" && (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    )}
+                    {getFieldStatus("password") === "error" && (
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    )}
+                  </div>
                 </motion.div>
-              </motion.div>
+
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {!formData.password && touched.password && (
+                      <>
+                        <span className="text-xs text-red-300">•</span>
+                        <span className="text-xs text-red-300">Required</span>
+                      </>
+                    )}
+                  </div>
+                  {errors.password && (
+                    <motion.p className="text-xs text-red-300 text-right">
+                      {errors.password}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Password strength indicator */}
+                {formData.password && (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-white/60">
+                        Password strength:
+                      </span>
+                      <span
+                        className={`text-xs font-medium ${
+                          formData.password.length >= 8
+                            ? "text-green-400"
+                            : "text-yellow-400"
+                        }`}
+                      >
+                        {formData.password.length >= 8 ? "Strong" : "Weak"}
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-1.5">
+                      <div
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          formData.password.length >= 8
+                            ? "bg-green-400 w-full"
+                            : formData.password.length >= 4
+                            ? "bg-yellow-400 w-2/3"
+                            : "bg-red-400 w-1/3"
+                        }`}
+                      />
+                    </div>
+                    <div className="mt-1 text-xs text-white/60 text-right">
+                      {formData.password.length}/8 characters
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Confirm Password Input */}
-              <motion.div variants={itemVariants}>
+              <div>
                 <motion.div
                   className="relative"
                   whileFocus={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-white/60" />
+                    <Lock
+                      className={`h-5 w-5 ${getIconColor("confirmPassword")}`}
+                    />
                   </div>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="block w-full pl-12 pr-4 py-4 bg-white/20 border border-white/30 rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/40 transition-all duration-300"
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
+                    className={getInputClasses("confirmPassword")}
                     placeholder="Confirm your password"
                   />
+
+                  {/* Show/Hide Button */}
                   <motion.button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                    className="absolute inset-y-0 right-8 pr-4 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5 text-white/60 hover:text-white/80" />
@@ -441,22 +697,66 @@ const Register = () => {
                       <Eye className="h-5 w-5 text-white/60 hover:text-white/80" />
                     )}
                   </motion.button>
+
+                  {/* Status Icon */}
+                  <div className="absolute inset-y-0 right-0 pr-12 flex items-center pointer-events-none">
+                    {getFieldStatus("confirmPassword") === "success" && (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    )}
+                    {getFieldStatus("confirmPassword") === "error" && (
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    )}
+                  </div>
                 </motion.div>
-              </motion.div>
+
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {!formData.confirmPassword && touched.confirmPassword && (
+                      <>
+                        <span className="text-xs text-red-300">•</span>
+                        <span className="text-xs text-red-300">Required</span>
+                      </>
+                    )}
+                  </div>
+                  {errors.confirmPassword && (
+                    <motion.p className="text-xs text-red-300 text-right">
+                      {errors.confirmPassword}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Password match indicator */}
+                {formData.password && formData.confirmPassword && (
+                  <div className="mt-1">
+                    {formData.password === formData.confirmPassword ? (
+                      <div className="text-xs text-green-300 text-right flex items-center justify-end gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Passwords match
+                      </div>
+                    ) : (
+                      <div className="text-xs text-red-300 text-right flex items-center justify-end gap-1">
+                        <XCircle className="h-3 w-3" />
+                        Passwords don't match
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Submit Button */}
             <motion.div variants={itemVariants}>
               <motion.button
                 type="submit"
-                disabled={loading}
+                disabled={
+                  loading || Object.values(errors).some((error) => error)
+                }
                 className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-green-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 whileHover={{
                   scale: loading ? 1 : 1.02,
                   boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)",
                 }}
                 whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 {loading ? (
                   <motion.div
@@ -467,21 +767,9 @@ const Register = () => {
                       ease: "linear",
                     }}
                     className="rounded-full h-6 w-6 border-b-2 border-green-600"
-                  ></motion.div>
+                  />
                 ) : (
-                  <motion.span
-                    animate={{
-                      backgroundPosition: ["0%", "100%"],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "reverse",
-                    }}
-                    className="bg-linear-to-r from-green-600 to-green-800 bg-clip-text text-transparent"
-                  >
-                    Create Account
-                  </motion.span>
+                  <span>Create Account</span>
                 )}
               </motion.button>
             </motion.div>
@@ -490,27 +778,12 @@ const Register = () => {
             <motion.div variants={itemVariants} className="text-center pt-6">
               <div className="text-white/80">
                 Already have an account?{" "}
-                <motion.span className="inline-block">
-                  <Link
-                    to="/login"
-                    className="font-semibold text-white hover:text-gray-200 transition-colors relative"
-                  >
-                    <motion.span
-                      whileHover={{
-                        scale: 1.05,
-                        textShadow: "0 0 20px rgba(255,255,255,0.8)",
-                      }}
-                      className="relative"
-                    >
-                      Sign In Here
-                      <motion.div
-                        className="absolute bottom-0 left-0 w-0 h-0.5 bg-white"
-                        whileHover={{ width: "100%" }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </motion.span>
-                  </Link>
-                </motion.span>
+                <Link
+                  to="/login"
+                  className="font-semibold text-white hover:text-gray-200 transition-colors underline"
+                >
+                  Sign In Here
+                </Link>
               </div>
             </motion.div>
           </motion.form>
