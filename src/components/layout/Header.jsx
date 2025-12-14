@@ -34,7 +34,10 @@ const Header = ({ isMobile, toggleSidebar }) => {
       "/destinations/new": "Tambah Destinasi",
     };
 
-    if (location.pathname.startsWith("/destinations/") && location.pathname.includes("/edit")) {
+    if (
+      location.pathname.startsWith("/destinations/") &&
+      location.pathname.includes("/edit")
+    ) {
       return "Edit Destinasi";
     }
 
@@ -49,11 +52,17 @@ const Header = ({ isMobile, toggleSidebar }) => {
       "/destinations/new": "Tambahkan destinasi baru ke rencana perjalananmu",
     };
 
-    if (location.pathname.startsWith("/destinations/") && location.pathname.includes("/edit")) {
+    if (
+      location.pathname.startsWith("/destinations/") &&
+      location.pathname.includes("/edit")
+    ) {
       return "Perbarui detail destinasi Anda";
     }
 
-    return descriptions[location.pathname] || "Pendamping perencanaan perjalanan pribadimu";
+    return (
+      descriptions[location.pathname] ||
+      "Pendamping perencanaan perjalanan pribadimu"
+    );
   };
 
   // Update time dan date
@@ -99,7 +108,11 @@ const Header = ({ isMobile, toggleSidebar }) => {
 
   const getInitials = (name) => {
     if (!name) return "P";
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
   const toggleDarkMode = () => {
@@ -110,11 +123,13 @@ const Header = ({ isMobile, toggleSidebar }) => {
   const headerHeight = isMobile ? "h-16" : "h-20";
 
   return (
-    <header className={`
+    <header
+      className={`
       fixed top-0 left-0 right-0 ${headerHeight} 
       bg-white/90 backdrop-blur-md z-30 shadow-sm border-b border-slate-200/60
-      ${isMobile ? 'pl-0 xl:pl-72' : 'pl-0 xl:pl-72'}
-    `}>
+      ${isMobile ? "pl-0 xl:pl-72" : "pl-0 xl:pl-72"}
+    `}
+    >
       <div className="flex justify-between items-center h-full px-4 xl:px-8">
         {/* Left section - Menu button for mobile + Title */}
         <div className="flex items-center gap-4">
@@ -127,7 +142,7 @@ const Header = ({ isMobile, toggleSidebar }) => {
               <Menu size={24} />
             </motion.button>
           )}
-          
+
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, x: -10 }}
@@ -136,7 +151,9 @@ const Header = ({ isMobile, toggleSidebar }) => {
             className="flex items-center gap-4"
           >
             <div>
-              <h1 className="text-lg xl:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              <h1 className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                {" "}
+                {/* 👈 text-base untuk mobile */}
                 {getPageTitle()}
               </h1>
               {!isMobile && (
@@ -213,7 +230,9 @@ const Header = ({ isMobile, toggleSidebar }) => {
             >
               <div className="hidden sm:block text-right">
                 <p className="font-semibold text-sm text-slate-800">
-                  {isMobile ? getInitials(user?.name) : user?.name || "Petualang"}
+                  {isMobile
+                    ? getInitials(user?.name)
+                    : user?.name || "Petualang"}
                 </p>
                 {!isMobile && (
                   <p className="text-xs text-slate-500">
@@ -274,7 +293,10 @@ const Header = ({ isMobile, toggleSidebar }) => {
                       className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100/80 transition-colors group"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      <User size={18} className="mr-3 text-slate-500 group-hover:text-blue-500" />
+                      <User
+                        size={18}
+                        className="mr-3 text-slate-500 group-hover:text-blue-500"
+                      />
                       Profil Saya
                     </Link>
                     <Link
@@ -282,7 +304,10 @@ const Header = ({ isMobile, toggleSidebar }) => {
                       className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100/80 transition-colors group"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      <Settings size={18} className="mr-3 text-slate-500 group-hover:text-blue-500" />
+                      <Settings
+                        size={18}
+                        className="mr-3 text-slate-500 group-hover:text-blue-500"
+                      />
                       Pengaturan
                     </Link>
 
@@ -291,7 +316,10 @@ const Header = ({ isMobile, toggleSidebar }) => {
                         onClick={handleLogout}
                         className="flex items-center w-full px-3 py-3 text-sm text-red-600 rounded-lg hover:bg-red-50/80 transition-colors group"
                       >
-                        <LogOut size={18} className="mr-3 group-hover:scale-110 transition-transform" />
+                        <LogOut
+                          size={18}
+                          className="mr-3 group-hover:scale-110 transition-transform"
+                        />
                         Keluar
                       </button>
                     </div>
