@@ -14,13 +14,14 @@ import {
   XCircle,
   Plus,
   Minus,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   STORAGE_BASE_URL,
   destinationService,
 } from "../services/destinationService";
-
 import Notification, { useNotification } from "../components/Notification";
 
 const DestinationForm = () => {
@@ -44,11 +45,22 @@ const DestinationForm = () => {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isMobile, setIsMobile] = useState(false);
 
   const { notification, showNotification, dismissNotification } =
     useNotification();
 
   const calendarRef = useRef(null);
+
+  // Check screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Handle click outside calendar
   useEffect(() => {
@@ -71,12 +83,10 @@ const DestinationForm = () => {
     if (isEdit) {
       loadDestination();
     } else {
-      // Set selectedDate ke hari ini untuk form baru
       setSelectedDate(new Date());
     }
   }, [id]);
 
-  // Otomatis set status berdasarkan tanggal
   useEffect(() => {
     if (formData.departure_date) {
       const today = new Date();
@@ -85,30 +95,22 @@ const DestinationForm = () => {
       const departureDate = new Date(formData.departure_date);
       departureDate.setHours(0, 0, 0, 0);
 
-      // Jika pilih tanggal masa lalu (kemarin atau lebih) dan status = false
       if (departureDate < today && !formData.is_achieved) {
-        // Auto-set ke false
         setFormData((prev) => ({
           ...prev,
           is_achieved: true,
         }));
-
-        // Optional: Show notification
         showNotification(
           "Perjalanan di masa lalu tidak bisa ditandai perencanaan. Status diubah ke 'Selesai'.",
           "warning"
         );
       }
 
-      // Jika pilih tanggal masa depan (besok atau lebih) dan status = true
       if (departureDate > today && formData.is_achieved) {
-        // Auto-set ke false
         setFormData((prev) => ({
           ...prev,
           is_achieved: false,
         }));
-
-        // Optional: Show notification
         showNotification(
           "Perjalanan di masa depan tidak bisa ditandai selesai. Status diubah ke 'Perencanaan'.",
           "warning"
@@ -117,41 +119,25 @@ const DestinationForm = () => {
     }
   }, [formData.departure_date]);
 
-  // Di loadDestination function - MASALAH BESAR DI SINI
   const loadDestination = async () => {
     try {
       setLoading(true);
       const destination = await destinationService.getById(id);
 
-      console.log("📥 Loaded destination data:", {
-        id: destination.id,
-        title: destination.title,
-        photo: destination.photo, // Ini cuma nama file: "abc123.jpg"
-        rawData: destination,
-      });
-
-      // FIX: Format budget sederhana
       const formatBudgetForInput = (budget) => {
         if (!budget && budget !== 0) return "";
         return budget.toString();
       };
 
-      // FIX: Format date
       const formatDateForInput = (dateString) => {
         if (!dateString) return "";
-
         try {
-          // Parse dengan locale timezone
           const date = new Date(dateString);
-
-          // Adjust for timezone offset
-          const timezoneOffset = date.getTimezoneOffset() * 60000; // offset in milliseconds
+          const timezoneOffset = date.getTimezoneOffset() * 60000;
           const localDate = new Date(date.getTime() - timezoneOffset);
-
           const year = localDate.getFullYear();
           const month = String(localDate.getMonth() + 1).padStart(2, "0");
           const day = String(localDate.getDate()).padStart(2, "0");
-
           return `${year}-${month}-${day}`;
         } catch (error) {
           console.error("Error formatting date:", error);
@@ -165,18 +151,15 @@ const DestinationForm = () => {
         budget: formatBudgetForInput(destination.budget),
         duration_days: destination.duration_days || "",
         is_achieved: destination.is_achieved || false,
-        photo: null, // Selalu null untuk existing photo
+        photo: null,
       });
 
-      // 🔥 TAMBAHKAN DI SINI: Set selectedDate berdasarkan departure_date yang di-load
       if (destination.departure_date) {
         setSelectedDate(new Date(destination.departure_date));
       }
 
-      // FIX: Set photo preview dengan URL yang benar
       if (destination.photo) {
         const previewUrl = `${STORAGE_BASE_URL}/destinations/${destination.photo}`;
-        console.log("🖼️ Setting photo preview URL:", previewUrl);
         setPhotoPreview(previewUrl);
       } else {
         setPhotoPreview(null);
@@ -201,11 +184,8 @@ const DestinationForm = () => {
     }
   };
 
-  // Modern budget handlers with +/- buttons
   const handleBudgetChange = (e) => {
     const { value } = e.target;
-
-    // Remove formatting to get raw number
     const rawValue = value.replace(/[^\d]/g, "");
 
     setFormData((prev) => ({
@@ -218,37 +198,24 @@ const DestinationForm = () => {
     }
   };
 
-  // Custom date selection handler - FIX TIMEZONE
   const handleDateSelect = (date) => {
-    // FIX TIMEZONE: Buat date baru dengan waktu lokal
     const localDate = new Date(
       date.getFullYear(),
       date.getMonth(),
       date.getDate()
     );
 
-    // Format ke YYYY-MM-DD tanpa timezone issues
     const year = localDate.getFullYear();
     const month = String(localDate.getMonth() + 1).padStart(2, "0");
     const day = String(localDate.getDate()).padStart(2, "0");
 
     const formattedDate = `${year}-${month}-${day}`;
 
-    console.log("Selected date:", {
-      original: date,
-      localDate: localDate,
-      formattedDate: formattedDate,
-      day: day,
-      month: month,
-      year: year,
-    });
-
     setFormData((prev) => ({ ...prev, departure_date: formattedDate }));
     setSelectedDate(localDate);
     setShowDatePicker(false);
   };
 
-  // Format budget for display with thousands separators
   const formatBudgetDisplay = (budget) => {
     if (!budget) return "";
     const num = parseInt(budget);
@@ -258,7 +225,7 @@ const DestinationForm = () => {
 
   const incrementBudget = () => {
     const currentBudget = parseInt(formData.budget || "0");
-    const newBudget = currentBudget + 100000; // Increment by 100,000
+    const newBudget = currentBudget + 100000;
     setFormData((prev) => ({
       ...prev,
       budget: newBudget.toString(),
@@ -268,7 +235,7 @@ const DestinationForm = () => {
   const decrementBudget = () => {
     const currentBudget = parseInt(formData.budget || "0");
     if (currentBudget > 0) {
-      const newBudget = Math.max(0, currentBudget - 100000); // Decrement by 100,000, minimum 0
+      const newBudget = Math.max(0, currentBudget - 100000);
       setFormData((prev) => ({
         ...prev,
         budget: newBudget.toString(),
@@ -276,7 +243,6 @@ const DestinationForm = () => {
     }
   };
 
-  // 🔥 FIX: Durasi handlers yang benar
   const incrementDuration = () => {
     const currentDays = parseInt(formData.duration_days || "0");
     const newDays = currentDays + 1;
@@ -296,7 +262,6 @@ const DestinationForm = () => {
         duration_days: (currentDays - 1).toString(),
       }));
     } else if (currentDays === 1) {
-      // Jika dari 1 dikurangi, set ke 0
       setFormData((prev) => ({
         ...prev,
         duration_days: "0",
@@ -328,7 +293,7 @@ const DestinationForm = () => {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPhotoPreview(e.target.result); // Ini akan menjadi data URL
+        setPhotoPreview(e.target.result);
       };
       reader.onerror = () => {
         console.error("Failed to read file");
@@ -355,10 +320,9 @@ const DestinationForm = () => {
     if (!formData.departure_date) {
       newErrors.departure_date = "Tanggal keberangkatan wajib diisi";
     } else {
-      // FIX: Handle timezone untuk validasi
-      const selectedDate = new Date(formData.departure_date + "T12:00:00"); // Set ke tengah hari
+      const selectedDate = new Date(formData.departure_date + "T12:00:00");
       const today = new Date();
-      today.setHours(12, 0, 0, 0); // Set ke tengah hari untuk konsisten
+      today.setHours(12, 0, 0, 0);
 
       if (selectedDate < today) {
         newErrors.departure_date =
@@ -382,7 +346,6 @@ const DestinationForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 🔥 NEW: Check if form is complete untuk disable submit button
   const isFormComplete = () => {
     return (
       formData.title.trim() &&
@@ -406,58 +369,35 @@ const DestinationForm = () => {
     setLoading(true);
 
     try {
-      // Gunakan FormData langsung, jangan object biasa
       const submitData = new FormData();
-
       submitData.append("title", formData.title);
       submitData.append("departure_date", formData.departure_date);
       submitData.append("budget", parseFloat(formData.budget));
       submitData.append("duration_days", parseInt(formData.duration_days));
-      submitData.append("is_achieved", formData.is_achieved ? "1" : "0"); // Convert to string
+      submitData.append("is_achieved", formData.is_achieved ? "1" : "0");
 
-      // Handle photo - FIX: Check if photo is a File object
       if (formData.photo && formData.photo instanceof File) {
         submitData.append("photo", formData.photo);
       }
 
-      console.log("Submitting data:", {
-        title: formData.title,
-        departure_date: formData.departure_date,
-        budget: formData.budget,
-        duration_days: formData.duration_days,
-        is_achieved: formData.is_achieved,
-        hasPhoto: !!(formData.photo && formData.photo instanceof File),
-      });
-
       let result;
       if (isEdit) {
         result = await destinationService.update(id, submitData);
-        // 🔥 NOTIFIKASI SUKSES
         showNotification("Destinasi berhasil diperbarui!", "success");
       } else {
         result = await destinationService.create(submitData);
-        // 🔥 NOTIFIKASI SUKSES
         showNotification("Destinasi berhasil dibuat!", "success");
       }
 
-      console.log("✅ Save successful:", result);
-
-      // 🔥 PERBAIKI: Delay navigate untuk show notification
       setTimeout(() => {
         navigate("/destinations");
-      }, 1500); // Tunggu 1.5 detik agar notification terlihat
-
-      navigate("/destinations");
+      }, 1500);
     } catch (error) {
-      console.error("Failed to save destination:", error);
-
-      // 🔥 SHOW ERROR NOTIFICATION
       let errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Gagal menyimpan destinasi. Silakan coba lagi.";
 
-      // Show detailed validation errors
       if (error.response?.data?.errors) {
         const validationErrors = error.response.data.errors;
         errorMessage = Object.values(validationErrors).flat().join(", ");
@@ -468,37 +408,6 @@ const DestinationForm = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getImageUrl = (photoFileName) => {
-    if (!photoFileName) return null;
-
-    console.log("🖼️ Processing photo file name:", photoFileName);
-
-    // Jika sudah data URL (dari FileReader), return langsung
-    if (photoFileName.startsWith("data:")) return photoFileName;
-
-    // Jika sudah full URL, return langsung
-    if (photoFileName.startsWith("http")) return photoFileName;
-
-    // SIMPLE: Langsung ke folder destinations
-    return `${STORAGE_BASE_URL}/destinations/${photoFileName}`;
-  };
-
-  const canMarkAsCompleted = () => {
-    if (!formData.departure_date) return true;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const departureDate = new Date(formData.departure_date);
-    departureDate.setHours(0, 0, 0, 0);
-
-    // Tidak disabled jika tanggal sudah lewat atau hari ini
-    // return departureDate <= today;
-
-    // Tidak disabled jika tanggal hari ini
-    return departureDate == today;
   };
 
   if (loading && isEdit) {
@@ -512,44 +421,136 @@ const DestinationForm = () => {
     );
   }
 
-  const imageUrl = getImageUrl(photoPreview);
+  // Skeleton loading untuk initial load
+  const SkeletonHeader = () => (
+    <motion.div className="bg-gradient-to-br from-blue-500/10 to-cyan-400/10 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6 border border-blue-200/30">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 md:gap-4">
+          <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-200 rounded-lg animate-pulse"></div>
+          <div className="space-y-1.5 md:space-y-2">
+            <div className="h-6 md:h-8 bg-gray-200 rounded animate-pulse w-32 md:w-48"></div>
+            <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-24 md:w-36"></div>
+          </div>
+        </div>
+        <div className="h-7 md:h-8 bg-gray-200 rounded-full animate-pulse w-24 md:w-32"></div>
+      </div>
+    </motion.div>
+  );
+
+  const SkeletonForm = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+      {/* Left Column */}
+      <div className="lg:col-span-1 space-y-4 md:space-y-6">
+        {/* Photo Upload Skeleton */}
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm">
+          <div className="h-6 md:h-7 bg-gray-200 rounded animate-pulse w-32 md:w-40 mb-3 md:mb-4"></div>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg md:rounded-xl p-4 md:p-8 text-center">
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-200 rounded-xl md:rounded-2xl mx-auto mb-2 md:mb-3 animate-pulse"></div>
+            <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-24 md:w-32 mx-auto mb-2 md:mb-3"></div>
+            <div className="h-8 md:h-10 bg-gray-200 rounded-lg md:rounded-xl animate-pulse w-24 md:w-32 mx-auto"></div>
+          </div>
+        </div>
+
+        {/* Status Skeleton */}
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm">
+          <div className="h-6 md:h-7 bg-gray-200 rounded animate-pulse w-28 md:w-36 mb-3 md:mb-4"></div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1.5 md:space-y-2">
+              <div className="h-4 md:h-5 bg-gray-200 rounded animate-pulse w-24 md:w-32"></div>
+              <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-20 md:w-28"></div>
+            </div>
+            <div className="h-6 w-12 md:h-7 md:w-14 bg-gray-200 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column */}
+      <div className="lg:col-span-2 space-y-4 md:space-y-6">
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm">
+          {/* Title Skeleton */}
+          <div className="mb-4 md:mb-6">
+            <div className="h-4 md:h-5 bg-gray-200 rounded animate-pulse w-28 md:w-32 mb-2 md:mb-3"></div>
+            <div className="h-10 md:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
+          </div>
+
+          {/* Date Skeleton */}
+          <div className="mb-4 md:mb-6">
+            <div className="h-4 md:h-5 bg-gray-200 rounded animate-pulse w-36 md:w-44 mb-2 md:mb-3"></div>
+            <div className="h-10 md:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
+          </div>
+
+          {/* Budget & Duration Row Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div>
+              <div className="h-4 md:h-5 bg-gray-200 rounded animate-pulse w-20 md:w-24 mb-2 md:mb-3"></div>
+              <div className="h-10 md:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
+            </div>
+            <div>
+              <div className="h-4 md:h-5 bg-gray-200 rounded animate-pulse w-28 md:w-32 mb-2 md:mb-3"></div>
+              <div className="h-10 md:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Submit Buttons Skeleton */}
+          <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+              <div className="h-10 md:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse flex-1"></div>
+              <div className="h-10 md:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse w-20 md:w-24"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (loading && !isEdit) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">
+          <SkeletonHeader />
+          <SkeletonForm />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen">
-      {/* 🔥 TAMBAHKAN NOTIFICATION COMPONENT */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+      {/* Notification Component */}
       <Notification
         notification={notification}
         onDismiss={dismissNotification}
       />
-      {/* Hero Section */}
+
+      {/* Hero Header - Responsive */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-blue-500/10 to-cyan-400/10 rounded-2xl p-6 mb-6 border border-blue-200/30 backdrop-blur-sm"
+        className="bg-gradient-to-br from-blue-500/10 to-cyan-400/10 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6 border border-blue-200/30 backdrop-blur-sm"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
             <Link
               to="/destinations"
-              className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              className="inline-flex items-center p-2 text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg md:rounded-xl hover:border-gray-400 transition-all shadow-sm hover:shadow-md"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
                 {isEdit ? "Edit Destinasi" : "Rencanakan Petualangan Baru"}
-                <span className="ml-1 text-white">{isEdit ? "📝" : "🗺️"}</span>
+                <span className="ml-1">{isEdit ? "📝" : "🗺️"}</span>
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-xs md:text-sm lg:text-base">
                 {isEdit
                   ? "Perbarui detail perjalanan Anda"
                   : "Tambahkan destinasi baru ke rencana perjalanan Anda"}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div
-              className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
+              className={`flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-full text-xs md:text-sm font-medium ${
                 formData.is_achieved
                   ? "bg-green-100 text-green-800"
                   : "bg-orange-100 text-orange-800"
@@ -557,13 +558,15 @@ const DestinationForm = () => {
             >
               {formData.is_achieved ? (
                 <>
-                  <CheckCircle className="h-4 w-4" />
-                  Tercapai
+                  <CheckCircle className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">Tercapai</span>
+                  <span className="sm:hidden">✓</span>
                 </>
               ) : (
                 <>
-                  <XCircle className="h-4 w-4" />
-                  Perencanaan
+                  <XCircle className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">Perencanaan</span>
+                  <span className="sm:hidden">✗</span>
                 </>
               )}
             </div>
@@ -571,227 +574,216 @@ const DestinationForm = () => {
         </div>
       </motion.div>
 
-      {/* Form Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Photo & Status */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Photo Upload Card */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
-          >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Camera className="h-5 w-5 text-blue-500" />
-              Foto Destinasi
-            </h3>
+      {/* Main Form Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 md:p-4 mb-4 md:mb-6">
+            <p className="text-red-800 text-xs md:text-sm">{submitError}</p>
+          </div>
+        )}
 
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-gray-400 transition-colors group">
-                {photoPreview ? (
-                  <div className="relative">
-                    <img
-                      src={photoPreview}
-                      alt="Preview"
-                      className="w-full h-48 object-cover rounded-lg mx-auto group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        console.error("❌ Failed to load image:", photoPreview);
-                        // Fallback ke placeholder
-                        e.target.style.display = "none";
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={removePhoto}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors shadow-lg"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="py-8">
-                    <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Camera className="h-8 w-8 text-blue-500" />
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {isEdit
-                        ? "Ganti foto destinasi"
-                        : "Unggah foto destinasi"}
-                    </p>
-                    <label className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all cursor-pointer shadow-md hover:shadow-lg">
-                      <Upload className="h-4 w-4 mr-2" />
-                      {isEdit ? "Ganti Foto" : "Pilih File"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        className="hidden"
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Left Column - Photo & Status (Mobile: di atas) */}
+          <div className="lg:col-span-1 space-y-4 md:space-y-6">
+            {/* Photo Upload Card - Responsive */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm"
+            >
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+                <Camera className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+                <span>Foto Destinasi</span>
+              </h3>
+
+              <div className="space-y-3 md:space-y-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg md:rounded-xl p-3 md:p-4 text-center group">
+                  {photoPreview ? (
+                    <div className="relative">
+                      <img
+                        src={photoPreview}
+                        alt="Preview"
+                        className="w-full h-32 md:h-48 object-cover rounded-lg mx-auto"
                       />
-                    </label>
-                    <p className="text-xs text-gray-500 mt-2">
-                      PNG, JPG maksimal 2MB
-                    </p>
+                      <button
+                        type="button"
+                        onClick={removePhoto}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                      >
+                        <X className="h-3 w-3 md:h-4 md:w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="py-4 md:py-8">
+                      <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-2 md:mb-3">
+                        <Camera className="h-5 w-5 md:h-8 md:w-8 text-blue-500" />
+                      </div>
+                      <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3">
+                        {isEdit
+                          ? "Ganti foto destinasi"
+                          : "Unggah foto destinasi"}
+                      </p>
+                      <label className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-blue-500 text-white rounded-lg md:rounded-xl hover:bg-blue-600 transition-all cursor-pointer shadow-md hover:shadow-lg text-xs md:text-sm">
+                        <Upload className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                        {isEdit ? "Ganti Foto" : "Pilih File"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoChange}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-xs text-gray-500 mt-2">
+                        PNG, JPG maksimal 2MB
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {errors.photo && (
+                  <p className="text-red-600 text-xs md:text-sm text-center">
+                    {errors.photo}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Status Toggle Card - Responsive */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm"
+            >
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4">
+                Status Perjalanan
+              </h3>
+
+              <label className="flex items-center justify-between cursor-pointer group">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm md:text-base font-medium text-gray-900 truncate">
+                    Tandai sebagai Selesai
                   </div>
-                )}
-              </div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {formData.is_achieved
+                      ? "✅ Perjalanan ini telah selesai"
+                      : "📝 Perjalanan ini dalam perencanaan"}
+                  </div>
+                </div>
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    name="is_achieved"
+                    checked={formData.is_achieved}
+                    onChange={handleChange}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-10 h-5 md:w-12 md:h-6 rounded-full transition-colors duration-300 ${
+                      formData.is_achieved
+                        ? "bg-green-500"
+                        : "bg-gray-300 group-hover:bg-gray-400"
+                    }`}
+                  ></div>
+                  <div
+                    className={`absolute left-0.5 top-0.5 md:left-1 md:top-1 bg-white w-4 h-4 md:w-4 md:h-4 rounded-full transition-transform duration-300 ${
+                      formData.is_achieved
+                        ? "transform translate-x-5 md:translate-x-6"
+                        : ""
+                    }`}
+                  ></div>
+                </div>
+              </label>
 
-              {errors.photo && (
-                <p className="text-red-600 text-sm text-center">
-                  {errors.photo}
+              <div className="mt-3 md:mt-4 p-2 md:p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-800 leading-tight">
+                  {!formData.departure_date ? (
+                    "📅 Pilih tanggal untuk melihat status"
+                  ) : (
+                    <>
+                      <span className="font-semibold">Status: </span>
+                      {(() => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        const departureDate = new Date(formData.departure_date);
+                        departureDate.setHours(0, 0, 0, 0);
+
+                        const diffDays = Math.ceil(
+                          (departureDate - today) / (1000 * 60 * 60 * 24)
+                        );
+
+                        if (diffDays < 0) {
+                          return `Perjalanan ini sudah lewat ${Math.abs(
+                            diffDays
+                          )} hari yang lalu`;
+                        } else if (diffDays === 0) {
+                          return "Perjalanan berlangsung hari ini";
+                        } else if (diffDays === 1) {
+                          return "Perjalanan akan dimulai besok";
+                        } else {
+                          return `Perjalanan akan dimulai dalam ${diffDays} hari`;
+                        }
+                      })()}
+                    </>
+                  )}
                 </p>
-              )}
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
 
-          {/* Status Toggle Card */}
+          {/* Right Column - Form Fields (Mobile: di bawah) */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
+            className="lg:col-span-2 space-y-4 md:space-y-6"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Status Perjalanan
-            </h3>
-
-            <label className="flex items-center justify-between cursor-pointer group">
-              <div>
-                <div className="text-sm font-medium text-gray-900">
-                  Tandai sebagai Selesai
+            <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+                {/* Title Field */}
+                <div>
+                  <label
+                    htmlFor="title"
+                    className="block text-xs md:text-sm font-medium text-gray-700 mb-2 md:mb-3"
+                  >
+                    <span>
+                      Judul Destinasi
+                      <span className="ml-1 text-red-600">*</span>
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 text-xs md:text-sm ${
+                      errors.title ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="contoh: Petualangan Bali yang Menakjubkan"
+                  />
+                  {errors.title && (
+                    <p className="text-red-600 text-xs md:text-sm mt-1 md:mt-2">
+                      {errors.title}
+                    </p>
+                  )}
                 </div>
-                <div className="text-xs text-gray-500">
-                  {formData.is_achieved
-                    ? "✅ Perjalanan ini telah selesai"
-                    : "📝 Perjalanan ini dalam perencanaan"}
-                </div>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  name="is_achieved"
-                  checked={formData.is_achieved}
-                  onChange={handleChange}
-                  disabled={!canMarkAsCompleted()}
-                  className="sr-only"
-                />
-                <div
-                  className={`w-12 h-6 rounded-full transition-colors duration-300 ${
-                    formData.is_achieved
-                      ? "bg-green-500"
-                      : "bg-gray-300 group-hover:bg-gray-400"
-                  } ${
-                    !canMarkAsCompleted() ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                ></div>
-                <div
-                  className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ${
-                    formData.is_achieved ? "transform translate-x-6" : ""
-                  }`}
-                ></div>
-              </div>
-            </label>
 
-            {/* Info tambahan */}
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-800">
-                {!formData.departure_date ? (
-                  "📅 Pilih tanggal untuk melihat status"
-                ) : (
-                  <>
-                    <span className="font-semibold">Status: </span>
-                    {(() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-
-                      const departureDate = new Date(formData.departure_date);
-                      departureDate.setHours(0, 0, 0, 0);
-
-                      const diffDays = Math.ceil(
-                        (departureDate - today) / (1000 * 60 * 60 * 24)
-                      );
-
-                      if (diffDays < 0) {
-                        return `Perjalanan ini sudah lewat ${Math.abs(
-                          diffDays
-                        )} hari yang lalu`;
-                      } else if (diffDays === 0) {
-                        return "Perjalanan berlangsung hari ini";
-                      } else if (diffDays === 1) {
-                        return "Perjalanan akan dimulai besok";
-                      } else {
-                        return `Perjalanan akan dimulai dalam ${diffDays} hari`;
-                      }
-                    })()}
-                  </>
-                )}
-              </p>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Right Column - Form Fields */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="lg:col-span-2 space-y-6"
-        >
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-            {submitError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                <p className="text-red-800 text-sm">{submitError}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Title */}
-              <div>
-                <label
-                  htmlFor="title"
-                  className="block text-sm font-medium text-gray-700 mb-3"
-                >
-                  <span>
-                    Judul Destinasi
-                    <span className="ml-1 text-red-600">*</span>
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 ${
-                    errors.title ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="contoh: Petualangan Bali yang Menakjubkan, Eksplorasi Kota Tokyo..."
-                />
-                {errors.title && (
-                  <p className="text-red-600 text-sm mt-2">{errors.title}</p>
-                )}
-              </div>
-
-              {/* Modern Inputs - 2 ROW LAYOUT */}
-              <div className="space-y-6">
-                {/* Row 1: Departure Date - Full Width */}
+                {/* Departure Date Field */}
                 <div>
                   <label
                     htmlFor="departure_date"
-                    className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2"
+                    className="block text-xs md:text-sm font-medium text-gray-700 mb-2 md:mb-3 flex items-center gap-2"
                   >
-                    <Calendar className="h-4 w-4 text-blue-500" />
+                    <Calendar className="h-3 w-3 md:h-4 md:w-4 text-blue-500" />
                     <span>
                       Tanggal Keberangkatan
                       <span className="ml-1 text-red-600">*</span>
                     </span>
                   </label>
 
-                  <div className="relative date-picker-container max-w-2xl">
-                    {/* Custom text input that triggers date picker */}
+                  <div className="relative date-picker-container">
                     <div
                       onClick={() => setShowDatePicker(!showDatePicker)}
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl cursor-pointer transition-all bg-gray-50/50 group-hover:border-blue-300 ${
+                      className={`w-full pl-10 md:pl-12 pr-3 md:pr-4 py-2 md:py-3 border rounded-lg md:rounded-xl cursor-pointer transition-all bg-gray-50/50 text-xs md:text-sm ${
                         errors.departure_date
                           ? "border-red-500"
                           : "border-gray-300"
@@ -814,72 +806,60 @@ const DestinationForm = () => {
                         : "Pilih tanggal keberangkatan"}
                     </div>
 
-                    {/* Calendar Icon */}
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center shadow-sm">
-                        <Calendar className="h-4 w-4 text-white" />
+                      <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-lg flex items-center justify-center shadow-sm">
+                        <Calendar className="h-3 w-3 md:h-4 md:w-4 text-white" />
                       </div>
                     </div>
 
-                    {/* Custom Date Picker */}
                     {showDatePicker && (
                       <motion.div
                         ref={calendarRef}
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 p-4 min-w-[320px]"
+                        className="absolute top-full left-0 right-0 mt-1 md:mt-2 bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-2xl z-50 p-3 md:p-4"
                       >
-                        <div className="flex justify-between items-center mb-4">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mb-3 md:mb-4">
                           <div className="flex gap-2">
-                            {/* Month Selector */}
                             <select
-                              value={
-                                selectedDate
-                                  ? selectedDate.getMonth()
-                                  : new Date().getMonth()
-                              }
+                              value={selectedDate.getMonth()}
                               onChange={(e) => {
-                                const newDate = selectedDate || new Date();
+                                const newDate = new Date(selectedDate);
                                 newDate.setMonth(parseInt(e.target.value));
-                                setSelectedDate(new Date(newDate));
+                                setSelectedDate(newDate);
                               }}
-                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="px-2 py-1.5 md:px-3 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-1"
                             >
                               {[
-                                "Januari",
-                                "Februari",
-                                "Maret",
-                                "April",
+                                "Jan",
+                                "Feb",
+                                "Mar",
+                                "Apr",
                                 "Mei",
-                                "Juni",
-                                "Juli",
-                                "Agustus",
-                                "September",
-                                "Oktober",
-                                "November",
-                                "Desember",
+                                "Jun",
+                                "Jul",
+                                "Agu",
+                                "Sep",
+                                "Okt",
+                                "Nov",
+                                "Des",
                               ].map((month, index) => (
                                 <option key={month} value={index}>
-                                  {month}
+                                  {isMobile ? month : `${month}uari`}
                                 </option>
                               ))}
                             </select>
 
-                            {/* Year Selector */}
                             <select
-                              value={
-                                selectedDate
-                                  ? selectedDate.getFullYear()
-                                  : new Date().getFullYear()
-                              }
+                              value={selectedDate.getFullYear()}
                               onChange={(e) => {
-                                const newDate = selectedDate || new Date();
+                                const newDate = new Date(selectedDate);
                                 newDate.setFullYear(parseInt(e.target.value));
-                                setSelectedDate(new Date(newDate));
+                                setSelectedDate(newDate);
                               }}
-                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="px-2 py-1.5 md:px-3 md:py-2 border border-gray-300 rounded-lg text-xs md:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-1"
                             >
-                              {Array.from({ length: 10 }, (_, i) => {
+                              {Array.from({ length: 5 }, (_, i) => {
                                 const year = new Date().getFullYear() + i;
                                 return (
                                   <option key={year} value={year}>
@@ -892,17 +872,18 @@ const DestinationForm = () => {
 
                           <button
                             onClick={() => setShowDatePicker(false)}
-                            className="text-gray-400 hover:text-gray-600 p-1"
+                            className="text-gray-400 hover:text-gray-600 p-1 self-end md:self-auto"
                           >
                             <X className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="grid grid-cols-7 gap-1 mb-2">
+
+                        <div className="grid grid-cols-7 gap-1 mb-1 md:mb-2">
                           {["M", "S", "S", "R", "K", "J", "S"].map(
                             (day, index) => (
                               <div
                                 key={`day-header-${index}`}
-                                className="text-center text-xs font-medium text-gray-500 py-2"
+                                className="text-center text-xs font-medium text-gray-500 py-1 md:py-2"
                               >
                                 {day}
                               </div>
@@ -912,36 +893,28 @@ const DestinationForm = () => {
 
                         <div className="grid grid-cols-7 gap-1">
                           {(() => {
-                            const currentDate = selectedDate || new Date();
+                            const currentDate = selectedDate;
                             const year = currentDate.getFullYear();
                             const month = currentDate.getMonth();
-
-                            // Get first day of month and total days
                             const firstDay = new Date(year, month, 1).getDay();
                             const daysInMonth = new Date(
                               year,
                               month + 1,
                               0
                             ).getDate();
-
-                            // Adjust for Monday first (0 = Monday, 6 = Sunday)
                             const adjustedFirstDay =
                               firstDay === 0 ? 6 : firstDay - 1;
 
                             const days = [];
 
-                            // Add empty cells for days before the first day of month
                             for (let i = 0; i < adjustedFirstDay; i++) {
                               days.push(
-                                <div key={`empty-${i}`} className="p-2"></div>
+                                <div key={`empty-${i}`} className="p-1"></div>
                               );
                             }
 
-                            // Add days of the month
                             for (let day = 1; day <= daysInMonth; day++) {
                               const date = new Date(year, month, day);
-
-                              // Format date untuk comparison
                               const dateYear = date.getFullYear();
                               const dateMonth = String(
                                 date.getMonth() + 1
@@ -951,32 +924,17 @@ const DestinationForm = () => {
                                 "0"
                               );
                               const dateFormatted = `${dateYear}-${dateMonth}-${dateDay}`;
-
                               const isSelected =
                                 formData.departure_date === dateFormatted;
-
-                              const today = new Date();
-                              today.setHours(0, 0, 0, 0);
-                              const dateForCheck = new Date(year, month, day);
-                              dateForCheck.setHours(0, 0, 0, 0);
-                              {
-                                /* const isPast = dateForCheck < today; */
-                              }
-                              const isPast = false;
 
                               days.push(
                                 <button
                                   key={day}
                                   type="button"
-                                  onClick={() =>
-                                    !isPast && handleDateSelect(date)
-                                  }
-                                  disabled={isPast}
-                                  className={`p-2 rounded-lg text-sm font-medium transition-all ${
+                                  onClick={() => handleDateSelect(date)}
+                                  className={`p-1 md:p-2 rounded text-xs md:text-sm font-medium transition-all ${
                                     isSelected
                                       ? "bg-blue-500 text-white"
-                                      : isPast
-                                      ? "text-gray-300 cursor-not-allowed"
                                       : "text-gray-700 hover:bg-gray-100"
                                   }`}
                                 >
@@ -988,40 +946,26 @@ const DestinationForm = () => {
                             return days;
                           })()}
                         </div>
-                        {/* Today Button */}
-                        <div className="flex justify-center mt-4">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const today = new Date();
-                              today.setHours(12, 0, 0, 0);
-                              handleDateSelect(today);
-                            }}
-                            className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
-                          >
-                            Pilih Hari Ini
-                          </button>
-                        </div>
                       </motion.div>
                     )}
                   </div>
 
                   {errors.departure_date && (
-                    <p className="text-red-600 text-sm mt-2">
+                    <p className="text-red-600 text-xs md:text-sm mt-1 md:mt-2">
                       {errors.departure_date}
                     </p>
                   )}
                 </div>
 
-                {/* Row 2: Budget & Duration - Side by Side */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Budget */}
+                {/* Budget & Duration Fields - Responsive Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                  {/* Budget Field */}
                   <div>
                     <label
                       htmlFor="budget"
-                      className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2"
+                      className="block text-xs md:text-sm font-medium text-gray-700 mb-2 md:mb-3 flex items-center gap-2"
                     >
-                      <DollarSign className="h-4 w-4 text-green-500" />
+                      <DollarSign className="h-3 w-3 md:h-4 md:w-4 text-green-500" />
                       <span>
                         Total Budget
                         <span className="ml-1 text-red-600">*</span>
@@ -1029,22 +973,20 @@ const DestinationForm = () => {
                     </label>
 
                     <div className="flex gap-2">
-                      {/* Minus Button - FIX: SEKARANG SUDAH BENAR */}
                       <motion.button
                         type="button"
                         onClick={decrementBudget}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         disabled={parseInt(formData.budget || "0") <= 0}
-                        className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl flex items-center justify-center hover:from-red-600 hover:to-red-700 transition-all shadow-lg flex-shrink-0 border border-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg md:rounded-xl flex items-center justify-center hover:from-red-600 hover:to-red-700 transition-all shadow-lg flex-shrink-0 border border-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Minus className="h-5 w-5" />
+                        <Minus className="h-3 w-3 md:h-4 md:w-4" />
                       </motion.button>
 
-                      {/* Input Field with Currency */}
                       <div className="relative flex-1">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                          <span className="text-gray-500 font-medium text-sm">
+                        <div className="absolute inset-y-0 left-2 md:left-3 flex items-center pointer-events-none">
+                          <span className="text-gray-500 font-medium text-xs md:text-sm">
                             Rp
                           </span>
                         </div>
@@ -1054,14 +996,13 @@ const DestinationForm = () => {
                           name="budget"
                           value={formatBudgetDisplay(formData.budget)}
                           onChange={handleBudgetChange}
-                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 text-right font-medium text-gray-900 ${
+                          className={`w-full pl-8 md:pl-10 pr-3 md:pr-4 py-2 md:py-3 border rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 text-right font-medium text-gray-900 text-xs md:text-sm ${
                             errors.budget ? "border-red-500" : "border-gray-300"
                           }`}
                           placeholder="0"
                         />
                       </div>
 
-                      {/* Plus Button - FIX: SEKARANG SUDAH BENAR */}
                       <motion.button
                         type="button"
                         onClick={incrementBudget}
@@ -1070,57 +1011,55 @@ const DestinationForm = () => {
                         disabled={
                           parseInt(formData.budget || "0") >= 1000000000
                         }
-                        className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl flex items-center justify-center hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex-shrink-0 border border-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg md:rounded-xl flex items-center justify-center hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex-shrink-0 border border-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Plus className="h-5 w-5" />
+                        <Plus className="h-3 w-3 md:h-4 md:w-4" />
                       </motion.button>
                     </div>
 
-                    <div className="flex justify-between items-center mt-2">
+                    <div className="flex justify-between items-center mt-1 md:mt-2">
                       <span className="text-xs text-gray-500">
                         Sesuaikan dengan 100.000
                       </span>
                       {formData.budget && (
-                        <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                        <span className="text-xs font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 md:px-2 md:py-1 rounded">
                           Rp {formatBudgetDisplay(formData.budget)}
                         </span>
                       )}
                     </div>
 
                     {errors.budget && (
-                      <p className="text-red-600 text-sm mt-2">
+                      <p className="text-red-600 text-xs md:text-sm mt-1 md:mt-2">
                         {errors.budget}
                       </p>
                     )}
                   </div>
 
-                  {/* Duration */}
+                  {/* Duration Field */}
                   <div>
                     <label
                       htmlFor="duration_days"
-                      className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2"
+                      className="block text-xs md:text-sm font-medium text-gray-700 mb-2 md:mb-3 flex items-center gap-2"
                     >
-                      <MapPin className="h-4 w-4 text-purple-500" />
+                      <MapPin className="h-3 w-3 md:h-4 md:w-4 text-purple-500" />
                       Durasi Perjalanan *
                     </label>
 
                     <div className="flex gap-2">
-                      {/* Minus Button */}
                       <motion.button
                         type="button"
                         onClick={decrementDuration}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         disabled={parseInt(formData.duration_days || "0") <= 0}
-                        className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg flex-shrink-0 border border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg md:rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg flex-shrink-0 border border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Minus className="h-5 w-5" />
+                        <Minus className="h-3 w-3 md:h-4 md:w-4" />
                       </motion.button>
 
-                      {/* Duration Display - Hide default arrows */}
                       <div className="relative flex-1">
-                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                          <MapPin className="h-4 w-4 text-purple-500" />
+                        <div className="absolute inset-y-0 left-2 md:left-3 flex items-center pointer-events-none">
+                          <MapPin className="h-3 w-3 md:h-4 md:w-4 text-purple-500" />
                         </div>
                         <input
                           type="number"
@@ -1130,13 +1069,12 @@ const DestinationForm = () => {
                           onChange={handleChange}
                           min="0"
                           max="365"
-                          className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 text-center font-medium text-gray-900 appearance-none ${
+                          className={`w-full pl-8 md:pl-10 pr-10 md:pr-12 py-2 md:py-3 border rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50/50 text-center font-medium text-gray-900 text-xs md:text-sm appearance-none ${
                             errors.duration_days
                               ? "border-red-500"
                               : "border-gray-300"
                           }`}
                           placeholder="0"
-                          // Hide default arrows for all browsers
                           style={{
                             MozAppearance: "textfield",
                             WebkitAppearance: "none",
@@ -1144,15 +1082,13 @@ const DestinationForm = () => {
                           }}
                         />
 
-                        {/* Days Label */}
-                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                          <span className="text-sm font-medium text-purple-600 bg-white/80 px-2 py-1 rounded-lg border border-purple-200">
+                        <div className="absolute inset-y-0 right-2 md:right-3 flex items-center pointer-events-none">
+                          <span className="text-xs md:text-sm font-medium text-purple-600 bg-white/80 px-1 py-0.5 md:px-2 md:py-1 rounded border border-purple-200">
                             hari
                           </span>
                         </div>
                       </div>
 
-                      {/* Plus Button */}
                       <motion.button
                         type="button"
                         onClick={incrementDuration}
@@ -1161,63 +1097,63 @@ const DestinationForm = () => {
                         disabled={
                           parseInt(formData.duration_days || "0") >= 365
                         }
-                        className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg flex-shrink-0 border border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg md:rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg flex-shrink-0 border border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Plus className="h-5 w-5" />
+                        <Plus className="h-3 w-3 md:h-4 md:w-4" />
                       </motion.button>
                     </div>
 
-                    <div className="flex justify-between items-center mt-2">
+                    <div className="flex justify-between items-center mt-1 md:mt-2">
                       <span className="text-xs text-gray-500">0-365 hari</span>
                       {formData.duration_days && (
-                        <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">
+                        <span className="text-xs font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 md:px-2 md:py-1 rounded">
                           {formData.duration_days} hari
                         </span>
                       )}
                     </div>
 
                     {errors.duration_days && (
-                      <p className="text-red-600 text-sm mt-2">
+                      <p className="text-red-600 text-xs md:text-sm mt-1 md:mt-2">
                         {errors.duration_days}
                       </p>
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Submit Buttons */}
-              <div className="flex gap-3 pt-6 border-t border-gray-200">
-                <motion.button
-                  type="submit"
-                  disabled={loading || !isFormComplete()} // 🔥 Disable jika form belum lengkap
-                  whileHover={
-                    !loading && isFormComplete() ? { scale: 1.02 } : {}
-                  }
-                  whileTap={!loading && isFormComplete() ? { scale: 0.98 } : {}}
-                  className={`inline-flex items-center px-8 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-lg flex-1 justify-center ${
-                    loading || !isFormComplete()
-                      ? "bg-gray-400 text-gray-200 cursor-not-allowed" // 🔥 Warna abu ketika disabled
-                      : "bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:from-blue-600 hover:to-cyan-500 hover:shadow-xl"
-                  }`}
-                >
-                  <Save className="h-5 w-5 mr-2" />
-                  {loading
-                    ? "Menyimpan..."
-                    : isEdit
-                    ? "Perbarui Destinasi"
-                    : "Buat Destinasi"}
-                </motion.button>
+                {/* Submit Buttons - Responsive */}
+                <div className="flex flex-col sm:flex-row gap-2 md:gap-3 pt-4 md:pt-6 border-t border-gray-200">
+                  <motion.button
+                    type="submit"
+                    disabled={loading || !isFormComplete()}
+                    whileHover={
+                      !loading && isFormComplete() ? { scale: 1.02 } : {}
+                    }
+                    whileTap={!loading && isFormComplete() ? { scale: 0.98 } : {}}
+                    className={`inline-flex items-center px-4 py-2.5 md:px-6 md:py-3 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-lg flex-1 justify-center text-xs md:text-sm ${
+                      loading || !isFormComplete()
+                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:from-blue-600 hover:to-cyan-500 hover:shadow-xl"
+                    }`}
+                  >
+                    <Save className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    {loading
+                      ? "Menyimpan..."
+                      : isEdit
+                      ? "Perbarui Destinasi"
+                      : "Buat Destinasi"}
+                  </motion.button>
 
-                <Link
-                  to="/destinations"
-                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium"
-                >
-                  Batal
-                </Link>
-              </div>
-            </form>
-          </div>
-        </motion.div>
+                  <Link
+                    to="/destinations"
+                    className="inline-flex items-center justify-center px-4 py-2.5 md:px-6 md:py-3 border border-gray-300 text-gray-700 rounded-lg md:rounded-xl hover:bg-gray-50 transition-all font-medium text-xs md:text-sm"
+                  >
+                    Batal
+                  </Link>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
