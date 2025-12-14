@@ -2,14 +2,41 @@ import api from "./api";
 
 export const STORAGE_BASE_URL = "http://localhost:8000/storage";
 
+// 🔥 CACHING SYSTEM
+let destinationsCache = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 10000; // 10 detik
+
 export const destinationService = {
-  // Get all destinations for current user
+  // Get all destinations for current user - WITH CACHE
   getAll: async () => {
-    const response = await api.get("/destinations");
-    return response.data;
+    // 🔥 Cek cache masih valid
+    const now = Date.now();
+    if (destinationsCache && (now - lastFetchTime) < CACHE_DURATION) {
+      console.log('📦 Using cached destinations');
+      return Promise.resolve(destinationsCache);
+    }
+
+    console.log('🔄 Fetching destinations from API');
+    try {
+      const response = await api.get("/destinations");
+      destinationsCache = response.data;
+      lastFetchTime = now;
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to load destinations:', error);
+      throw error;
+    }
   },
 
-  // Get single destination
+  // Clear cache ketika ada perubahan data
+  clearCache: () => {
+    destinationsCache = null;
+    lastFetchTime = 0;
+    console.log('🧹 Destination cache cleared');
+  },
+
+  // Get single destination - NO CACHE untuk detail
   getById: async (id) => {
     const response = await api.get(`/destinations/${id}`);
     return response.data;
@@ -38,6 +65,9 @@ export const destinationService = {
         "Content-Type": "multipart/form-data",
       },
     });
+    
+    // 🔥 Clear cache setelah create
+    destinationService.clearCache();
     return response.data;
   },
 
@@ -55,7 +85,6 @@ export const destinationService = {
         }
       }
 
-      // JANGAN buat FormData baru, pakai yang dari parameter
       formData.append("_method", "PUT");
 
       const response = await api.post(`/destinations/${id}`, formData, {
@@ -65,6 +94,9 @@ export const destinationService = {
       });
 
       console.log("✅ Update successful:", response.data);
+      
+      // 🔥 Clear cache setelah update
+      destinationService.clearCache();
       return response.data;
     } catch (error) {
       console.error("❌ Update failed:", error);
@@ -75,12 +107,18 @@ export const destinationService = {
   // Delete destination
   delete: async (id) => {
     const response = await api.delete(`/destinations/${id}`);
+    
+    // 🔥 Clear cache setelah delete
+    destinationService.clearCache();
     return response.data;
   },
 
   // Bulk delete
   bulkDelete: async (ids) => {
     const response = await api.post("/destinations/bulk-delete", { ids });
+    
+    // 🔥 Clear cache setelah bulk delete
+    destinationService.clearCache();
     return response.data;
   },
 
@@ -89,9 +127,11 @@ export const destinationService = {
     const response = await api.post("/destinations/bulk-update", {
       ids,
       ...updateData,
-      // Convert boolean for bulk update too
       is_achieved: updateData.is_achieved ? 1 : 0,
     });
+    
+    // 🔥 Clear cache setelah bulk update
+    destinationService.clearCache();
     return response.data;
   },
 };

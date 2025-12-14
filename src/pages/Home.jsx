@@ -29,6 +29,8 @@ import {
   STORAGE_BASE_URL,
 } from "../services/destinationService";
 
+import OptimizedImage from "../components/common/OptimizedImage";
+
 // 🔥 Animation Variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -371,14 +373,74 @@ const HeaderSkeleton = () => (
   </motion.div>
 );
 
-// 🔥 StoryCarousel Component
+// 🔥 StoryCarousel Component - FIXED VERSION
 const StoryCarousel = ({ upcomingDestinations }) => {
+  // 🔥 SEMUA HOOK HARUS DI ATAS, SEBELUM CONDITIONAL LOGIC
   const [activeStory, setActiveStory] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [imageLoading, setImageLoading] = useState({});
+  const [loadedImages, setLoadedImages] = useState(new Set());
   const timerRef = useRef(null);
-  const lastChangeTimeRef = useRef(Date.now());
 
+  // 🔥 Helper functions - pakai useCallback
+  const getImageUrl = useCallback((photoPath) => {
+    if (!photoPath) return null;
+    if (photoPath.startsWith("http")) return photoPath;
+
+    console.log("📸 DEBUG - Original photoPath:", photoPath);
+
+    // CASE 1: Path sudah relatif "destinations/filename.jpg"
+    if (photoPath.startsWith("destinations/")) {
+      return `${STORAGE_BASE_URL}/${photoPath}`;
+    }
+
+    // CASE 2: Path dari Laravel "storage/destinations/filename.jpg"
+    if (photoPath.startsWith("storage/")) {
+      return `${STORAGE_BASE_URL}/${photoPath.replace("storage/", "")}`;
+    }
+
+    // CASE 3: Path dari Laravel "/storage/destinations/filename.jpg"
+    if (photoPath.startsWith("/storage/")) {
+      return `${STORAGE_BASE_URL}/${photoPath.replace("/storage/", "")}`;
+    }
+
+    // CASE 4: Hanya filename "filename.jpg"
+    return `${STORAGE_BASE_URL}/destinations/${photoPath}`;
+  }, []);
+
+  const formatDate = useCallback((dateString) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }, []);
+
+  const getDaysUntil = useCallback((dateString) => {
+    const today = new Date();
+    const departure = new Date(dateString);
+    const diffTime = departure - today;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }, []);
+
+  // 🔥 Preload images
+  useEffect(() => {
+    if (upcomingDestinations.length === 0) return;
+
+    upcomingDestinations.forEach((dest, index) => {
+      if (dest.photo && !loadedImages.has(index)) {
+        const url = getImageUrl(dest.photo);
+        if (url) {
+          const img = new Image();
+          img.src = url;
+          img.onload = () => {
+            setLoadedImages((prev) => new Set([...prev, index]));
+          };
+        }
+      }
+    });
+  }, [upcomingDestinations, getImageUrl, loadedImages]);
+
+  // 🔥 Auto-play carousel
   useEffect(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -389,7 +451,6 @@ const StoryCarousel = ({ upcomingDestinations }) => {
 
     timerRef.current = setInterval(() => {
       setActiveStory((prev) => (prev + 1) % upcomingDestinations.length);
-      lastChangeTimeRef.current = Date.now();
     }, 5000);
 
     return () => {
@@ -400,13 +461,6 @@ const StoryCarousel = ({ upcomingDestinations }) => {
     };
   }, [isPlaying, upcomingDestinations.length]);
 
-  useEffect(() => {
-    setImageLoading((prev) => ({
-      ...prev,
-      [activeStory]: true,
-    }));
-  }, [activeStory]);
-
   const handleStoryChange = useCallback(
     (index) => {
       if (timerRef.current) {
@@ -415,70 +469,23 @@ const StoryCarousel = ({ upcomingDestinations }) => {
       }
 
       setActiveStory(index);
-      lastChangeTimeRef.current = Date.now();
 
-      if (isPlaying) {
+      if (isPlaying && upcomingDestinations.length > 0) {
         timerRef.current = setInterval(() => {
           setActiveStory((prev) => (prev + 1) % upcomingDestinations.length);
-          lastChangeTimeRef.current = Date.now();
         }, 5000);
       }
     },
     [isPlaying, upcomingDestinations.length]
   );
 
-  const handleNext = useCallback(() => {
-    handleStoryChange((activeStory + 1) % upcomingDestinations.length);
-  }, [activeStory, upcomingDestinations.length, handleStoryChange]);
-
-  const handlePrev = useCallback(() => {
-    handleStoryChange(
-      (activeStory - 1 + upcomingDestinations.length) %
-        upcomingDestinations.length
-    );
-  }, [activeStory, upcomingDestinations.length, handleStoryChange]);
-
-  const handleImageLoad = useCallback((index) => {
-    setImageLoading((prev) => ({
-      ...prev,
-      [index]: false,
-    }));
-  }, []);
-
-  const handleImageError = useCallback((index) => {
-    setImageLoading((prev) => ({
-      ...prev,
-      [index]: false,
-    }));
-  }, []);
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const getDaysUntil = (dateString) => {
-    const today = new Date();
-    const departure = new Date(dateString);
-    const diffTime = departure - today;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  const getImageUrl = (photoPath) => {
-    if (!photoPath) return null;
-    if (photoPath.startsWith("http")) return photoPath;
-    return `${STORAGE_BASE_URL}/destinations/${photoPath}`;
-  };
-
+  // 🔥 SEKARANG BARU RENDER LOGIC
   if (upcomingDestinations.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative min-h-[320px] md:min-h-[380px] rounded-3xl mb-6 md:mb-8 border-2 border-dashed border-gray-300/50 bg-gradient-to-br from-slate-50 via-white to-gray-50 shadow-lg overflow-hidden" // 🔥 ubah ke min-height
+        className="relative min-h-[320px] md:min-h-[380px] rounded-3xl mb-6 md:mb-8 border-2 border-dashed border-gray-300/50 bg-gradient-to-br from-slate-50 via-white to-gray-50 shadow-lg overflow-hidden"
       >
         {/* Background pattern - subtle */}
         <div className="absolute inset-0 opacity-10">
@@ -499,7 +506,7 @@ const StoryCarousel = ({ upcomingDestinations }) => {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="mb-4 md:mb-6" // 🔥 kurangi margin
+            className="mb-4 md:mb-6"
           >
             <div className="relative">
               {/* Outer circle - lebih kecil */}
@@ -544,7 +551,7 @@ const StoryCarousel = ({ upcomingDestinations }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="max-w-xl mx-auto px-2" // 🔥 tambah padding horizontal
+            className="max-w-xl mx-auto px-2"
           >
             <h3 className="text-lg md:text-xl lg:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-2">
               Siap untuk Petualangan?
@@ -559,34 +566,30 @@ const StoryCarousel = ({ upcomingDestinations }) => {
 
             {/* Call to action buttons - 1 LINE RESPONSIVE */}
             <div className="flex flex-wrap justify-center gap-2 md:gap-3">
-              {" "}
-              {/* 🔥 gap lebih kecil */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex-1 min-w-[140px] max-w-[200px]" // 🔥 kontrol lebar
+                className="flex-1 min-w-[140px] max-w-[200px]"
               >
                 <Link
                   to="/destinations/new"
-                  className="inline-flex items-center justify-center w-full px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-lg md:rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-md hover:shadow-lg font-medium text-xs md:text-sm whitespace-nowrap" // 🔥 text kecil
+                  className="inline-flex items-center justify-center w-full px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-lg md:rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-md hover:shadow-lg font-medium text-xs md:text-sm whitespace-nowrap"
                 >
                   <Plus className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 flex-shrink-0" />
-                  <span className="truncate">Rencanakan Baru</span>{" "}
-                  {/* 🔥 text lebih pendek */}
+                  <span className="truncate">Rencanakan Baru</span>
                 </Link>
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex-1 min-w-[120px] max-w-[180px]" // 🔥 kontrol lebar
+                className="flex-1 min-w-[120px] max-w-[180px]"
               >
                 <Link
                   to="/destinations"
                   className="inline-flex items-center justify-center w-full px-3 py-2 md:px-4 md:py-2.5 border border-gray-300 text-gray-700 rounded-lg md:rounded-xl hover:bg-gray-50 transition-all font-medium text-xs md:text-sm whitespace-nowrap"
                 >
                   <Compass className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 flex-shrink-0" />
-                  <span className="truncate">Lihat Semua</span>{" "}
-                  {/* 🔥 text lebih pendek */}
+                  <span className="truncate">Lihat Semua</span>
                 </Link>
               </motion.div>
             </div>
@@ -626,61 +629,54 @@ const StoryCarousel = ({ upcomingDestinations }) => {
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.4 }}
       className="relative h-80 rounded-3xl overflow-hidden mb-8"
     >
       <AnimatePresence mode="wait">
         <motion.div
           key={activeStory}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
           className="absolute inset-0"
         >
           <div className="relative w-full h-full">
-            <div className="relative w-full h-full">
-              {upcomingDestinations[activeStory]?.photo ? (
-                <>
-                  {(imageLoading[activeStory] === undefined ||
-                    imageLoading[activeStory]) && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse z-10">
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-16 h-16 bg-gray-400 rounded-full animate-pulse"></div>
-                      </div>
-                    </div>
-                  )}
+            {/* Background fallback */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-300" />
 
-                  <img
-                    src={getImageUrl(upcomingDestinations[activeStory].photo)}
-                    alt={upcomingDestinations[activeStory].title}
-                    className={`w-full h-full object-cover transition-opacity duration-300 ${
-                      imageLoading[activeStory] ? "opacity-0" : "opacity-100"
-                    }`}
-                    onLoad={() => handleImageLoad(activeStory)}
-                    onError={() => handleImageError(activeStory)}
-                  />
-                </>
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center">
-                  <Plane className="h-20 w-20 text-white opacity-80" />
-                </div>
-              )}
-            </div>
+            {/* OPTIMIZED IMAGE */}
+            {upcomingDestinations[activeStory]?.photo ? (
+              <OptimizedImage
+                src={getImageUrl(upcomingDestinations[activeStory].photo)}
+                alt={upcomingDestinations[activeStory].title}
+                className="w-full h-full"
+                fallback={
+                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center">
+                    <Plane className="h-20 w-20 text-white opacity-80" />
+                  </div>
+                }
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-cyan-300 flex items-center justify-center">
+                <Plane className="h-20 w-20 text-white opacity-80" />
+              </div>
+            )}
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
+            {/* Content overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 }}
+                    transition={{ delay: 0.15 }}
                     className="px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/90"
                   >
                     Akan Datang
@@ -688,7 +684,7 @@ const StoryCarousel = ({ upcomingDestinations }) => {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
+                    transition={{ delay: 0.2 }}
                     className="flex items-center text-sm opacity-90"
                   >
                     <Calendar className="h-3 w-3 mr-1" />
@@ -701,7 +697,7 @@ const StoryCarousel = ({ upcomingDestinations }) => {
                 <motion.h3
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.25 }}
                   className="text-2xl font-bold mb-2"
                 >
                   {upcomingDestinations[activeStory]?.title}
@@ -710,7 +706,7 @@ const StoryCarousel = ({ upcomingDestinations }) => {
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
+                  transition={{ delay: 0.3 }}
                   className="text-white/80 mb-4 line-clamp-2"
                 >
                   Berangkat dalam{" "}
@@ -723,7 +719,7 @@ const StoryCarousel = ({ upcomingDestinations }) => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
+                  transition={{ delay: 0.35 }}
                 >
                   <Link
                     to={`/destinations/${upcomingDestinations[activeStory]?.id}`}
@@ -739,10 +735,11 @@ const StoryCarousel = ({ upcomingDestinations }) => {
         </motion.div>
       </AnimatePresence>
 
+      {/* Carousel controls */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
+        transition={{ delay: 0.5 }}
         className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-4"
       >
         <div className="flex gap-2">
@@ -761,7 +758,12 @@ const StoryCarousel = ({ upcomingDestinations }) => {
 
         <div className="flex gap-2">
           <motion.button
-            onClick={handlePrev}
+            onClick={() =>
+              handleStoryChange(
+                (activeStory - 1 + upcomingDestinations.length) %
+                  upcomingDestinations.length
+              )
+            }
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
@@ -770,7 +772,9 @@ const StoryCarousel = ({ upcomingDestinations }) => {
           </motion.button>
 
           <motion.button
-            onClick={handleNext}
+            onClick={() =>
+              handleStoryChange((activeStory + 1) % upcomingDestinations.length)
+            }
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
@@ -1269,21 +1273,32 @@ const QuickActions = ({ destinations = [] }) => (
 
 const Home = () => {
   const [destinations, setDestinations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [error, setError] = useState("");
 
   const loadDestinations = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
+      setIsDataLoaded(false);
       setError("");
+
+      // 🔥 PERBAIKI console.time - handle duplicate timers
+      const timerName = `fetch-destinations-${Date.now()}`;
+      console.time(timerName);
+
       const data = await destinationService.getAll();
+
+      console.timeEnd(timerName);
       setDestinations(data);
+      setIsDataLoaded(true);
     } catch (error) {
-      console.error("Failed to load destinations:", error);
+      console.error("❌ Failed to load destinations:", error);
       setError("Gagal memuat data destinasi. Silakan coba lagi.");
       setDestinations([]);
+      setIsDataLoaded(false);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -1291,16 +1306,17 @@ const Home = () => {
     loadDestinations();
   }, [loadDestinations]);
 
-  // 🔥 PERBAIKAN: Upcoming destinations termasuk hari ini
+  // 🔥 PASTIKAN SEMUA HOOK DIPANGGIL SEBELUM CONDITIONAL RETURN
   const upcomingDestinations = useMemo(() => {
+    if (!isDataLoaded) return [];
+
     return destinations
       .filter((dest) => {
-        if (dest.is_achieved) return false; // Skip yang sudah tercapai
+        if (dest.is_achieved) return false;
 
         const departureDate = new Date(dest.departure_date);
         const today = new Date();
 
-        // Normalize to compare dates only (ignore time)
         const normalizedDeparture = new Date(
           departureDate.getFullYear(),
           departureDate.getMonth(),
@@ -1312,20 +1328,32 @@ const Home = () => {
           today.getDate()
         );
 
-        // Include today and future dates
         return normalizedDeparture >= normalizedToday;
       })
       .sort((a, b) => new Date(a.departure_date) - new Date(b.departure_date))
       .slice(0, 5);
-  }, [destinations]);
+  }, [destinations, isDataLoaded]);
 
   const completedTrips = useMemo(() => {
+    if (!isDataLoaded) return [];
+
     return destinations
       .filter((d) => d.is_achieved)
       .sort((a, b) => new Date(b.departure_date) - new Date(a.departure_date));
-  }, [destinations]);
+  }, [destinations, isDataLoaded]);
 
   const stats = useMemo(() => {
+    const defaultStats = {
+      total: 0,
+      achieved: 0,
+      planning: 0,
+      totalBudget: 0,
+      totalDays: 0,
+      upcoming: 0,
+    };
+
+    if (!isDataLoaded) return defaultStats;
+
     return {
       total: destinations.length,
       achieved: destinations.filter((d) => d.is_achieved).length,
@@ -1338,15 +1366,30 @@ const Home = () => {
         (sum, d) => sum + parseInt(d.duration_days || 0),
         0
       ),
-      upcoming: destinations.filter(
-        (dest) =>
-          new Date(dest.departure_date) > new Date() && !dest.is_achieved
-      ).length,
-    };
-  }, [destinations]);
+      upcoming: destinations.filter((dest) => {
+        if (dest.is_achieved) return false;
 
-  // Show skeleton loading
-  if (loading) {
+        const departureDate = new Date(dest.departure_date);
+        const today = new Date();
+
+        const normalizedDeparture = new Date(
+          departureDate.getFullYear(),
+          departureDate.getMonth(),
+          departureDate.getDate()
+        );
+        const normalizedToday = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate()
+        );
+
+        return normalizedDeparture >= normalizedToday;
+      }).length,
+    };
+  }, [destinations, isDataLoaded]);
+
+  // 🔥 SEKARANG BARU CONDITIONAL RETURN
+  if (isLoading && !isDataLoaded) {
     return <HomeSkeleton />;
   }
 
@@ -1363,7 +1406,19 @@ const Home = () => {
             animate={{ scale: 1, opacity: 1 }}
             className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4"
           >
-            <Compass className="h-10 w-10 text-red-600" />
+            <svg
+              className="h-10 w-10 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -1379,6 +1434,19 @@ const Home = () => {
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg font-semibold"
           >
+            <svg
+              className="h-5 w-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
             Coba Lagi
           </motion.button>
         </div>
@@ -1386,13 +1454,14 @@ const Home = () => {
     );
   }
 
+  // 🔥 RENDER NORMAL
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 shadow-sm"
       >
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -1404,7 +1473,6 @@ const Home = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                   className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
-                  // className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
                 >
                   Travel Dashboard
                   <span className="ml-1 text-white">🚞</span>
@@ -1414,7 +1482,6 @@ const Home = () => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
                   className="text-gray-600 mt-1 text-sm lg:text-base"
-                  // className="text-gray-600 mt-1"
                 >
                   Ringkasan perjalanan dan rencana Anda
                 </motion.p>
@@ -1422,7 +1489,6 @@ const Home = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Button hanya muncul di tablet ke atas */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1446,24 +1512,34 @@ const Home = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Story Carousel - HANYA perjalanan akan datang */}
-        <StoryCarousel upcomingDestinations={upcomingDestinations} />
+        {/* Story Carousel */}
+        {isDataLoaded ? (
+          <StoryCarousel upcomingDestinations={upcomingDestinations} />
+        ) : (
+          <StoryCarouselSkeleton />
+        )}
 
         {/* Quick Stats */}
-        <QuickStats stats={stats} />
+        {isDataLoaded ? <QuickStats stats={stats} /> : <QuickStatsSkeleton />}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Left Column - 2/3 width */}
+          {/* Left Column */}
           <div className="xl:col-span-2">
-            {/* Perjalanan yang Sudah Selesai */}
-            <CompletedTripsSection trips={completedTrips} />
+            {isDataLoaded ? (
+              <CompletedTripsSection trips={completedTrips} />
+            ) : (
+              <TripSectionSkeleton />
+            )}
           </div>
 
-          {/* Right Column - 1/3 width */}
+          {/* Right Column */}
           <div>
-            {/* Aksi Cepat */}
-            <QuickActions destinations={destinations} />
+            {isDataLoaded ? (
+              <QuickActions destinations={destinations} />
+            ) : (
+              <QuickActionsSkeleton />
+            )}
           </div>
         </div>
       </div>
