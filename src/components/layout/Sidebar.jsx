@@ -63,17 +63,17 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
       icon: MapPin,
       label: "Destinasi",
       sub: [
-        { 
-          path: "/destinations", 
-          label: "Semua Destinasi", 
+        {
+          path: "/destinations",
+          label: "Semua Destinasi",
           icon: Compass,
-          exact: true
+          exact: true,
         },
-        { 
-          path: "/destinations/new", 
-          label: "Tambah Baru", 
+        {
+          path: "/destinations/new",
+          label: "Tambah Baru",
           icon: Plus,
-          exact: true
+          exact: true,
         },
       ],
       type: "dropdown",
@@ -81,7 +81,7 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
     {
       key: "itineraries",
       icon: Calendar,
-      label: "Rencana Perjalanan", 
+      label: "Rencana Perjalanan",
       href: "/itineraries",
       type: "single",
     },
@@ -113,16 +113,16 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
 
   const sidebarVariants = {
     hidden: { x: "-100%", opacity: 0 },
-    visible: { 
-      x: 0, 
+    visible: {
+      x: 0,
       opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" }
+      transition: { duration: 0.3, ease: "easeOut" },
     },
-    exit: { 
-      x: "-100%", 
+    exit: {
+      x: "-100%",
       opacity: 0,
-      transition: { duration: 0.2, ease: "easeIn" }
-    }
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
   };
 
   // Sidebar content
@@ -171,7 +171,8 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
               whileTap={{ scale: 0.95 }}
             >
               <img
-                src="/images/icon.png"
+                // src="/images/icon.png"
+                src={`${import.meta.env.BASE_URL}images/icon.png`}
                 className="w-7 h-7"
                 alt="Logo"
               />
@@ -226,7 +227,9 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
                         <div className="flex items-center gap-4">
                           <Icon
                             size={20}
-                            className={isActive ? "text-white" : "text-blue-300"}
+                            className={
+                              isActive ? "text-white" : "text-blue-300"
+                            }
                           />
                           <span className="font-medium">{item.label}</span>
                         </div>
@@ -244,7 +247,9 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
             }
 
             if (item.type === "dropdown") {
-              const hasActiveSubItem = location.pathname.startsWith(`/${item.key}`);
+              const hasActiveSubItem = location.pathname.startsWith(
+                `/${item.key}`
+              );
 
               return (
                 <motion.div
@@ -263,9 +268,11 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
                     }`}
                   >
                     <div className="flex items-center gap-4">
-                      <Icon 
-                        size={20} 
-                        className={hasActiveSubItem ? "text-white" : "text-blue-300"} 
+                      <Icon
+                        size={20}
+                        className={
+                          hasActiveSubItem ? "text-white" : "text-blue-300"
+                        }
                       />
                       <span className="font-medium">{item.label}</span>
                     </div>
@@ -273,9 +280,11 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
                       animate={{ rotate: openMenus[item.key] ? 90 : 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <ChevronRight 
-                        size={16} 
-                        className={hasActiveSubItem ? "text-white" : "text-blue-300"} 
+                      <ChevronRight
+                        size={16}
+                        className={
+                          hasActiveSubItem ? "text-white" : "text-blue-300"
+                        }
                       />
                     </motion.div>
                   </button>
@@ -303,7 +312,9 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
                                   to={subItem.path}
                                   end={subItem.exact}
                                   className={getSubLinkClass}
-                                  onClick={() => isMobile && toggleSidebar(false)}
+                                  onClick={() =>
+                                    isMobile && toggleSidebar(false)
+                                  }
                                 >
                                   <SubIcon size={16} className="mr-3" />
                                   <span>{subItem.label}</span>
@@ -358,9 +369,7 @@ const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
   );
 
   return isMobile ? (
-    <AnimatePresence>
-      {sidebarOpen && sidebarContent}
-    </AnimatePresence>
+    <AnimatePresence>{sidebarOpen && sidebarContent}</AnimatePresence>
   ) : (
     sidebarContent
   );
