@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,10 +11,12 @@ import {
   Plus,
   Compass,
   Navigation,
+  X,
+  Menu,
 } from "lucide-react";
 import { useAuth } from "../../utils/auth";
 
-const Sidebar = () => {
+const Sidebar = ({ isMobile, sidebarOpen, toggleSidebar }) => {
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState({});
   const { logout, user } = useAuth();
@@ -31,11 +33,23 @@ const Sidebar = () => {
     setOpenMenus(newOpenMenus);
   }, [location.pathname]);
 
-  const handleMenuToggle = (menu) => {
-    setOpenMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
-  };
+  // Close sidebar on navigation untuk mobile
+  useEffect(() => {
+    if (isMobile) {
+      toggleSidebar(false);
+    }
+  }, [location.pathname, isMobile]);
 
-  // Navigation structure dengan exact matching - BAHASA INDONESIA
+  const handleMenuToggle = useCallback((menu) => {
+    setOpenMenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    if (isMobile) toggleSidebar(false);
+  }, [logout, isMobile, toggleSidebar]);
+
+  // Navigation structure
   const navigation = [
     {
       key: "dashboard",
@@ -73,7 +87,7 @@ const Sidebar = () => {
     },
   ];
 
-  // Styling functions dengan warna biru yang lebih natural
+  // Styling functions
   const getLinkClass = ({ isActive }) =>
     `relative flex items-center justify-between w-full p-3 px-4 rounded-xl transition-all duration-300 ease-out group border ${
       isActive
@@ -97,72 +111,85 @@ const Sidebar = () => {
     },
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: {
+  const sidebarVariants = {
+    hidden: { x: "-100%", opacity: 0 },
+    visible: { 
+      x: 0, 
       opacity: 1,
-      x: 0,
-      transition: { duration: 0.2 },
+      transition: { duration: 0.3, ease: "easeOut" }
     },
+    exit: { 
+      x: "-100%", 
+      opacity: 0,
+      transition: { duration: 0.2, ease: "easeIn" }
+    }
   };
 
-  return (
-    <aside className="fixed top-0 left-0 w-72 h-full bg-gradient-to-b from-slate-800 via-blue-900/80 to-slate-800 flex flex-col z-40 border-r border-slate-700/50 shadow-2xl">
-      {/* App Header yang lebih natural */}
-      <motion.div
-        className="relative px-6 py-6 bg-gradient-to-r from-blue-800 to-blue-700 border-b border-blue-600/30"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {/* Subtle Background Elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-400 rounded-full -translate-y-10 translate-x-10"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-300 rounded-full translate-y-8 -translate-x-8"></div>
-        </div>
-
-        <div className="relative z-10 flex items-center gap-4">
-          <motion.div
-            className="p-3 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/10"
-            whileHover={{
-              scale: 1.05,
-              transition: { type: "spring", stiffness: 300 },
-            }}
-            whileTap={{ scale: 0.95 }}
+  // Sidebar content
+  const sidebarContent = (
+    <motion.aside
+      variants={!isMobile ? undefined : sidebarVariants}
+      initial={isMobile ? "hidden" : false}
+      animate={isMobile ? (sidebarOpen ? "visible" : "hidden") : "visible"}
+      exit={isMobile ? "exit" : undefined}
+      className={`
+        fixed top-0 left-0 w-72 h-full bg-gradient-to-b from-slate-800 via-blue-900/80 to-slate-800 
+        flex flex-col z-50 border-r border-slate-700/50 shadow-2xl
+        ${!isMobile ? "xl:flex" : ""}
+      `}
+    >
+      {/* Mobile Header dengan close button */}
+      {isMobile && (
+        <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg">
+              <Plane className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-white font-bold">Travel Planner</span>
+          </div>
+          <button
+            onClick={() => toggleSidebar(false)}
+            className="p-2 text-white hover:bg-white/10 rounded-lg"
           >
-            <div className="relative">
+            <X size={24} />
+          </button>
+        </div>
+      )}
+
+      {/* App Header untuk desktop */}
+      {!isMobile && (
+        <motion.div
+          className="relative px-6 py-6 bg-gradient-to-r from-blue-800 to-blue-700 border-b border-blue-600/30"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="relative z-10 flex items-center gap-4">
+            <motion.div
+              className="p-3 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/10"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <img
                 src="/images/icon.png"
-                className="w-7 h-7 transition-transform duration-300"
-                alt="Travel Planner Logo"
+                className="w-7 h-7"
+                alt="Logo"
               />
-            </div>
-          </motion.div>
+            </motion.div>
 
-          <div className="flex-1">
-            <Link
-              to="/home"
-              className="block group"
-            >
-              <motion.h1 
-                className="text-xl font-bold text-white tracking-tight mb-1"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                Travel Planner
-              </motion.h1>
-              <motion.p 
-                className="text-blue-200 text-xs"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                Rencanakan Petualanganmu
-              </motion.p>
-            </Link>
+            <div className="flex-1">
+              <Link to="/home" className="block group">
+                <h1 className="text-xl font-bold text-white tracking-tight mb-1">
+                  Travel Planner
+                </h1>
+                <p className="text-blue-200 text-xs">
+                  Rencanakan Petualanganmu
+                </p>
+              </Link>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Navigation Menu */}
       <nav className="flex-1 p-5 space-y-3 overflow-y-auto">
@@ -185,42 +212,28 @@ const Sidebar = () => {
               return (
                 <motion.div
                   key={item.key}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 + 0.5 }}
                 >
                   <NavLink
                     to={item.href}
                     className={getLinkClass}
+                    onClick={() => isMobile && toggleSidebar(false)}
                   >
                     {({ isActive }) => (
                       <>
                         <div className="flex items-center gap-4">
-                          <motion.div
-                            animate={{
-                              scale: isActive ? 1.1 : 1,
-                            }}
-                            transition={{ type: "spring", stiffness: 300 }}
-                          >
-                            <Icon
-                              size={20}
-                              className={
-                                isActive ? "text-white" : "text-blue-300"
-                              }
-                            />
-                          </motion.div>
+                          <Icon
+                            size={20}
+                            className={isActive ? "text-white" : "text-blue-300"}
+                          />
                           <span className="font-medium">{item.label}</span>
                         </div>
                         {isActive && (
                           <motion.div
                             className="w-2 h-2 bg-blue-400 rounded-full"
                             layoutId="activeDot"
-                            transition={{
-                              type: "spring",
-                              stiffness: 500,
-                              damping: 30,
-                            }}
                           />
                         )}
                       </>
@@ -231,18 +244,13 @@ const Sidebar = () => {
             }
 
             if (item.type === "dropdown") {
-              // Check jika ada sub-item yang active
-              {/* const hasActiveSubItem = item.sub.some(subItem => 
-                location.pathname === subItem.path
-              ); */}
               const hasActiveSubItem = location.pathname.startsWith(`/${item.key}`);
 
               return (
                 <motion.div
                   key={item.key}
-                  variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 + 0.5 }}
                   className="space-y-2"
                 >
@@ -295,6 +303,7 @@ const Sidebar = () => {
                                   to={subItem.path}
                                   end={subItem.exact}
                                   className={getSubLinkClass}
+                                  onClick={() => isMobile && toggleSidebar(false)}
                                 >
                                   <SubIcon size={16} className="mr-3" />
                                   <span>{subItem.label}</span>
@@ -324,15 +333,9 @@ const Sidebar = () => {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <motion.div
-              className="relative"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
-                {user?.name?.charAt(0).toUpperCase() || "P"}
-              </div>
-            </motion.div>
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+              {user?.name?.charAt(0).toUpperCase() || "P"}
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">
                 {user?.name || "Petualang"}
@@ -342,20 +345,24 @@ const Sidebar = () => {
               </p>
             </div>
           </div>
-          <motion.button
-            onClick={logout}
+          <button
+            onClick={handleLogout}
             className="p-2 text-blue-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
             title="Keluar"
-            whileHover={{
-              scale: 1.1,
-            }}
-            whileTap={{ scale: 0.9 }}
           >
             <LogOut size={18} />
-          </motion.button>
+          </button>
         </div>
       </motion.div>
-    </aside>
+    </motion.aside>
+  );
+
+  return isMobile ? (
+    <AnimatePresence>
+      {sidebarOpen && sidebarContent}
+    </AnimatePresence>
+  ) : (
+    sidebarContent
   );
 };
 
