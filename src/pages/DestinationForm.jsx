@@ -336,16 +336,17 @@ const DestinationForm = () => {
 
     if (!formData.departure_date) {
       newErrors.departure_date = "Tanggal keberangkatan wajib diisi";
-    } else {
-      const selectedDate = new Date(formData.departure_date + "T12:00:00");
-      const today = new Date();
-      today.setHours(12, 0, 0, 0);
+    } 
+    // else {
+    //   const selectedDate = new Date(formData.departure_date + "T12:00:00");
+    //   const today = new Date();
+    //   today.setHours(12, 0, 0, 0);
 
-      if (selectedDate < today) {
-        newErrors.departure_date =
-          "Tanggal keberangkatan tidak boleh di masa lalu";
-      }
-    }
+    //   if (selectedDate < today) {
+    //     newErrors.departure_date =
+    //       "Tanggal keberangkatan tidak boleh di masa lalu";
+    //   }
+    // }
 
     if (!formData.budget || parseFloat(formData.budget) <= 0) {
       newErrors.budget = "Budget yang valid wajib diisi";
