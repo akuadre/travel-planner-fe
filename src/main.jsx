@@ -10,6 +10,7 @@ import { NotificationProvider } from "./components/Notification";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Router>
+    {/* <Router basename="/travel"> */}
       <AuthProvider>
         {/* 🔥 WRAP DENGAN NOTIFICATION */}
         <NotificationProvider>
