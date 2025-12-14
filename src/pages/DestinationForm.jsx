@@ -52,14 +52,31 @@ const DestinationForm = () => {
 
   const calendarRef = useRef(null);
 
+  const getDateStatus = () => {
+    if (!formData.departure_date) return "EMPTY";
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dep = new Date(formData.departure_date);
+    dep.setHours(0, 0, 0, 0);
+
+    if (dep < today) return "PAST";
+    if (dep > today) return "FUTURE";
+    return "TODAY";
+  };
+
+  const dateStatus = getDateStatus();
+  const isToggleDisabled = dateStatus === "PAST" || dateStatus === "FUTURE";
+
   // Check screen size
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   // Handle click outside calendar
@@ -657,15 +674,30 @@ const DestinationForm = () => {
                 Status Perjalanan
               </h3>
 
-              <label className="flex items-center justify-between cursor-pointer group">
+              <label
+                className={`flex items-center justify-between group
+                ${
+                  isToggleDisabled
+                    ? "cursor-not-allowed opacity-70"
+                    : "cursor-pointer"
+                }
+              `}
+              >
                 <div className="flex-1 min-w-0">
                   <div className="text-sm md:text-base font-medium text-gray-900 truncate">
                     Tandai sebagai Selesai
                   </div>
                   <div className="text-xs text-gray-500 truncate">
-                    {formData.is_achieved
-                      ? "✅ Perjalanan ini telah selesai"
-                      : "📝 Perjalanan ini dalam perencanaan"}
+                    {dateStatus === "PAST" &&
+                      "🔒 Status terkunci karena perjalanan sudah lewat"}
+                    {dateStatus === "FUTURE" &&
+                      "🔒 Status terkunci sampai hari keberangkatan"}
+                    {dateStatus === "TODAY" &&
+                      (formData.is_achieved
+                        ? "✅ Perjalanan ini telah selesai"
+                        : "📝 Perjalanan berlangsung hari ini")}
+                    {dateStatus === "EMPTY" &&
+                      "📅 Pilih tanggal untuk mengatur status"}
                   </div>
                 </div>
                 <div className="relative flex-shrink-0">
@@ -674,21 +706,29 @@ const DestinationForm = () => {
                     name="is_achieved"
                     checked={formData.is_achieved}
                     onChange={handleChange}
+                    disabled={isToggleDisabled}
                     className="sr-only"
                   />
                   <div
-                    className={`w-10 h-5 md:w-12 md:h-6 rounded-full transition-colors duration-300 ${
-                      formData.is_achieved
-                        ? "bg-green-500"
-                        : "bg-gray-300 group-hover:bg-gray-400"
-                    }`}
-                  ></div>
-                  <div
-                    className={`absolute left-0.5 top-0.5 md:left-1 md:top-1 bg-white w-4 h-4 md:w-4 md:h-4 rounded-full transition-transform duration-300 ${
-                      formData.is_achieved
-                        ? "transform translate-x-5 md:translate-x-6"
+                    className={`w-10 h-5 md:w-12 md:h-6 rounded-full transition-colors duration-300
+                    ${formData.is_achieved ? "bg-green-500" : "bg-gray-300"}
+                    ${
+                      !isToggleDisabled && !formData.is_achieved
+                        ? "group-hover:bg-gray-400"
                         : ""
-                    }`}
+                    }
+                  `}
+                  ></div>
+
+                  <div
+                    className={`absolute left-0.5 top-0.5 md:left-1 md:top-1 bg-white w-4 h-4 md:w-4 md:h-4 rounded-full transition-transform duration-300
+                      ${
+                        formData.is_achieved
+                          ? "transform translate-x-5 md:translate-x-6"
+                          : ""
+                      }
+                      ${isToggleDisabled ? "opacity-60" : ""}
+                    `}
                   ></div>
                 </div>
               </label>
@@ -1128,7 +1168,9 @@ const DestinationForm = () => {
                     whileHover={
                       !loading && isFormComplete() ? { scale: 1.02 } : {}
                     }
-                    whileTap={!loading && isFormComplete() ? { scale: 0.98 } : {}}
+                    whileTap={
+                      !loading && isFormComplete() ? { scale: 0.98 } : {}
+                    }
                     className={`inline-flex items-center px-4 py-2.5 md:px-6 md:py-3 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-lg flex-1 justify-center text-xs md:text-sm ${
                       loading || !isFormComplete()
                         ? "bg-gray-400 text-gray-200 cursor-not-allowed"
