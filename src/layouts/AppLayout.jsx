@@ -11,21 +11,29 @@ const StableFooter = memo(Footer);
 
 const AppLayout = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 Default false untuk mobile
 
   // Check screen size untuk responsive
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1280); // xl breakpoint
-      if (window.innerWidth >= 1280) {
-        setSidebarOpen(false); // Auto close sidebar on desktop
+      const mobile = window.innerWidth < 1280; // xl breakpoint
+      setIsMobile(mobile);
+      
+      // 🔥 Logic: Di desktop sidebar open, di mobile sidebar closed
+      if (!mobile && !sidebarOpen) {
+        setSidebarOpen(true); // Desktop: auto open sidebar
+      }
+      
+      // Optional: Kalau resize dari desktop ke mobile, close sidebar
+      if (mobile && sidebarOpen) {
+        setSidebarOpen(false);
       }
     };
 
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  }, []); // 🔥 Empty dependency array
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -51,7 +59,8 @@ const AppLayout = () => {
       {/* Main content area - Responsive margin */}
       <div className={`
         flex flex-col min-h-screen transition-all duration-300
-        ${isMobile ? 'ml-0' : 'ml-0 xl:ml-72'}
+        ${sidebarOpen && !isMobile ? 'ml-0 xl:ml-72' : 'ml-0'}
+        ${isMobile ? '' : 'xl:ml-72'}
       `}>
         {/* Header - Responsive */}
         <StableHeader 
@@ -62,7 +71,7 @@ const AppLayout = () => {
         {/* Main content - Responsive padding */}
         <main className={`
           grow p-4 transition-all duration-300
-          ${isMobile ? 'pt-20' : 'pt-24'}
+          ${isMobile ? 'pt-16' : 'pt-20'}
         `}>
           <div className="max-w-7xl mx-auto">
             <Outlet />
