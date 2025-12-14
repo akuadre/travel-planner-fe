@@ -1260,8 +1260,7 @@ const Home = () => {
   const completedTrips = useMemo(() => {
     return destinations
       .filter((d) => d.is_achieved)
-      .sort((a, b) => new Date(b.departure_date) - new Date(a.departure_date))
-      .slice(0, 3);
+      .sort((a, b) => new Date(b.departure_date) - new Date(a.departure_date));
   }, [destinations]);
 
   const stats = useMemo(() => {
