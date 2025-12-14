@@ -67,7 +67,9 @@ const DestinationForm = () => {
   };
 
   const dateStatus = getDateStatus();
-  const isToggleDisabled = dateStatus === "PAST" || dateStatus === "FUTURE";
+  
+  // const isToggleDisabled = dateStatus === "PAST" || dateStatus === "FUTURE";
+  const isToggleDisabled = dateStatus === "PAST";
 
   // Check screen size
   useEffect(() => {
@@ -123,15 +125,15 @@ const DestinationForm = () => {
         );
       }
 
-      if (departureDate > today && formData.is_achieved) {
+      if (departureDate >= today && formData.is_achieved) {
         setFormData((prev) => ({
           ...prev,
           is_achieved: false,
         }));
-        showNotification(
-          "Perjalanan di masa depan tidak bisa ditandai selesai. Status diubah ke 'Perencanaan'.",
-          "warning"
-        );
+        // showNotification(
+        //   "Perjalanan di masa depan tidak bisa ditandai selesai. Status diubah ke 'Perencanaan'.",
+        //   "warning"
+        // );
       }
     }
   }, [formData.departure_date]);
@@ -336,7 +338,7 @@ const DestinationForm = () => {
 
     if (!formData.departure_date) {
       newErrors.departure_date = "Tanggal keberangkatan wajib diisi";
-    } 
+    }
     // else {
     //   const selectedDate = new Date(formData.departure_date + "T12:00:00");
     //   const today = new Date();
@@ -692,7 +694,8 @@ const DestinationForm = () => {
                     {dateStatus === "PAST" &&
                       "🔒 Status terkunci karena perjalanan sudah lewat"}
                     {dateStatus === "FUTURE" &&
-                      "🔒 Status terkunci sampai hari keberangkatan"}
+                      "📝 Perjalanan dijadwalkan di masa mendatang"
+                      }
                     {dateStatus === "TODAY" &&
                       (formData.is_achieved
                         ? "✅ Perjalanan ini telah selesai"
