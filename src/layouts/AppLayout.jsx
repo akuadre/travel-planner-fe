@@ -2,73 +2,95 @@ import { Outlet } from "react-router-dom";
 import Header from "../components/layout/Header";
 import Sidebar from "../components/layout/Sidebar";
 import Footer from "../components/layout/Footer";
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, useCallback } from "react";
 
-// Gunakan React.memo untuk prevent unnecessary re-renders
 const StableSidebar = memo(Sidebar);
 const StableHeader = memo(Header);
 const StableFooter = memo(Footer);
 
 const AppLayout = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // 🔥 Default false untuk mobile
+  const [isMobile, setIsMobile] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Check screen size untuk responsive
+  // 🔥 PERBAIKAN: Initial check untuk device
   useEffect(() => {
     const checkScreenSize = () => {
-      const mobile = window.innerWidth < 1280; // xl breakpoint
+      const mobile = window.innerWidth < 1280;
       setIsMobile(mobile);
       
-      // 🔥 Logic: Di desktop sidebar open, di mobile sidebar closed
-      if (!mobile && !sidebarOpen) {
-        setSidebarOpen(true); // Desktop: auto open sidebar
-      }
-      
-      // Optional: Kalau resize dari desktop ke mobile, close sidebar
-      if (mobile && sidebarOpen) {
+      // 🔥 CRITICAL: Set sidebar state berdasarkan device
+      if (mobile) {
+        // Mobile: sidebar closed
         setSidebarOpen(false);
+      } else {
+        // Desktop: sidebar open
+        setSidebarOpen(true);
       }
     };
 
+    // Panggil untuk initial check
     checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []); // 🔥 Empty dependency array
+    
+    const handleResize = () => {
+      checkScreenSize();
+    };
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 🔥 PERBAIKAN: Toggle function yang sederhana
+  const toggleSidebar = useCallback(() => {
+    console.log("🔄 Toggling sidebar, current state:", sidebarOpen);
+    setSidebarOpen(prev => !prev);
+  }, [sidebarOpen]);
+
+  const closeSidebar = useCallback(() => {
+    console.log("❌ Closing sidebar");
+    setSidebarOpen(false);
+  }, []);
+
+  if (isMobile === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  console.log("📱 Device:", isMobile ? "Mobile" : "Desktop", "Sidebar:", sidebarOpen ? "Open" : "Closed");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-      {/* Sidebar - Responsive */}
+      {/* Sidebar */}
       <StableSidebar 
         isMobile={isMobile}
         sidebarOpen={sidebarOpen}
         toggleSidebar={toggleSidebar}
+        closeSidebar={closeSidebar}
       />
       
       {/* Mobile sidebar overlay */}
       {isMobile && sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
         />
       )}
       
-      {/* Main content area - Responsive margin */}
+      {/* Main content */}
       <div className={`
         flex flex-col min-h-screen transition-all duration-300
-        ${sidebarOpen && !isMobile ? 'ml-0 xl:ml-72' : 'ml-0'}
-        ${isMobile ? '' : 'xl:ml-72'}
+        ${!isMobile && sidebarOpen ? 'xl:ml-72' : 'ml-0'}
       `}>
-        {/* Header - Responsive */}
+        {/* Header */}
         <StableHeader 
           isMobile={isMobile}
           toggleSidebar={toggleSidebar}
+          sidebarOpen={sidebarOpen}
         />
         
-        {/* Main content - Responsive padding */}
+        {/* Main content */}
         <main className={`
           grow p-4 transition-all duration-300
           ${isMobile ? 'pt-16' : 'pt-20'}
