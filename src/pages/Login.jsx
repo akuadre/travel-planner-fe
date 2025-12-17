@@ -15,6 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useMediaQuery } from "react-responsive";
 
 // Shared animation variants
 const containerVariants = {
@@ -78,9 +79,25 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [bgLoaded, setBgLoaded] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+
+  // Background image
+  const baseUrl =
+    import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
+      ? import.meta.env.BASE_URL
+      : "/";
+  const backgroundImage = `${baseUrl}images/bg3.png`;
+
+  // Preload background image
+  useEffect(() => {
+    const img = new Image();
+    img.src = backgroundImage;
+    img.onload = () => setBgLoaded(true);
+  }, [backgroundImage]);
 
   // 🔥 VALIDATION RULES (simplified untuk login)
   const validationRules = {
@@ -215,15 +232,6 @@ const Login = () => {
     }
   };
 
-  const baseUrl =
-    import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
-      ? import.meta.env.BASE_URL
-      : "/";
-
-  // const backgroundImage = "/images/bg3.png";
-  // const backgroundImage = `${import.meta.env.BASE_URL}images/bg3.png`;
-  const backgroundImage = `${baseUrl}images/bg3.png`;
-
   return (
     <motion.div
       initial="hidden"
@@ -231,68 +239,95 @@ const Login = () => {
       exit="exit"
       className="min-h-screen flex relative overflow-hidden"
     >
-      {/* Background dengan Parallax Effect */}
+      {/* Background dengan Optimasi Mobile */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Container untuk background image dengan overflow hidden */}
         <div className="absolute inset-0 overflow-hidden">
-          <motion.div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url(${backgroundImage})`,
-              // Perubahan: backgroundSize dari "110% 110%" jadi "cover"
-              // dan atur scale animasi lebih kecil
-              backgroundSize: "cover",
-              minWidth: "100%",
-              minHeight: "100%",
-            }}
-            animate={{
-              // Kurangi range pergerakan agar tidak keluar frame
-              x: ["0%", "1%", "0%", "-1%", "0%"],
-              y: ["0%", "0.5%", "0%", "-0.5%", "0%"],
-              scale: [1, 1.01, 1, 1.005, 1], // Scale lebih kecil
-            }}
-            transition={{
-              duration: 30, // Durasi lebih lambat
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
+          {/* 🔥 STATIC BACKGROUND DI MOBILE, PARALLAX HANYA DI DESKTOP */}
+          {!isMobile ? (
+            <motion.div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: bgLoaded ? `url(${backgroundImage})` : "none",
+                backgroundSize: "cover",
+                minWidth: "100%",
+                minHeight: "100%",
+              }}
+              animate={
+                bgLoaded
+                  ? {
+                      x: ["0%", "1%", "0%", "-1%", "0%"],
+                      y: ["0%", "0.5%", "0%", "-0.5%", "0%"],
+                      scale: [1, 1.01, 1, 1.005, 1],
+                    }
+                  : {}
+              }
+              transition={
+                bgLoaded
+                  ? {
+                      duration: 30,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }
+                  : {}
+              }
+            />
+          ) : (
+            // ✅ MOBILE: STATIC BACKGROUND SAJA
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: bgLoaded ? `url(${backgroundImage})` : "none",
+                backgroundSize: "cover",
+                minWidth: "100%",
+                minHeight: "100%",
+              }}
+            />
+          )}
+
+          {/* Fallback gradient saat gambar belum load */}
+          {!bgLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80" />
+          )}
         </div>
 
-        {/* Blue Gradient Overlay - tetap sama */}
+        {/* Blue Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-blue-700/80 to-blue-800/80"></div>
 
-        {/* Additional Pattern Overlay - tetap sama */}
+        {/* Additional Pattern Overlay */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-white rounded-full blur-xl"></div>
           <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-white rounded-full blur-lg"></div>
           <div className="absolute top-1/2 left-1/2 w-40 h-40 bg-white rounded-full blur-2xl"></div>
         </div>
 
-        {/* Floating Icons - tetap sama */}
-        <motion.div
-          variants={floatingAnimation}
-          animate="animate"
-          className="absolute top-20 left-20 text-white/20"
-        >
-          <Mountain size={60} />
-        </motion.div>
-        <motion.div
-          variants={floatingAnimation}
-          animate="animate"
-          transition={{ delay: 1 }}
-          className="absolute top-40 right-32 text-white/15"
-        >
-          <Sun size={80} />
-        </motion.div>
-        <motion.div
-          variants={floatingAnimation}
-          animate="animate"
-          transition={{ delay: 2 }}
-          className="absolute bottom-32 left-32 text-white/25"
-        >
-          <MapPin size={50} />
-        </motion.div>
+        {/* 🔥 FLOATING ICONS HANYA DI DESKTOP */}
+        {!isMobile && (
+          <>
+            <motion.div
+              variants={floatingAnimation}
+              animate="animate"
+              className="absolute top-20 left-20 text-white/20"
+            >
+              <Mountain size={60} />
+            </motion.div>
+            <motion.div
+              variants={floatingAnimation}
+              animate="animate"
+              transition={{ delay: 1 }}
+              className="absolute top-40 right-32 text-white/15"
+            >
+              <Sun size={80} />
+            </motion.div>
+            <motion.div
+              variants={floatingAnimation}
+              animate="animate"
+              transition={{ delay: 2 }}
+              className="absolute bottom-32 left-32 text-white/25"
+            >
+              <MapPin size={50} />
+            </motion.div>
+          </>
+        )}
       </div>
 
       {/* Left Side - Form */}
@@ -308,24 +343,24 @@ const Login = () => {
           <motion.div variants={itemVariants} className="text-center">
             <motion.div
               className="flex justify-center"
-              whileHover={{
-                scale: 1.1,
-                rotate: [0, -5, 5, 0],
-                transition: { duration: 0.5 },
-              }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={!isMobile ? { scale: 1.1, rotate: [0, -5, 5, 0] } : {}}
+              whileTap={!isMobile ? { scale: 0.95 } : {}}
             >
               <motion.div
                 className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30"
-                whileHover={{
-                  boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)",
-                  background: [
-                    "rgba(255,255,255,0.2)",
-                    "rgba(255,255,255,0.3)",
-                    "rgba(255,255,255,0.2)",
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
+                whileHover={
+                  !isMobile
+                    ? {
+                        boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)",
+                        background: [
+                          "rgba(255,255,255,0.2)",
+                          "rgba(255,255,255,0.3)",
+                          "rgba(255,255,255,0.2)",
+                        ],
+                      }
+                    : {}
+                }
+                transition={!isMobile ? { duration: 2, repeat: Infinity } : {}}
               >
                 <Plane className="h-12 w-12 text-white" />
               </motion.div>
@@ -366,7 +401,7 @@ const Login = () => {
               <div>
                 <motion.div
                   className="relative"
-                  whileFocus={{ scale: 1.02 }}
+                  whileFocus={!isMobile ? { scale: 1.02 } : {}}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -428,7 +463,7 @@ const Login = () => {
               <div>
                 <motion.div
                   className="relative"
-                  whileFocus={{ scale: 1.02 }}
+                  whileFocus={!isMobile ? { scale: 1.02 } : {}}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -478,8 +513,8 @@ const Login = () => {
                     type="button"
                     className="absolute inset-y-0 right-0 pr-4 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={!isMobile ? { scale: 1.1 } : {}}
+                    whileTap={!isMobile ? { scale: 0.9 } : {}}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5 text-white/60 hover:text-white/80 transition-colors" />
@@ -519,12 +554,16 @@ const Login = () => {
                   loading || Object.values(errors).some((error) => error)
                 }
                 className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                whileHover={{
-                  scale: loading ? 1 : 1.02,
-                  boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)",
-                }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                whileHover={
+                  !isMobile && !loading
+                    ? {
+                        scale: 1.02,
+                        boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)",
+                      }
+                    : {}
+                }
+                whileTap={!isMobile ? { scale: 0.98 } : {}}
+                transition={!isMobile ? { type: "spring", stiffness: 400, damping: 17 } : {}}
               >
                 {loading ? (
                   <motion.div
@@ -552,18 +591,24 @@ const Login = () => {
                     className="font-semibold text-white hover:text-gray-200 transition-colors relative"
                   >
                     <motion.span
-                      whileHover={{
-                        scale: 1.05,
-                        textShadow: "0 0 20px rgba(255,255,255,0.8)",
-                      }}
+                      whileHover={
+                        !isMobile
+                          ? {
+                              scale: 1.05,
+                              textShadow: "0 0 20px rgba(255,255,255,0.8)",
+                            }
+                          : {}
+                      }
                       className="relative"
                     >
                       Join the Adventure
-                      <motion.div
-                        className="absolute bottom-0 left-0 w-0 h-0.5 bg-white"
-                        whileHover={{ width: "100%" }}
-                        transition={{ duration: 0.3 }}
-                      />
+                      {!isMobile && (
+                        <motion.div
+                          className="absolute bottom-0 left-0 w-0 h-0.5 bg-white"
+                          whileHover={{ width: "100%" }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
                     </motion.span>
                   </Link>
                 </motion.span>
@@ -575,20 +620,28 @@ const Login = () => {
           <motion.div
             variants={itemVariants}
             className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"
-            whileHover={{
-              scale: 1.02,
-              boxShadow: "0 20px 40px rgba(255, 255, 255, 0.1)",
-            }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={
+              !isMobile
+                ? {
+                    scale: 1.02,
+                    boxShadow: "0 20px 40px rgba(255, 255, 255, 0.1)",
+                  }
+                : {}
+            }
+            transition={!isMobile ? { type: "spring", stiffness: 300 } : {}}
           >
             <p className="text-white/80 text-center text-sm">
               <strong className="text-white">Demo credentials:</strong>
               <br />
               <motion.span
-                animate={{
-                  opacity: [0.7, 1, 0.7],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
+                animate={
+                  !isMobile
+                    ? {
+                        opacity: [0.7, 1, 0.7],
+                      }
+                    : {}
+                }
+                transition={!isMobile ? { duration: 2, repeat: Infinity } : {}}
               >
                 adrenalin@gmail.com / adrenalin
               </motion.span>
@@ -597,91 +650,93 @@ const Login = () => {
         </motion.div>
       </motion.div>
 
-      {/* Right Side - Hero Content */}
-      <motion.div
-        initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 0.5 }}
-        className="hidden lg:flex flex-1 relative z-10 items-center justify-center"
-      >
-        <div className="text-center text-white max-w-2xl px-12">
-          <motion.h1
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="text-6xl font-bold mb-8 leading-tight"
-          >
-            Your Journey
-            <motion.br
+      {/* Right Side - Hero Content (HIDDEN DI MOBILE) */}
+      {!isMobile && (
+        <motion.div
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="hidden lg:flex flex-1 relative z-10 items-center justify-center"
+        >
+          <div className="text-center text-white max-w-2xl px-12">
+            <motion.h1
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
+              className="text-6xl font-bold mb-8 leading-tight"
+            >
+              Your Journey
+              <motion.br
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+              />
+              <motion.span
+                className="bg-linear-to-r from-white to-blue-200 bg-clip-text text-transparent"
+                animate={{
+                  backgroundPosition: ["0%", "100%"],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+              >
+                Begins Here
+              </motion.span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.8 }}
+              className="text-xl text-blue-100 mb-12 leading-relaxed"
+            >
+              Plan unforgettable adventures, create lasting memories, and explore
+              the world one destination at a time.
+            </motion.p>
+
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-            />
-            <motion.span
-              className="bg-linear-to-r from-white to-blue-200 bg-clip-text text-transparent"
-              animate={{
-                backgroundPosition: ["0%", "100%"],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                repeatType: "reverse",
-              }}
+              transition={{ delay: 1.4, duration: 0.8 }}
+              className="grid grid-cols-3 gap-8"
             >
-              Begins Here
-            </motion.span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
-            className="text-xl text-blue-100 mb-12 leading-relaxed"
-          >
-            Plan unforgettable adventures, create lasting memories, and explore
-            the world one destination at a time.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.8 }}
-            className="grid grid-cols-3 gap-8"
-          >
-            {[
-              { icon: MapPin, text: "Discover Places" },
-              { icon: Mountain, text: "Plan Trips" },
-              { icon: Sun, text: "Create Memories" },
-            ].map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.text}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.6 + index * 0.2, duration: 0.6 }}
-                  className="text-center"
-                  whileHover={{
-                    y: -10,
-                    transition: { type: "spring", stiffness: 300 },
-                  }}
-                >
+              {[
+                { icon: MapPin, text: "Discover Places" },
+                { icon: Mountain, text: "Plan Trips" },
+                { icon: Sun, text: "Create Memories" },
+              ].map((item, index) => {
+                const Icon = item.icon;
+                return (
                   <motion.div
-                    className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30 inline-block mb-3"
+                    key={item.text}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.6 + index * 0.2, duration: 0.6 }}
+                    className="text-center"
                     whileHover={{
-                      rotate: 360,
-                      transition: { duration: 0.8 },
+                      y: -10,
+                      transition: { type: "spring", stiffness: 300 },
                     }}
                   >
-                    <Icon className="h-8 w-8 text-white" />
+                    <motion.div
+                      className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30 inline-block mb-3"
+                      whileHover={{
+                        rotate: 360,
+                        transition: { duration: 0.8 },
+                      }}
+                    >
+                      <Icon className="h-8 w-8 text-white" />
+                    </motion.div>
+                    <p className="text-white/90 font-medium">{item.text}</p>
                   </motion.div>
-                  <p className="text-white/90 font-medium">{item.text}</p>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };

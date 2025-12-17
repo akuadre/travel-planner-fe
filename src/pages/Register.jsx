@@ -16,8 +16,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useMediaQuery } from "react-responsive";
 
-// Shared animation variants (SAMA dengan login)
+// Shared animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -86,9 +87,25 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [bgLoaded, setBgLoaded] = useState(false);
 
   const { register } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+
+  // Background image - tetap sama
+  const baseUrl =
+    import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
+      ? import.meta.env.BASE_URL
+      : "/";
+  const backgroundImage = `${baseUrl}images/bg5.png`;
+
+  // Preload background image
+  useEffect(() => {
+    const img = new Image();
+    img.src = backgroundImage;
+    img.onload = () => setBgLoaded(true);
+  }, [backgroundImage]);
 
   // 🔥 VALIDATION RULES
   const validationRules = {
@@ -241,17 +258,6 @@ const Register = () => {
     }
   };
 
-  // Background image
-
-  const baseUrl =
-    import.meta.env.BASE_URL && import.meta.env.BASE_URL !== "/"
-      ? import.meta.env.BASE_URL
-      : "/";
-
-  // const backgroundImage = "/images/bg5.png";
-  // const backgroundImage = `${import.meta.env.BASE_URL}images/bg5.png`;
-  const backgroundImage = `${baseUrl}images/bg5.png`;
-
   return (
     <motion.div
       initial="hidden"
@@ -259,35 +265,58 @@ const Register = () => {
       exit="exit"
       className="min-h-screen flex relative overflow-hidden"
     >
-      {/* Background */}
+      {/* Background - OPTIMIZED FOR MOBILE */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Container untuk background image dengan overflow hidden */}
         <div className="absolute inset-0 overflow-hidden">
-          <motion.div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url(${backgroundImage})`,
-              // Perubahan: backgroundSize dari "110% 110%" jadi "cover"
-              // dan atur scale animasi lebih kecil
-              backgroundSize: "cover",
-              minWidth: "100%",
-              minHeight: "100%",
-            }}
-            animate={{
-              // Kurangi range pergerakan agar tidak keluar frame
-              x: ["0%", "1%", "0%", "-1%", "0%"],
-              y: ["0%", "0.5%", "0%", "-0.5%", "0%"],
-              scale: [1, 1.01, 1, 1.005, 1], // Scale lebih kecil
-            }}
-            transition={{
-              duration: 30, // Durasi lebih lambat
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
+          {/* 🔥 STATIC BACKGROUND DI MOBILE, PARALLAX HANYA DI DESKTOP */}
+          {!isMobile ? (
+            <motion.div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: bgLoaded ? `url(${backgroundImage})` : "none",
+                backgroundSize: "cover",
+                minWidth: "100%",
+                minHeight: "100%",
+              }}
+              animate={
+                bgLoaded
+                  ? {
+                      x: ["0%", "1%", "0%", "-1%", "0%"],
+                      y: ["0%", "0.5%", "0%", "-0.5%", "0%"],
+                      scale: [1, 1.01, 1, 1.005, 1],
+                    }
+                  : {}
+              }
+              transition={
+                bgLoaded
+                  ? {
+                      duration: 30,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }
+                  : {}
+              }
+            />
+          ) : (
+            // ✅ MOBILE: STATIC BACKGROUND SAJA
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: bgLoaded ? `url(${backgroundImage})` : "none",
+                backgroundSize: "cover",
+                minWidth: "100%",
+                minHeight: "100%",
+              }}
+            />
+          )}
+
+          {/* Fallback gradient saat gambar belum load */}
+          {!bgLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-green-600/80 via-green-700/80 to-green-800/80" />
+          )}
         </div>
 
-        {/* Green Gradient Overlay - ubah dari blue ke green */}
+        {/* Green Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-green-600/80 via-green-700/80 to-green-800/80"></div>
 
         <div className="absolute inset-0 opacity-10">
@@ -296,117 +325,123 @@ const Register = () => {
           <div className="absolute top-1/2 right-1/2 w-40 h-40 bg-white rounded-full blur-2xl"></div>
         </div>
 
-        {/* Floating Icons - tetap sama */}
-        <motion.div
-          variants={floatingAnimation}
-          animate="animate"
-          className="absolute top-20 right-20 text-white/20"
-        >
-          <Mountain size={60} />
-        </motion.div>
-        <motion.div
-          variants={floatingAnimation}
-          animate="animate"
-          transition={{ delay: 1 }}
-          className="absolute top-40 left-32 text-white/15"
-        >
-          <Sun size={80} />
-        </motion.div>
-        <motion.div
-          variants={floatingAnimation}
-          animate="animate"
-          transition={{ delay: 2 }}
-          className="absolute bottom-32 right-32 text-white/25"
-        >
-          <MapPin size={50} />
-        </motion.div>
+        {/* 🔥 FLOATING ICONS HANYA DI DESKTOP */}
+        {!isMobile && (
+          <>
+            <motion.div
+              variants={floatingAnimation}
+              animate="animate"
+              className="absolute top-20 right-20 text-white/20"
+            >
+              <Mountain size={60} />
+            </motion.div>
+            <motion.div
+              variants={floatingAnimation}
+              animate="animate"
+              transition={{ delay: 1 }}
+              className="absolute top-40 left-32 text-white/15"
+            >
+              <Sun size={80} />
+            </motion.div>
+            <motion.div
+              variants={floatingAnimation}
+              animate="animate"
+              transition={{ delay: 2 }}
+              className="absolute bottom-32 right-32 text-white/25"
+            >
+              <MapPin size={50} />
+            </motion.div>
+          </>
+        )}
       </div>
 
-      {/* Left Side - Hero Content */}
-      <motion.div
-        initial={{ opacity: 0, x: -100 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 0.5 }}
-        className="hidden lg:flex flex-1 relative z-10 items-center justify-center"
-      >
-        <div className="text-center text-white max-w-2xl px-12">
-          <motion.h1
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="text-6xl font-bold mb-8 leading-tight"
-          >
-            Start Your
-            <motion.br
+      {/* Left Side - Hero Content (HIDDEN DI MOBILE) */}
+      {!isMobile && (
+        <motion.div
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="hidden lg:flex flex-1 relative z-10 items-center justify-center"
+        >
+          <div className="text-center text-white max-w-2xl px-12">
+            <motion.h1
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
+              className="text-6xl font-bold mb-8 leading-tight"
+            >
+              Start Your
+              <motion.br
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+              />
+              <motion.span
+                className="bg-linear-to-r from-white to-green-200 bg-clip-text text-transparent"
+                animate={{
+                  backgroundPosition: ["0%", "100%"],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+              >
+                Adventure
+              </motion.span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.8 }}
+              className="text-xl text-green-100 mb-12 leading-relaxed"
+            >
+              Join our community of travelers and start planning your dream
+              vacations with ease and style.
+            </motion.p>
+
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-            />
-            <motion.span
-              className="bg-linear-to-r from-white to-green-200 bg-clip-text text-transparent"
-              animate={{
-                backgroundPosition: ["0%", "100%"],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                repeatType: "reverse",
-              }}
+              transition={{ delay: 1.4, duration: 0.8 }}
+              className="grid grid-cols-3 gap-8"
             >
-              Adventure
-            </motion.span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
-            className="text-xl text-green-100 mb-12 leading-relaxed"
-          >
-            Join our community of travelers and start planning your dream
-            vacations with ease and style.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 0.8 }}
-            className="grid grid-cols-3 gap-8"
-          >
-            {[
-              { icon: User, text: "Create Profile" },
-              { icon: MapPin, text: "Save Destinations" },
-              { icon: Sun, text: "Share Memories" },
-            ].map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.text}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.6 + index * 0.2, duration: 0.6 }}
-                  className="text-center"
-                  whileHover={{
-                    y: -10,
-                    transition: { type: "spring", stiffness: 300 },
-                  }}
-                >
+              {[
+                { icon: User, text: "Create Profile" },
+                { icon: MapPin, text: "Save Destinations" },
+                { icon: Sun, text: "Share Memories" },
+              ].map((item, index) => {
+                const Icon = item.icon;
+                return (
                   <motion.div
-                    className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30 inline-block mb-3"
+                    key={item.text}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.6 + index * 0.2, duration: 0.6 }}
+                    className="text-center"
                     whileHover={{
-                      rotate: 360,
-                      transition: { duration: 0.8 },
+                      y: -10,
+                      transition: { type: "spring", stiffness: 300 },
                     }}
                   >
-                    <Icon className="h-8 w-8 text-white" />
+                    <motion.div
+                      className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30 inline-block mb-3"
+                      whileHover={{
+                        rotate: 360,
+                        transition: { duration: 0.8 },
+                      }}
+                    >
+                      <Icon className="h-8 w-8 text-white" />
+                    </motion.div>
+                    <p className="text-white/90 font-medium">{item.text}</p>
                   </motion.div>
-                  <p className="text-white/90 font-medium">{item.text}</p>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Right Side - Form */}
       <motion.div
@@ -421,12 +456,16 @@ const Register = () => {
           <motion.div variants={itemVariants} className="text-center">
             <motion.div
               className="flex justify-center"
-              whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={!isMobile ? { scale: 1.1, rotate: [0, -5, 5, 0] } : {}}
+              whileTap={!isMobile ? { scale: 0.95 } : {}}
             >
               <motion.div
                 className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl border border-white/30"
-                whileHover={{ boxShadow: "0 20px 40px rgba(34, 197, 94, 0.3)" }}
+                whileHover={
+                  !isMobile
+                    ? { boxShadow: "0 20px 40px rgba(34, 197, 94, 0.3)" }
+                    : {}
+                }
               >
                 <Plane className="h-12 w-12 text-white" />
               </motion.div>
@@ -467,7 +506,7 @@ const Register = () => {
               <div>
                 <motion.div
                   className="relative"
-                  whileFocus={{ scale: 1.02 }}
+                  whileFocus={!isMobile ? { scale: 1.02 } : {}}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -496,7 +535,6 @@ const Register = () => {
                   </div>
                 </motion.div>
 
-                {/* 🔥 CUSTOM REQUIRED INDICATOR + VALIDATION MESSAGE */}
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     {!formData.name && touched.name && (
@@ -529,7 +567,7 @@ const Register = () => {
               <div>
                 <motion.div
                   className="relative"
-                  whileFocus={{ scale: 1.02 }}
+                  whileFocus={!isMobile ? { scale: 1.02 } : {}}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -586,14 +624,13 @@ const Register = () => {
               <div>
                 <motion.div
                   className="relative"
-                  whileFocus={{ scale: 1.02 }}
+                  whileFocus={!isMobile ? { scale: 1.02 } : {}}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <Lock className={`h-5 w-5 ${getIconColor("password")}`} />
                   </div>
 
-                  {/* Input dengan padding yang pas */}
                   <input
                     id="password"
                     name="password"
@@ -620,7 +657,7 @@ const Register = () => {
                     }}
                   />
 
-                  {/* Status Icon - di tengah antara eye dan kanan */}
+                  {/* Status Icon */}
                   <div className="absolute inset-y-0 right-12 pr-3 flex items-center pointer-events-none">
                     {getFieldStatus("password") === "success" && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
@@ -630,13 +667,13 @@ const Register = () => {
                     )}
                   </div>
 
-                  {/* Show/Hide Button - paling kanan */}
+                  {/* Show/Hide Button */}
                   <motion.button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-4 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={!isMobile ? { scale: 1.1 } : {}}
+                    whileTap={!isMobile ? { scale: 0.9 } : {}}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5 text-white/60 hover:text-white/80" />
@@ -646,7 +683,6 @@ const Register = () => {
                   </motion.button>
                 </motion.div>
 
-                {/* Validation messages dan password strength indicator TETAP SAMA */}
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     {!formData.password && touched.password && (
@@ -702,7 +738,7 @@ const Register = () => {
               <div>
                 <motion.div
                   className="relative"
-                  whileFocus={{ scale: 1.02 }}
+                  whileFocus={!isMobile ? { scale: 1.02 } : {}}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -752,8 +788,8 @@ const Register = () => {
                     type="button"
                     className="absolute inset-y-0 right-0 pr-4 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={!isMobile ? { scale: 1.1 } : {}}
+                    whileTap={!isMobile ? { scale: 0.9 } : {}}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5 text-white/60 hover:text-white/80" />
@@ -806,11 +842,15 @@ const Register = () => {
                   loading || Object.values(errors).some((error) => error)
                 }
                 className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-green-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                whileHover={{
-                  scale: loading ? 1 : 1.02,
-                  boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)",
-                }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={
+                  !isMobile && !loading
+                    ? {
+                        scale: 1.02,
+                        boxShadow: "0 20px 40px rgba(255, 255, 255, 0.3)",
+                      }
+                    : {}
+                }
+                whileTap={!isMobile ? { scale: 0.98 } : {}}
               >
                 {loading ? (
                   <motion.div
