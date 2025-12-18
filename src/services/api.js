@@ -52,11 +52,16 @@ api.interceptors.response.use(
     if (error.response?.data?.message) {
       error.message = error.response.data.message;
     } else if (error.code === 'NETWORK_ERROR') {
-      error.message = 'Network error. Please check your connection and make sure the backend server is running.';
+      // error.message = 'Network error. Please check your connection and make sure the backend server is running.';
+      error.message = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
     } else if (error.code === 'TIMEOUT_ERROR') {
-      error.message = 'Request timeout. The server is taking too long to respond.';
+      // error.message = 'Request timeout. The server is taking too long to respond.';
+      error.message = 'Server sedang sibuk. Silakan coba lagi.';
     } else if (error.response?.status === 500) {
-      error.message = 'Server error. Please try again later.';
+      // error.message = 'Server error. Please try again later.';
+      error.message = 'Terjadi kesalahan pada server. Silakan coba lagi.';
+    } else if (error.message.includes('timeout')) {
+      error.message = 'Waktu tunggu habis. Silakan coba lagi.';
     }
     
     return Promise.reject(error);
