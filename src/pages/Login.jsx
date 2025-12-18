@@ -123,7 +123,8 @@ const Login = () => {
       }
     });
     setErrors(newErrors);
-  }, [formData, touched]);
+  // }, [formData, touched]);
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -175,7 +176,7 @@ const Login = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setError("Please fix the errors in the form");
+      // setError("Please fix the errors in the form");
       return;
     }
 
@@ -415,31 +416,31 @@ const Login = () => {
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    onFocus={handleFocus}
+                    // onFocus={handleFocus}
                     className={getInputClasses("email")}
                     placeholder="Enter your email"
                   />
 
                   {/* Status Icon */}
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  {/* <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                     {getFieldStatus("email") === "success" && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     )}
                     {getFieldStatus("email") === "error" && (
                       <XCircle className="h-5 w-5 text-red-400" />
                     )}
-                  </div>
+                  </div> */}
                 </motion.div>
 
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-1">
+                <div className="mt-2 flex items-center justify-end">
+                  {/* <div className="flex items-center gap-1">
                     {!formData.email && touched.email && (
                       <>
                         <span className="text-xs text-red-300">•</span>
                         <span className="text-xs text-red-300">Required</span>
                       </>
                     )}
-                  </div>
+                  </div> */}
                   {errors.email && (
                     <motion.p
                       initial={{ opacity: 0, y: -5 }}
@@ -452,11 +453,11 @@ const Login = () => {
                 </div>
 
                 {/* Email format hint */}
-                {formData.email && !errors.email && (
+                {/* {formData.email && !errors.email && (
                   <div className="mt-1 text-xs text-green-300 text-right">
                     ✓ Valid email format
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* Password Input */}
@@ -479,7 +480,7 @@ const Login = () => {
                     value={formData.password}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    onFocus={handleFocus}
+                    // onFocus={handleFocus}
                     className="block w-full pl-12 pr-20 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300"
                     placeholder="Enter your password"
                     style={{
@@ -499,14 +500,14 @@ const Login = () => {
                   />
 
                   {/* Status Icon - ditempatkan di tengah-tengah antara eye dan kanan */}
-                  <div className="absolute inset-y-0 right-12 pr-3 flex items-center pointer-events-none">
+                  {/* <div className="absolute inset-y-0 right-12 pr-3 flex items-center pointer-events-none">
                     {getFieldStatus("password") === "success" && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     )}
                     {getFieldStatus("password") === "error" && (
                       <XCircle className="h-5 w-5 text-red-400" />
                     )}
-                  </div>
+                  </div> */}
 
                   {/* Show/Hide Button - paling kanan */}
                   <motion.button
@@ -524,15 +525,15 @@ const Login = () => {
                   </motion.button>
                 </motion.div>
 
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-1">
+                <div className="mt-2 flex items-center justify-end">
+                  {/* <div className="flex items-center gap-1">
                     {!formData.password && touched.password && (
                       <>
                         <span className="text-xs text-red-300">•</span>
                         <span className="text-xs text-red-300">Required</span>
                       </>
                     )}
-                  </div>
+                  </div> */}
                   {errors.password && (
                     <motion.p
                       initial={{ opacity: 0, y: -5 }}
@@ -551,7 +552,8 @@ const Login = () => {
               <motion.button
                 type="submit"
                 disabled={
-                  loading || Object.values(errors).some((error) => error)
+                  // loading || Object.values(errors).some((error) => error)
+                  loading
                 }
                 className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 whileHover={
