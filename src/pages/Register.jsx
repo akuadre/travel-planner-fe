@@ -143,7 +143,8 @@ const Register = () => {
       }
     });
     setErrors(newErrors);
-  }, [formData, touched]);
+  // }, [formData, touched]);
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -816,7 +817,7 @@ const Register = () => {
                 </div>
 
                 {/* Password match indicator */}
-                {formData.password && formData.confirmPassword && (
+                {/* {formData.password && formData.confirmPassword && (
                   <div className="mt-1">
                     {formData.password === formData.confirmPassword ? (
                       <div className="text-xs text-green-300 text-right flex items-center justify-end gap-1">
@@ -830,7 +831,7 @@ const Register = () => {
                       </div>
                     )}
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 
