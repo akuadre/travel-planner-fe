@@ -11,15 +11,19 @@ import {
   Moon,
   Calendar as CalendarIcon,
   Menu,
+  Bell,
+  Search,
+  Home,
 } from "lucide-react";
 import { useAuth } from "../../utils/auth";
 
-const Header = ({ isMobile, toggleSidebar }) => {
+const Header = ({ toggleSidebar }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState("--:--");
   const [currentDate, setCurrentDate] = useState("");
   const [currentDay, setCurrentDay] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,8 +32,8 @@ const Header = ({ isMobile, toggleSidebar }) => {
   // Get dynamic page titles
   const getPageTitle = () => {
     const titles = {
-      "/home": "Dashboard Perjalanan",
-      "/destinations": "Destinasi Saya",
+      "/home": "Dashboard",
+      "/destinations": "Destinasi",
       "/itineraries": "Rencana Perjalanan",
       "/destinations/new": "Tambah Destinasi",
     };
@@ -46,23 +50,20 @@ const Header = ({ isMobile, toggleSidebar }) => {
 
   const getPageDescription = () => {
     const descriptions = {
-      "/home": "Kelola dan lacak petualangan perjalananmu",
-      "/destinations": "Buat dan atur destinasi impianmu",
-      "/itineraries": "Rencanakan aktivitas dan jadwal perjalananmu",
-      "/destinations/new": "Tambahkan destinasi baru ke rencana perjalananmu",
+      "/home": "Kelola petualangan perjalananmu",
+      "/destinations": "Atur destinasi impianmu",
+      "/itineraries": "Rencanakan aktivitas perjalanan",
+      "/destinations/new": "Tambahkan destinasi baru",
     };
 
     if (
       location.pathname.startsWith("/destinations/") &&
       location.pathname.includes("/edit")
     ) {
-      return "Perbarui detail destinasi Anda";
+      return "Perbarui detail destinasi";
     }
 
-    return (
-      descriptions[location.pathname] ||
-      "Pendamping perencanaan perjalanan pribadimu"
-    );
+    return descriptions[location.pathname] || "Pendamping perencanaanmu";
   };
 
   // Update time dan date
@@ -80,7 +81,9 @@ const Header = ({ isMobile, toggleSidebar }) => {
       });
       setCurrentDate(formattedDate);
 
-      const formattedDay = now.toLocaleDateString("id-ID", { weekday: "long" });
+      const formattedDay = now.toLocaleDateString("id-ID", { 
+        weekday: "long" 
+      });
       setCurrentDay(formattedDay);
     };
 
@@ -119,216 +122,238 @@ const Header = ({ isMobile, toggleSidebar }) => {
     setIsDarkMode(!isDarkMode);
   };
 
-  // Responsive header height
-  const headerHeight = isMobile ? "h-16" : "h-20";
-
   return (
-    <header
-      className={`
-      fixed top-0 left-0 right-0 ${headerHeight} 
-      bg-white/90 backdrop-blur-md z-30 shadow-sm border-b border-slate-200/60
-      ${isMobile ? "pl-0 xl:pl-72" : "pl-0 xl:pl-72"}
-    `}
-    >
-      <div className="flex justify-between items-center h-full px-4 xl:px-8">
-        {/* Left section - Menu button for mobile + Title */}
-        <div className="flex items-center gap-4">
-          {isMobile && (
+    <header className="fixed top-0 left-0 right-0 h-16 lg:h-20 bg-white/95 backdrop-blur-md z-30 shadow-sm border-b border-slate-200/60 lg:pl-72">
+      <div className="h-full px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-full gap-4">
+          {/* Left Section: Menu Button + Title */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Menu Button */}
             <motion.button
               onClick={toggleSidebar}
-              className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              className="lg:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
               whileTap={{ scale: 0.9 }}
             >
-              <Menu size={24} />
+              <Menu size={20} />
             </motion.button>
-          )}
 
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className="flex items-center gap-4"
-          >
-            <div>
-              <h1 className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                {" "}
-                {/* 👈 text-base untuk mobile */}
-                {getPageTitle()}
-              </h1>
-              {!isMobile && (
-                <p className="text-sm text-slate-500 mt-1">
-                  {getPageDescription()}
-                </p>
-              )}
+            {/* Page Title & Description */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                {/* Home Link untuk mobile */}
+                {location.pathname !== "/home" && (
+                  <Link
+                    to="/home"
+                    className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  >
+                    <Home size={18} className="text-slate-600" />
+                  </Link>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <motion.div
+                    key={location.pathname}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent truncate">
+                      {getPageTitle()}
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block truncate">
+                      {getPageDescription()}
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
             </div>
-          </motion.div>
+          </div>
+
+          {/* Right Section: Actions & User */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Search Button (Mobile) */}
+            <motion.button
+              onClick={() => setShowSearch(!showSearch)}
+              className="sm:hidden p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+              whileTap={{ scale: 0.9 }}
+            >
+              <Search size={20} />
+            </motion.button>
+
+            {/* Date & Time Display */}
+            <div className="hidden lg:flex items-center gap-3">
+              {/* Time */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200">
+                <Clock size={16} className="text-blue-500" />
+                <div className="text-sm">
+                  <span className="font-semibold text-slate-800 font-mono">
+                    {currentTime}
+                  </span>
+                  <span className="text-xs text-slate-500 ml-1">WIB</span>
+                </div>
+              </div>
+
+              {/* Date */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-xl border border-blue-100">
+                <CalendarIcon size={16} className="text-blue-500" />
+                <div className="text-sm">
+                  <div className="font-semibold text-slate-800">{currentDay}</div>
+                  <div className="text-xs text-slate-600">{currentDate}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Time Compact */}
+            <div className="lg:hidden flex items-center gap-1 px-2 py-1.5 bg-slate-50 rounded-lg">
+              <Clock size={14} className="text-blue-500" />
+              <span className="text-xs font-semibold text-slate-700 font-mono">
+                {currentTime}
+              </span>
+            </div>
+
+            {/* Dark Mode Toggle */}
+            {/* <motion.button
+              onClick={toggleDarkMode}
+              className="hidden sm:block p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              whileTap={{ scale: 0.9 }}
+            >
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </motion.button> */}
+
+            {/* User Profile Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <motion.button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 p-1.5 sm:p-2 rounded-xl hover:bg-slate-100 transition-colors"
+                whileTap={{ scale: 0.95 }}
+              >
+                {/* Avatar */}
+                <div className="relative">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md">
+                    {getInitials(user?.name)}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full border-2 border-white shadow-sm"></div>
+                </div>
+
+                {/* User info - Desktop only */}
+                <div className="hidden lg:block text-left">
+                  <p className="text-sm font-semibold text-slate-800 truncate max-w-[120px]">
+                    {user?.name || "Petualang"}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate max-w-[120px]">
+                    {user?.email || "penjelajah@travel.com"}
+                  </p>
+                </div>
+
+                {/* Dropdown arrow - Desktop only */}
+                <ChevronDown 
+                  size={16} 
+                  className="hidden lg:block text-slate-400 transition-transform duration-200"
+                  style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                />
+              </motion.button>
+
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    className="absolute right-0 mt-2 w-64 sm:w-72 rounded-xl shadow-xl bg-white/95 backdrop-blur-md border border-slate-200/60 z-40 overflow-hidden"
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    {/* User Info Header */}
+                    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4 text-white">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                          <span className="font-bold text-lg">
+                            {getInitials(user?.name)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm">
+                            {user?.name || "Petualang"}
+                          </p>
+                          <p className="text-xs text-blue-100 opacity-90">
+                            {user?.email || "penjelajah@travel.com"}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-blue-200 mt-2">
+                        ✈️ {user?.name?.split(' ')[0] || "Petualang"} Traveler
+                      </p>
+                    </div>
+
+                    {/* Dropdown Menu Items */}
+                    <div className="p-2">
+                      <Link
+                        to="/profile"
+                        className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <User size={16} className="mr-3 text-slate-500" />
+                        Profil Saya
+                      </Link>
+                      <Link
+                        to="/settings"
+                        className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <Settings size={16} className="mr-3 text-slate-500" />
+                        Pengaturan
+                      </Link>
+
+                      {/* Theme Toggle in dropdown for mobile */}
+                      {/* <button
+                        onClick={toggleDarkMode}
+                        className="sm:hidden flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                      >
+                        {isDarkMode ? (
+                          <Sun size={16} className="mr-3 text-slate-500" />
+                        ) : (
+                          <Moon size={16} className="mr-3 text-slate-500" />
+                        )}
+                        {isDarkMode ? "Mode Terang" : "Mode Gelap"}
+                      </button> */}
+
+                      <div className="border-t border-slate-200 mt-2 pt-2">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center w-full px-3 py-3 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut size={16} className="mr-3" />
+                          Keluar
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
 
-        {/* Right Section - Time, Date & User */}
-        <div className="flex items-center gap-3">
-          {/* Date & Time Display - Responsive */}
-          {!isMobile && (
+        {/* Mobile Search Bar (Toggle) */}
+        <AnimatePresence>
+          {showSearch && (
             <motion.div
-              className="hidden md:flex items-center gap-4"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
+              className="sm:hidden mt-2"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
             >
-              {/* Waktu Card */}
-              <motion.div
-                className="hidden md:flex items-center gap-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl px-4 py-2.5 border border-slate-200/60 shadow-sm"
-                whileHover={{ scale: 1.02 }}
-              >
-                <Clock size={18} className="text-blue-500" />
-                <div className="text-right">
-                  <p className="font-semibold text-slate-700 text-sm font-mono">
-                    {currentTime}{" "}
-                    <span className="text-xs text-slate-500">WIB</span>
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Tanggal Card */}
-              <div className="hidden lg:flex items-center gap-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl px-4 py-2.5 border border-blue-100/60 shadow-sm">
-                <CalendarIcon size={18} className="text-blue-500" />
-                <div className="text-right">
-                  <p className="font-semibold text-slate-800 text-sm">
-                    {currentDay}
-                  </p>
-                  <p className="text-xs text-slate-600">{currentDate}</p>
-                </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari destinasi..."
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  autoFocus
+                />
               </div>
             </motion.div>
           )}
-
-          {/* Mobile time display */}
-          {isMobile && (
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <Clock size={16} className="text-blue-500" />
-              <span className="font-mono">{currentTime}</span>
-            </div>
-          )}
-
-          {/* Dark Mode Toggle */}
-          <motion.button
-            onClick={toggleDarkMode}
-            className="hidden sm:block p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-          </motion.button>
-
-          {/* User Profile Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <motion.button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 p-2 rounded-2xl hover:bg-slate-100/80 transition-all duration-200"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="hidden sm:block text-right">
-                <p className="font-semibold text-sm text-slate-800">
-                  {isMobile
-                    ? getInitials(user?.name)
-                    : user?.name || "Petualang"}
-                </p>
-                {!isMobile && (
-                  <p className="text-xs text-slate-500">
-                    {user?.email || "Penjelajah"}
-                  </p>
-                )}
-              </div>
-
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-9 h-9 xl:w-11 xl:h-11 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                  {getInitials(user?.name)}
-                </div>
-                {!isMobile && (
-                  <motion.div
-                    className="absolute -bottom-1 -right-1 w-3 h-3 xl:w-4 xl:h-4 bg-green-400 rounded-full border-2 border-white shadow"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                )}
-              </div>
-
-              {!isMobile && (
-                <motion.div
-                  animate={{ rotate: isDropdownOpen ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ChevronDown size={18} className="text-slate-400" />
-                </motion.div>
-              )}
-            </motion.button>
-
-            <AnimatePresence>
-              {isDropdownOpen && (
-                <motion.div
-                  className="absolute right-0 mt-2 xl:mt-3 w-64 xl:w-72 rounded-2xl shadow-xl bg-white/95 backdrop-blur-md border border-slate-200/60 z-40 overflow-hidden"
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                >
-                  {/* Header dengan gradient */}
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4 text-white">
-                    <p className="font-semibold text-sm">
-                      {user?.name || "Petualang"}
-                    </p>
-                    <p className="text-xs text-blue-100 opacity-90">
-                      {user?.email || "Penjelajah"}
-                    </p>
-                    <p className="text-xs text-blue-200 mt-1">
-                      ✈️ Pecinta Perjalanan
-                    </p>
-                  </div>
-
-                  <div className="p-2">
-                    <Link
-                      to="/profile"
-                      className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100/80 transition-colors group"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      <User
-                        size={18}
-                        className="mr-3 text-slate-500 group-hover:text-blue-500"
-                      />
-                      Profil Saya
-                    </Link>
-                    <Link
-                      to="/settings"
-                      className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100/80 transition-colors group"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      <Settings
-                        size={18}
-                        className="mr-3 text-slate-500 group-hover:text-blue-500"
-                      />
-                      Pengaturan
-                    </Link>
-
-                    <div className="border-t border-slate-200/60 mt-2 pt-2">
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center w-full px-3 py-3 text-sm text-red-600 rounded-lg hover:bg-red-50/80 transition-colors group"
-                      >
-                        <LogOut
-                          size={18}
-                          className="mr-3 group-hover:scale-110 transition-transform"
-                        />
-                        Keluar
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+        </AnimatePresence>
       </div>
     </header>
   );
