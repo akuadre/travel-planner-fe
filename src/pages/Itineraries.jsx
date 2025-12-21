@@ -36,19 +36,19 @@ import Notification, { useNotification } from "../components/Notification";
 
 // 🔥 Skeleton Loading Components - Desktop tetap sama
 const SkeletonStats = () => (
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
     {[1, 2, 3, 4].map((item) => (
       <div
         key={item}
-        className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm"
+        className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm"
       >
         <div className="flex items-center justify-between">
-          <div className="space-y-2 flex-1">
-            <div className="h-8 bg-gray-200 rounded-lg animate-pulse w-20"></div>
-            <div className="h-4 bg-gray-100 rounded animate-pulse w-32"></div>
+          <div className="space-y-1.5 md:space-y-2 flex-1">
+            <div className="h-6 md:h-8 bg-gray-200 rounded-lg animate-pulse w-16 md:w-20"></div>
+            <div className="h-3 md:h-4 bg-gray-100 rounded animate-pulse w-24 md:w-32"></div>
           </div>
-          <div className="p-3 rounded-xl bg-gray-200 animate-pulse">
-            <div className="h-6 w-6"></div>
+          <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-gray-200 animate-pulse">
+            <div className="h-4 w-4 md:h-6 md:w-6"></div>
           </div>
         </div>
       </div>
@@ -58,36 +58,54 @@ const SkeletonStats = () => (
 
 const SkeletonTimelineView = () => (
   <div className="relative">
-    <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400/30 via-purple-400/30 to-cyan-400/30 rounded-full"></div>
+    <div className="absolute left-4 md:left-6 lg:left-8 top-0 bottom-0 w-0.5 md:w-1 bg-gradient-to-b from-blue-400/30 via-purple-400/30 to-cyan-400/30 rounded-full"></div>
 
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {[1, 2, 3].map((day) => (
-        <div key={day} className="relative flex items-start gap-6">
-          <div className="relative z-10 flex-shrink-0 w-16 h-16 bg-gray-200 rounded-2xl animate-pulse"></div>
-          <div className="flex-1 bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="h-6 bg-gray-200 rounded animate-pulse w-40"></div>
-              <div className="flex items-center gap-2">
-                <div className="h-6 bg-gray-200 rounded-full animate-pulse w-20"></div>
-                <div className="h-8 w-8 bg-gray-200 rounded-lg animate-pulse"></div>
+        <div
+          key={day}
+          className="relative flex items-start gap-3 md:gap-4 lg:gap-6"
+        >
+          {/* Timeline dot skeleton - lebih kecil untuk mobile */}
+          <div className="relative z-10 flex-shrink-0 w-10 h-10 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gray-200 rounded-lg md:rounded-xl lg:rounded-2xl animate-pulse"></div>
+
+          {/* Day content skeleton */}
+          <div className="flex-1 bg-white rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6 border border-gray-200 shadow-sm">
+            {/* Header skeleton - mobile: vertical, desktop: horizontal */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 md:mb-3 lg:mb-4 gap-1 md:gap-2">
+              <div className="h-4 md:h-5 bg-gray-200 rounded animate-pulse w-24 md:w-32 lg:w-40"></div>
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <div className="h-5 md:h-6 bg-gray-200 rounded-full animate-pulse w-16 md:w-20"></div>
+                <div className="h-6 w-6 md:h-8 md:w-8 bg-gray-200 rounded animate-pulse"></div>
               </div>
             </div>
-            <div className="space-y-4">
+
+            {/* Activities skeleton */}
+            <div className="space-y-3 md:space-y-4">
               {[1, 2].map((activity) => (
                 <div
                   key={activity}
-                  className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200/50"
+                  className="flex flex-col md:flex-row md:items-start gap-2 md:gap-3 lg:gap-4 p-2.5 md:p-3 lg:p-4 bg-gray-50/50 rounded-lg md:rounded-xl border border-gray-200/50"
                 >
-                  <div className="flex-shrink-0">
-                    <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-20"></div>
+                  {/* Time & Icon section skeleton */}
+                  <div className="flex md:flex-col gap-2 flex-shrink-0">
+                    {/* Time badge skeleton */}
+                    <div className="h-7 md:h-8 bg-gray-200 rounded animate-pulse w-16 md:w-20"></div>
+                    {/* Icon skeleton */}
+                    <div className="h-7 w-7 md:h-8 md:w-8 bg-gray-200 rounded md:rounded-lg animate-pulse"></div>
                   </div>
-                  <div className="flex-shrink-0 p-3 bg-gray-200 rounded-xl animate-pulse">
-                    <div className="h-5 w-5"></div>
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <div className="h-5 bg-gray-200 rounded animate-pulse w-48"></div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-64"></div>
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-32"></div>
+
+                  {/* Content skeleton */}
+                  <div className="flex-1 min-w-0 space-y-1.5 md:space-y-2">
+                    <div className="h-4 md:h-5 bg-gray-200 rounded animate-pulse w-full md:w-3/4"></div>
+                    <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-full"></div>
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+
+                    {/* Action buttons skeleton - mobile: full width */}
+                    <div className="flex gap-1.5 md:gap-2 pt-2 md:pt-3 border-t border-gray-100">
+                      <div className="flex-1 h-7 md:h-8 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="flex-1 h-7 md:h-8 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -100,61 +118,66 @@ const SkeletonTimelineView = () => (
 );
 
 const SkeletonGridView = () => (
-  <div className="space-y-6">
-    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-      <div className="h-6 bg-gray-200 rounded animate-pulse w-48 mb-4"></div>
-      <div className="flex flex-wrap gap-3">
+  <div className="space-y-4 md:space-y-6">
+    {/* Day navigation skeleton */}
+    <div className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6 border border-gray-200 shadow-sm">
+      <div className="h-4 md:h-5 lg:h-6 bg-gray-200 rounded animate-pulse w-32 md:w-40 lg:w-48 mb-3 md:mb-4"></div>
+      <div className="flex gap-2 overflow-x-auto pb-2">
         {[1, 2, 3].map((day) => (
           <div
             key={day}
-            className="h-12 bg-gray-200 rounded-xl animate-pulse w-24"
+            className="h-8 md:h-10 lg:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse w-20 md:w-24 lg:w-28 flex-shrink-0"
           ></div>
         ))}
       </div>
     </div>
-    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-2xl p-6 text-white">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="h-8 bg-blue-400/50 rounded animate-pulse w-64"></div>
-          <div className="h-4 bg-blue-400/50 rounded animate-pulse w-48"></div>
+
+    {/* Day header skeleton */}
+    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6 text-white">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-0">
+        <div className="space-y-1.5 md:space-y-2">
+          <div className="h-5 md:h-6 lg:h-8 bg-blue-400/50 rounded animate-pulse w-40 md:w-56 lg:w-64"></div>
+          <div className="h-3 md:h-4 bg-blue-400/50 rounded animate-pulse w-32 md:w-40 lg:w-48"></div>
         </div>
         <div className="text-right space-y-1">
-          <div className="h-8 bg-blue-400/50 rounded animate-pulse w-12"></div>
-          <div className="h-4 bg-blue-400/50 rounded animate-pulse w-16"></div>
+          <div className="h-6 md:h-8 lg:h-10 bg-blue-400/50 rounded animate-pulse w-10 md:w-12 lg:w-16"></div>
+          <div className="h-3 md:h-4 bg-blue-400/50 rounded animate-pulse w-14 md:w-16 lg:w-20"></div>
         </div>
       </div>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    {/* Activities grid skeleton */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
       {[1, 2, 3, 4, 5, 6].map((activity) => (
         <div
           key={activity}
-          className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+          className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl border border-gray-200 overflow-hidden"
         >
-          <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-3 md:p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <div className="h-5 w-5 bg-white/50 rounded animate-pulse"></div>
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-1.5 md:p-2 bg-white/20 rounded-lg md:rounded-xl backdrop-blur-sm">
+                  <div className="h-4 w-4 md:h-5 md:w-5 bg-white/50 rounded animate-pulse"></div>
                 </div>
                 <div className="space-y-1">
-                  <div className="h-5 bg-white/50 rounded animate-pulse w-32"></div>
-                  <div className="h-3 bg-white/50 rounded animate-pulse w-20"></div>
+                  <div className="h-4 md:h-5 bg-white/50 rounded animate-pulse w-24 md:w-32"></div>
+                  <div className="h-2.5 md:h-3 bg-white/50 rounded animate-pulse w-16 md:w-20"></div>
                 </div>
               </div>
-              <div className="h-5 w-5 bg-white/50 rounded-full animate-pulse"></div>
+              <div className="h-4 w-4 md:h-5 md:w-5 bg-white/50 rounded-full animate-pulse"></div>
             </div>
           </div>
-          <div className="p-4 space-y-3">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-full"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
-            <div className="flex flex-wrap gap-2">
-              <div className="h-6 bg-gray-200 rounded-full animate-pulse w-16"></div>
-              <div className="h-6 bg-gray-200 rounded-full animate-pulse w-20"></div>
+          <div className="p-3 md:p-4 space-y-2 md:space-y-3">
+            <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-full"></div>
+            <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+            <div className="flex flex-wrap gap-1.5 md:gap-2">
+              <div className="h-5 md:h-6 bg-gray-200 rounded-full animate-pulse w-14 md:w-16"></div>
+              <div className="h-5 md:h-6 bg-gray-200 rounded-full animate-pulse w-16 md:w-20"></div>
             </div>
-            <div className="flex gap-2 pt-3 border-t border-gray-100">
-              <div className="flex-1 h-8 bg-gray-200 rounded-xl animate-pulse"></div>
-              <div className="flex-1 h-8 bg-gray-200 rounded-xl animate-pulse"></div>
+            <div className="flex gap-1.5 md:gap-2 pt-2 md:pt-3 border-t border-gray-100">
+              <div className="flex-1 h-7 md:h-8 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
+              <div className="flex-1 h-7 md:h-8 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
             </div>
           </div>
         </div>
@@ -164,45 +187,45 @@ const SkeletonGridView = () => (
 );
 
 const SkeletonAllDestinations = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
     {[1, 2, 3, 4, 5].map((item) => (
       <div
         key={item}
-        className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+        className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl border border-gray-200 overflow-hidden"
       >
-        <div className="h-48 bg-gray-200 relative overflow-hidden animate-pulse">
-          <div className="absolute top-4 right-4">
-            <div className="h-6 bg-gray-300 rounded-full animate-pulse w-20"></div>
+        <div className="h-36 md:h-48 bg-gray-200 relative overflow-hidden animate-pulse">
+          <div className="absolute top-2 md:top-4 right-2 md:right-4">
+            <div className="h-5 md:h-6 bg-gray-300 rounded-full animate-pulse w-16 md:w-20"></div>
           </div>
         </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="p-4 md:p-6 space-y-3 md:space-y-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
             <div className="flex items-center">
-              <div className="h-4 w-4 bg-gray-200 rounded mr-2 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+              <div className="h-3 w-3 md:h-4 md:w-4 bg-gray-200 rounded mr-1.5 md:mr-2 animate-pulse"></div>
+              <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-16 md:w-20"></div>
             </div>
             <div className="flex items-center">
-              <div className="h-4 w-4 bg-gray-200 rounded mr-2 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-16"></div>
+              <div className="h-3 w-3 md:h-4 md:w-4 bg-gray-200 rounded mr-1.5 md:mr-2 animate-pulse"></div>
+              <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-14 md:w-16"></div>
             </div>
             <div className="flex items-center col-span-2">
-              <div className="h-4 w-4 bg-gray-200 rounded mr-2 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+              <div className="h-3 w-3 md:h-4 md:w-4 bg-gray-200 rounded mr-1.5 md:mr-2 animate-pulse"></div>
+              <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-20 md:w-24"></div>
             </div>
           </div>
-          <div className="flex gap-3">
-            <div className="flex-1 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
-            <div className="flex-1 h-10 bg-gray-200 rounded-xl animate-pulse"></div>
+          <div className="flex gap-2 md:gap-3">
+            <div className="flex-1 h-9 md:h-10 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
+            <div className="flex-1 h-9 md:h-10 bg-gray-200 rounded-lg md:rounded-xl animate-pulse"></div>
           </div>
         </div>
       </div>
     ))}
-    <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden">
-      <div className="flex flex-col items-center justify-center p-8 h-full min-h-[300px] text-center">
-        <div className="w-20 h-20 bg-gray-200 rounded-2xl flex items-center justify-center mb-4 animate-pulse"></div>
-        <div className="h-6 bg-gray-200 rounded animate-pulse w-40 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded animate-pulse w-56 mb-4"></div>
-        <div className="h-12 bg-gray-200 rounded-xl animate-pulse w-32"></div>
+    <div className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl border-2 border-dashed border-gray-300 overflow-hidden">
+      <div className="flex flex-col items-center justify-center p-6 md:p-8 h-full min-h-[250px] md:min-h-[300px] text-center">
+        <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-200 rounded-lg md:rounded-xl lg:rounded-2xl flex items-center justify-center mb-3 md:mb-4 animate-pulse"></div>
+        <div className="h-5 md:h-6 bg-gray-200 rounded animate-pulse w-32 md:w-40 mb-1.5 md:mb-2"></div>
+        <div className="h-3 md:h-4 bg-gray-200 rounded animate-pulse w-44 md:w-56 mb-3 md:mb-4"></div>
+        <div className="h-10 md:h-12 bg-gray-200 rounded-lg md:rounded-xl animate-pulse w-28 md:w-32"></div>
       </div>
     </div>
   </div>
