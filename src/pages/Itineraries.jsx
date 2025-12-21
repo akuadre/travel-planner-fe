@@ -74,7 +74,10 @@ const SkeletonTimelineView = () => (
             </div>
             <div className="space-y-4">
               {[1, 2].map((activity) => (
-                <div key={activity} className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200/50">
+                <div
+                  key={activity}
+                  className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200/50"
+                >
                   <div className="flex-shrink-0">
                     <div className="h-10 bg-gray-200 rounded-lg animate-pulse w-20"></div>
                   </div>
@@ -102,7 +105,10 @@ const SkeletonGridView = () => (
       <div className="h-6 bg-gray-200 rounded animate-pulse w-48 mb-4"></div>
       <div className="flex flex-wrap gap-3">
         {[1, 2, 3].map((day) => (
-          <div key={day} className="h-12 bg-gray-200 rounded-xl animate-pulse w-24"></div>
+          <div
+            key={day}
+            className="h-12 bg-gray-200 rounded-xl animate-pulse w-24"
+          ></div>
         ))}
       </div>
     </div>
@@ -120,7 +126,10 @@ const SkeletonGridView = () => (
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[1, 2, 3, 4, 5, 6].map((activity) => (
-        <div key={activity} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div
+          key={activity}
+          className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+        >
           <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -157,7 +166,10 @@ const SkeletonGridView = () => (
 const SkeletonAllDestinations = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
     {[1, 2, 3, 4, 5].map((item) => (
-      <div key={item} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div
+        key={item}
+        className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+      >
         <div className="h-48 bg-gray-200 relative overflow-hidden animate-pulse">
           <div className="absolute top-4 right-4">
             <div className="h-6 bg-gray-300 rounded-full animate-pulse w-20"></div>
@@ -239,15 +251,16 @@ const Itineraries = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const { notification, showNotification, dismissNotification } = useNotification();
+  const { notification, showNotification, dismissNotification } =
+    useNotification();
 
   const isSingleDestinationMode = Boolean(destinationId);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   useEffect(() => {
@@ -262,11 +275,15 @@ const Itineraries = () => {
       if (isSingleDestinationMode) {
         const destData = await destinationService.getById(destinationId);
         setSelectedDestination(destData);
-        const itinerariesData = await itineraryService.getByDestination(destinationId);
+        const itinerariesData = await itineraryService.getByDestination(
+          destinationId
+        );
         setItineraries(itinerariesData);
 
         if (itinerariesData.length > 0) {
-          const firstDay = Math.min(...itinerariesData.map((i) => i.day_number));
+          const firstDay = Math.min(
+            ...itinerariesData.map((i) => i.day_number)
+          );
           setExpandedDays(new Set([firstDay]));
           setSelectedDay(firstDay);
         }
@@ -318,7 +335,9 @@ const Itineraries = () => {
     showNotification("Aktivitas berhasil diperbarui!", "success");
     setItineraries((prev) =>
       prev
-        .map((item) => item.id === updatedItinerary.id ? updatedItinerary : item)
+        .map((item) =>
+          item.id === updatedItinerary.id ? updatedItinerary : item
+        )
         .sort((a, b) => {
           if (a.day_number !== b.day_number) return a.day_number - b.day_number;
           const timeA = a.schedule_time || "00:00";
@@ -330,10 +349,16 @@ const Itineraries = () => {
   };
 
   const handleDelete = async (itineraryId) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus item rencana perjalanan ini?")) {
+    if (
+      window.confirm(
+        "Apakah Anda yakin ingin menghapus item rencana perjalanan ini?"
+      )
+    ) {
       try {
         await itineraryService.delete(itineraryId);
-        setItineraries((prev) => prev.filter((item) => item.id !== itineraryId));
+        setItineraries((prev) =>
+          prev.filter((item) => item.id !== itineraryId)
+        );
         showNotification("Aktivitas berhasil dihapus", "success");
       } catch (error) {
         console.error("Failed to delete itinerary:", error);
@@ -397,11 +422,41 @@ const Itineraries = () => {
 
   const getActivityIcon = (activityType) => {
     const type = activityType?.toLowerCase() || "";
-    if (type.includes("food") || type.includes("restaurant") || type.includes("eat") || type.includes("makan")) return Utensils;
-    if (type.includes("hotel") || type.includes("accommodation") || type.includes("stay") || type.includes("penginapan")) return Hotel;
-    if (type.includes("photo") || type.includes("sightseeing") || type.includes("view") || type.includes("wisata")) return Camera;
-    if (type.includes("hiking") || type.includes("mountain") || type.includes("nature") || type.includes("alam")) return Mountain;
-    if (type.includes("flight") || type.includes("travel") || type.includes("transport") || type.includes("perjalanan")) return Plane;
+    if (
+      type.includes("food") ||
+      type.includes("restaurant") ||
+      type.includes("eat") ||
+      type.includes("makan")
+    )
+      return Utensils;
+    if (
+      type.includes("hotel") ||
+      type.includes("accommodation") ||
+      type.includes("stay") ||
+      type.includes("penginapan")
+    )
+      return Hotel;
+    if (
+      type.includes("photo") ||
+      type.includes("sightseeing") ||
+      type.includes("view") ||
+      type.includes("wisata")
+    )
+      return Camera;
+    if (
+      type.includes("hiking") ||
+      type.includes("mountain") ||
+      type.includes("nature") ||
+      type.includes("alam")
+    )
+      return Mountain;
+    if (
+      type.includes("flight") ||
+      type.includes("travel") ||
+      type.includes("transport") ||
+      type.includes("perjalanan")
+    )
+      return Plane;
     return Navigation;
   };
 
@@ -427,45 +482,78 @@ const Itineraries = () => {
   // 🔥 SINGLE DESTINATION TIMELINE VIEW - MOBILE IMPROVEMENTS
   const SingleDestinationTimelineView = ({ groupedItineraries }) => (
     <div className="relative">
-      <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400/30 via-purple-400/30 to-cyan-400/30 rounded-full"></div>
+      {/* Timeline line - mobile lebih tipis dan posisi lebih kiri */}
+      <div className="absolute left-4 md:left-6 lg:left-8 top-0 bottom-0 w-0.5 md:w-1 bg-gradient-to-b from-blue-400/30 via-purple-400/30 to-cyan-400/30 rounded-full"></div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {Object.keys(groupedItineraries).map((dayNumber) => (
-          <div key={dayNumber} className="relative flex items-start gap-6">
-            {/* Timeline Dot - Desktop tetap w-16 h-16, Mobile lebih kecil */}
+          <div
+            key={dayNumber}
+            className="relative flex items-start gap-3 md:gap-4 lg:gap-6"
+          >
+            {/* Timeline Dot - Lebih kecil untuk mobile */}
             <div
-              className={`relative z-10 flex-shrink-0 ${isMobile ? 'w-12 h-12 rounded-xl' : 'w-16 h-16 rounded-2xl'} flex items-center justify-center bg-gradient-to-br ${getDayColor(dayNumber)} shadow-lg`}
+              className={`relative z-10 flex-shrink-0 ${
+                isMobile
+                  ? "w-10 h-10 rounded-lg"
+                  : "w-14 md:w-16 h-14 md:h-16 rounded-xl md:rounded-2xl"
+              } flex items-center justify-center bg-gradient-to-br ${getDayColor(
+                dayNumber
+              )} shadow-md md:shadow-lg`}
             >
-              <div className="text-white font-bold text-sm">
-                Hari {dayNumber}
+              <div className="text-white font-bold text-xs md:text-sm">
+                {isMobile ? `H${dayNumber}` : `Hari ${dayNumber}`}
               </div>
             </div>
 
-            {/* Day Content - Mobile padding lebih kecil */}
-            <div className={`flex-1 bg-white ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl p-6'} border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300`}>
-              <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} justify-between ${isMobile ? 'gap-2 mb-3' : 'mb-4'}`}>
-                <h3 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-gray-900`}>
-                  Petualangan Hari {dayNumber}
+            {/* Day Content - Mobile: lebih compact */}
+            <div
+              className={`flex-1 bg-white ${
+                isMobile ? "rounded-lg" : "rounded-xl md:rounded-2xl"
+              } p-3 md:p-4 lg:p-6 border border-gray-200 shadow-sm hover:shadow-md md:hover:shadow-xl transition-all duration-300 overflow-hidden`}
+            >
+              {/* Header - Mobile: vertical stack */}
+              <div
+                className={`flex ${
+                  isMobile ? "flex-col" : "items-center justify-between"
+                } mb-2 md:mb-3 lg:mb-4 gap-1 md:gap-2`}
+              >
+                <h3
+                  className={`font-bold text-gray-900 ${
+                    isMobile ? "text-sm md:text-base" : "text-lg md:text-xl"
+                  } truncate`}
+                >
+                  {isMobile
+                    ? `Hari ${dayNumber}`
+                    : `Petualangan Hari ${dayNumber}`}
                 </h3>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <span className="px-1.5 md:px-2 py-0.5 md:py-1 bg-blue-100 text-blue-800 rounded-full text-xs md:text-sm font-medium whitespace-nowrap">
                     {groupedItineraries[dayNumber].length} aktivitas
                   </span>
                   <button
                     onClick={() => toggleDay(parseInt(dayNumber))}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-1 md:p-1.5 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
                   >
                     {expandedDays.has(parseInt(dayNumber)) ? (
-                      <ChevronUp className="h-4 w-4" />
+                      <ChevronUp
+                        className={`${
+                          isMobile ? "h-3 w-3" : "h-3.5 w-3.5 md:h-4 md:w-4"
+                        }`}
+                      />
                     ) : (
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown
+                        className={`${
+                          isMobile ? "h-3 w-3" : "h-3.5 w-3.5 md:h-4 md:w-4"
+                        }`}
+                      />
                     )}
                   </button>
                 </div>
               </div>
 
               {expandedDays.has(parseInt(dayNumber)) && (
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {groupedItineraries[dayNumber].map((itinerary) => {
                     const ActivityIcon = getActivityIcon(itinerary.activities);
                     return (
@@ -474,56 +562,155 @@ const Itineraries = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-xl border border-gray-200/50 hover:border-blue-200 hover:bg-blue-50/30 transition-all group/item"
+                        className={`flex flex-col ${
+                          isMobile
+                            ? "gap-2"
+                            : "md:flex-row md:items-start gap-3 md:gap-4"
+                        } p-2.5 md:p-3 lg:p-4 bg-gray-50/50 ${
+                          isMobile ? "rounded-lg" : "rounded-lg md:rounded-xl"
+                        } border border-gray-200/50 hover:border-blue-200 hover:bg-blue-50/30 transition-all group/item overflow-hidden`}
                       >
-                        <div className="flex-shrink-0">
-                          <div className="bg-white px-3 py-2 rounded-lg border border-gray-300 shadow-sm">
-                            <Clock className="h-4 w-4 text-blue-600 inline mr-2" />
-                            <span className="text-sm font-medium text-gray-700">
-                              {formatTime(itinerary.schedule_time)}
-                            </span>
+                        {/* Time & Icon Section - Mobile: horizontal, Desktop: bisa horizontal atau vertical */}
+                        <div
+                          className={`flex ${
+                            isMobile
+                              ? "items-center gap-2"
+                              : "md:flex-col md:items-start md:gap-2"
+                          } flex-shrink-0`}
+                        >
+                          {/* Time Badge - Mobile lebih kecil */}
+                          <div
+                            className={`bg-white ${
+                              isMobile
+                                ? "px-2 py-1"
+                                : "px-2 md:px-3 py-1 md:py-1.5"
+                            } rounded ${
+                              isMobile ? "border" : "border"
+                            } border-gray-300 shadow-sm whitespace-nowrap`}
+                          >
+                            <div className="flex items-center">
+                              <Clock
+                                className={`${
+                                  isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
+                                } text-blue-600 mr-1 md:mr-1.5`}
+                              />
+                              <span
+                                className={`font-medium text-gray-700 ${
+                                  isMobile ? "text-xs" : "text-xs md:text-sm"
+                                }`}
+                              >
+                                {formatTime(itinerary.schedule_time)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Activity Icon - Mobile lebih kecil */}
+                          <div
+                            className={`${
+                              isMobile ? "p-1.5" : "p-2 md:p-2.5"
+                            } bg-white ${
+                              isMobile ? "rounded" : "rounded-lg"
+                            } border border-gray-200 shadow-sm flex-shrink-0`}
+                          >
+                            <ActivityIcon
+                              className={`${
+                                isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+                              } text-blue-600`}
+                            />
                           </div>
                         </div>
 
-                        <div className="flex-shrink-0 p-3 bg-white rounded-xl border border-gray-200 shadow-sm">
-                          <ActivityIcon className="h-5 w-5 text-blue-600" />
-                        </div>
-
+                        {/* Content Section - Mobile: full width dengan truncate */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                          <div className="flex flex-col gap-1.5 md:gap-2">
+                            {/* Location dengan truncate */}
+                            <div className="flex items-center gap-1.5">
+                              <h4
+                                className={`font-semibold text-gray-900 ${
+                                  isMobile ? "text-sm" : "text-sm md:text-base"
+                                } truncate`}
+                                title={itinerary.location}
+                              >
                                 {itinerary.location}
-                                {itinerary.activities?.includes("highlight") && (
-                                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                )}
                               </h4>
-                              <p className="text-gray-600 mb-2 text-sm leading-relaxed">
-                                {itinerary.description}
-                              </p>
-                              {itinerary.activities && (
-                                <div className="flex items-center gap-2">
-                                  <Zap className="h-3 w-3 text-orange-500" />
-                                  <span className="text-xs text-gray-500 font-medium">
-                                    {itinerary.activities}
-                                  </span>
-                                </div>
+                              {itinerary.activities?.includes("highlight") && (
+                                <Star
+                                  className={`${
+                                    isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
+                                  } text-yellow-500 fill-current flex-shrink-0`}
+                                />
                               )}
                             </div>
-                            <div className="flex gap-2 ml-4 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => setEditingItinerary(itinerary)}
-                                className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(itinerary.id)}
-                                className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
+
+                            {/* Description dengan line clamp untuk mobile */}
+                            <p
+                              className={`text-gray-600 ${
+                                isMobile
+                                  ? "text-xs leading-relaxed line-clamp-2"
+                                  : "text-sm leading-relaxed"
+                              }`}
+                            >
+                              {itinerary.description}
+                            </p>
+
+                            {/* Activities tags - Mobile: truncate */}
+                            {itinerary.activities && (
+                              <div className="flex items-center gap-1.5">
+                                <Zap
+                                  className={`${
+                                    isMobile ? "h-2.5 w-2.5" : "h-3 w-3"
+                                  } text-orange-500 flex-shrink-0`}
+                                />
+                                <span
+                                  className={`${
+                                    isMobile ? "text-xs" : "text-xs md:text-sm"
+                                  } text-gray-500 font-medium truncate`}
+                                  title={itinerary.activities}
+                                >
+                                  {itinerary.activities}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Buttons - Mobile: full width dibawah */}
+                          <div
+                            className={`flex gap-1.5 md:gap-2 ${
+                              isMobile
+                                ? "pt-2 mt-2 border-t border-gray-100"
+                                : "mt-2 md:mt-3 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                            }`}
+                          >
+                            <button
+                              onClick={() => setEditingItinerary(itinerary)}
+                              className={`${
+                                isMobile
+                                  ? "flex-1 flex items-center justify-center gap-1 py-1.5 text-xs"
+                                  : "p-1.5 md:p-2"
+                              } text-green-600 hover:text-green-800 hover:bg-green-50 ${
+                                isMobile ? "rounded" : "rounded-lg"
+                              } transition-all`}
+                            >
+                              <Edit
+                                className={isMobile ? "h-3 w-3" : "h-3.5 w-3.5"}
+                              />
+                              {isMobile && <span>Edit</span>}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(itinerary.id)}
+                              className={`${
+                                isMobile
+                                  ? "flex-1 flex items-center justify-center gap-1 py-1.5 text-xs"
+                                  : "p-1.5 md:p-2"
+                              } text-red-600 hover:text-red-800 hover:bg-red-50 ${
+                                isMobile ? "rounded" : "rounded-lg"
+                              } transition-all`}
+                            >
+                              <Trash2
+                                className={isMobile ? "h-3 w-3" : "h-3.5 w-3.5"}
+                              />
+                              {isMobile && <span>Hapus</span>}
+                            </button>
                           </div>
                         </div>
                       </motion.div>
@@ -544,7 +731,9 @@ const Itineraries = () => {
       Object.keys(groupedItineraries)[0] || "1"
     );
 
-    const allDays = Object.keys(groupedItineraries).sort((a, b) => parseInt(a) - parseInt(b));
+    const allDays = Object.keys(groupedItineraries).sort(
+      (a, b) => parseInt(a) - parseInt(b)
+    );
     const selectedDayActivities = groupedItineraries[selectedDay] || [];
 
     return (
@@ -554,14 +743,20 @@ const Itineraries = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Pilih Hari untuk Melihat Aktivitas
           </h3>
-          <div className={`flex ${isMobile ? 'gap-2 overflow-x-auto pb-2' : 'flex-wrap gap-3'}`}>
+          <div
+            className={`flex ${
+              isMobile ? "gap-2 overflow-x-auto pb-2" : "flex-wrap gap-3"
+            }`}
+          >
             {allDays.map((dayNumber) => (
               <motion.button
                 key={dayNumber}
                 onClick={() => setSelectedDay(dayNumber)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`${isMobile ? 'flex-shrink-0 px-3 py-2' : 'px-4 py-3'} rounded-xl border-2 transition-all font-semibold ${
+                className={`${
+                  isMobile ? "flex-shrink-0 px-3 py-2" : "px-4 py-3"
+                } rounded-xl border-2 transition-all font-semibold ${
                   selectedDay === dayNumber
                     ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white border-transparent shadow-lg"
                     : "bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50"
@@ -581,15 +776,22 @@ const Itineraries = () => {
           key={selectedDay}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`bg-gradient-to-r from-blue-500 to-cyan-400 ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl p-6'} text-white`}
+          className={`bg-gradient-to-r from-blue-500 to-cyan-400 ${
+            isMobile ? "rounded-xl p-4" : "rounded-2xl p-6"
+          } text-white`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-2`}>
+              <h2
+                className={`${
+                  isMobile ? "text-xl" : "text-2xl"
+                } font-bold mb-2`}
+              >
                 Rencana Perjalanan Hari {selectedDay}
               </h2>
               <p className="text-blue-100 opacity-90">
-                {selectedDayActivities.length} aktivitas direncanakan untuk hari ini
+                {selectedDayActivities.length} aktivitas direncanakan untuk hari
+                ini
               </p>
             </div>
             <div className="text-right">
@@ -615,7 +817,11 @@ const Itineraries = () => {
                   transition={{ delay: index * 0.1 }}
                   className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-2"
                 >
-                  <div className={`bg-gradient-to-r ${getDayColor(selectedDay)} p-4 text-white`}>
+                  <div
+                    className={`bg-gradient-to-r ${getDayColor(
+                      selectedDay
+                    )} p-4 text-white`}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -734,19 +940,38 @@ const Itineraries = () => {
               </div>
               <div className="text-center p-4 bg-green-50 rounded-xl">
                 <div className="text-2xl font-bold text-green-600">
-                  {selectedDayActivities.filter(activity => activity.schedule_time && activity.schedule_time < "12:00").length}
+                  {
+                    selectedDayActivities.filter(
+                      (activity) =>
+                        activity.schedule_time &&
+                        activity.schedule_time < "12:00"
+                    ).length
+                  }
                 </div>
                 <div className="text-sm text-green-800">Pagi</div>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-xl">
                 <div className="text-2xl font-bold text-orange-600">
-                  {selectedDayActivities.filter(activity => activity.schedule_time && activity.schedule_time >= "12:00" && activity.schedule_time < "18:00").length}
+                  {
+                    selectedDayActivities.filter(
+                      (activity) =>
+                        activity.schedule_time &&
+                        activity.schedule_time >= "12:00" &&
+                        activity.schedule_time < "18:00"
+                    ).length
+                  }
                 </div>
                 <div className="text-sm text-orange-800">Siang</div>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-xl">
                 <div className="text-2xl font-bold text-purple-600">
-                  {selectedDayActivities.filter(activity => activity.schedule_time && activity.schedule_time >= "18:00").length}
+                  {
+                    selectedDayActivities.filter(
+                      (activity) =>
+                        activity.schedule_time &&
+                        activity.schedule_time >= "18:00"
+                    ).length
+                  }
                 </div>
                 <div className="text-sm text-purple-800">Malam</div>
               </div>
@@ -946,7 +1171,10 @@ const Itineraries = () => {
   // 🔥 HEADER - Mobile responsive, desktop tetap sama
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
-      <Notification notification={notification} onDismiss={dismissNotification} />
+      <Notification
+        notification={notification}
+        onDismiss={dismissNotification}
+      />
 
       {/* HEADER - Mobile responsive, desktop tetap */}
       <motion.div
@@ -956,10 +1184,17 @@ const Itineraries = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           {/* MOBILE: flex-col, DESKTOP: flex-row */}
-          <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} justify-between ${isMobile ? 'gap-3' : ''}`}>
-            
+          <div
+            className={`flex ${
+              isMobile ? "flex-col" : "items-center"
+            } justify-between ${isMobile ? "gap-3" : ""}`}
+          >
             {/* Left Section */}
-            <div className={`flex ${isMobile ? 'flex-col sm:flex-row' : 'items-center'} gap-3 ${isMobile ? 'sm:gap-6' : 'gap-6'}`}>
+            <div
+              className={`flex ${
+                isMobile ? "flex-col sm:flex-row" : "items-center"
+              } gap-3 ${isMobile ? "sm:gap-6" : "gap-6"}`}
+            >
               <Link
                 to={isSingleDestinationMode ? "/itineraries" : "/home"}
                 className="inline-flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 bg-white border border-gray-300 rounded-lg hover:border-gray-400 transition-all shadow-sm hover:shadow-md text-sm w-fit"
@@ -967,9 +1202,13 @@ const Itineraries = () => {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
               </Link>
-              
+
               <div>
-                <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent`}>
+                <h1
+                  className={`${
+                    isMobile ? "text-xl" : "text-3xl"
+                  } font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent`}
+                >
                   {isSingleDestinationMode
                     ? selectedDestination?.title || "Rencana Perjalanan"
                     : "Semua Rencana Perjalanan"}
@@ -987,7 +1226,11 @@ const Itineraries = () => {
 
             {/* Right Section - Mobile: di bawah, Desktop: samping */}
             {isSingleDestinationMode && (
-              <div className={`flex ${isMobile ? 'flex-col sm:flex-row' : 'items-center'} ${isMobile ? 'gap-2 mt-2' : 'gap-4'}`}>
+              <div
+                className={`flex ${
+                  isMobile ? "flex-col sm:flex-row" : "items-center"
+                } ${isMobile ? "gap-2 mt-2" : "gap-4"}`}
+              >
                 <div className="flex bg-gray-100 rounded-xl p-1">
                   {[
                     { key: "timeline", label: "Timeline", icon: List },
@@ -1014,7 +1257,11 @@ const Itineraries = () => {
                   onClick={() => setShowForm(true)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`inline-flex items-center ${isMobile ? 'justify-center' : ''} px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-lg sm:rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl font-semibold text-sm sm:text-base ${isMobile ? 'mt-2' : ''}`}
+                  className={`inline-flex items-center ${
+                    isMobile ? "justify-center" : ""
+                  } px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-lg sm:rounded-xl hover:from-blue-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl font-semibold text-sm sm:text-base ${
+                    isMobile ? "mt-2" : ""
+                  }`}
                 >
                   <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Tambah Aktivitas
@@ -1078,8 +1325,12 @@ const Itineraries = () => {
                           {stat.label}
                         </p>
                       </div>
-                      <div className={`p-3 rounded-xl bg-${stat.color}-100 group-hover:scale-110 transition-transform`}>
-                        <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
+                      <div
+                        className={`p-3 rounded-xl bg-${stat.color}-100 group-hover:scale-110 transition-transform`}
+                      >
+                        <stat.icon
+                          className={`h-6 w-6 text-${stat.color}-600`}
+                        />
                       </div>
                     </div>
                   </motion.div>
@@ -1109,7 +1360,9 @@ const Itineraries = () => {
                         Siap untuk Petualangan? 🗺️
                       </h3>
                       <p className="text-gray-600 mb-6 text-lg">
-                        Perjalanan {selectedDestination?.duration_days} hari Anda ke {selectedDestination?.title} menanti! Mulai rencanakan pengalaman menakjubkan Anda.
+                        Perjalanan {selectedDestination?.duration_days} hari
+                        Anda ke {selectedDestination?.title} menanti! Mulai
+                        rencanakan pengalaman menakjubkan Anda.
                       </p>
                       <motion.div
                         whileHover={{ scale: 1.05 }}
@@ -1126,9 +1379,13 @@ const Itineraries = () => {
                     </div>
                   </motion.div>
                 ) : viewMode === "timeline" ? (
-                  <SingleDestinationTimelineView groupedItineraries={groupedItineraries} />
+                  <SingleDestinationTimelineView
+                    groupedItineraries={groupedItineraries}
+                  />
                 ) : (
-                  <SingleDestinationGridView groupedItineraries={groupedItineraries} />
+                  <SingleDestinationGridView
+                    groupedItineraries={groupedItineraries}
+                  />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -1162,7 +1419,12 @@ const Itineraries = () => {
                 },
                 {
                   icon: Zap,
-                  value: formatCurrency(destinations.reduce((sum, d) => sum + parseFloat(d.budget), 0)),
+                  value: formatCurrency(
+                    destinations.reduce(
+                      (sum, d) => sum + parseFloat(d.budget),
+                      0
+                    )
+                  ),
                   label: "Total Budget",
                   color: "purple",
                 },
@@ -1181,7 +1443,9 @@ const Itineraries = () => {
                       </p>
                       <p className="text-sm text-gray-600 mt-1">{stat.label}</p>
                     </div>
-                    <div className={`p-3 rounded-xl bg-${stat.color}-100 group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`p-3 rounded-xl bg-${stat.color}-100 group-hover:scale-110 transition-transform`}
+                    >
                       <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
                     </div>
                   </div>
@@ -1203,7 +1467,8 @@ const Itineraries = () => {
                     Belum Ada Destinasi 🗺️
                   </h3>
                   <p className="text-gray-600 mb-6 text-lg">
-                    Mulai dengan membuat destinasi pertama Anda untuk merencanakan perjalanan yang menakjubkan!
+                    Mulai dengan membuat destinasi pertama Anda untuk
+                    merencanakan perjalanan yang menakjubkan!
                   </p>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
