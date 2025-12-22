@@ -180,10 +180,7 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 + 0.5 }}
                   >
-                    <NavLink
-                      to={item.href}
-                      className={getLinkClass}
-                    >
+                    <NavLink to={item.href} className={getLinkClass}>
                       {({ isActive }) => (
                         <>
                           <div className="flex items-center gap-4">
@@ -340,24 +337,26 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
             >
               {/* Mobile Header */}
               <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
-  <div className="flex items-center gap-3">
-    {/* Custom Logo Image untuk Mobile - sama seperti desktop tapi ukuran kecil */}
-    <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/10">
-      <img
-        src={`${import.meta.env.BASE_URL}images/icon.png`}
-        className="w-6 h-6" // Ukuran lebih kecil untuk mobile
-        alt="Travel Planner Logo"
-      />
-    </div>
-    <span className="text-white font-bold text-lg">Travel Planner</span>
-  </div>
-  <button
-    onClick={closeSidebar}
-    className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-  >
-    <X size={24} />
-  </button>
-</div>
+                <div className="flex items-center gap-3">
+                  {/* Custom Logo Image untuk Mobile - sama seperti desktop tapi ukuran kecil */}
+                  <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/10">
+                    <img
+                      src={`${import.meta.env.BASE_URL}images/icon.png`}
+                      className="w-6 h-6" // Ukuran lebih kecil untuk mobile
+                      alt="Travel Planner Logo"
+                    />
+                  </div>
+                  <span className="text-white font-bold text-lg">
+                    Travel Planner
+                  </span>
+                </div>
+                <button
+                  onClick={closeSidebar}
+                  className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
 
               {/* Navigation Menu (Mobile) */}
               <nav className="flex-1 p-5 space-y-3 overflow-y-auto">
@@ -387,7 +386,9 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
                                     isActive ? "text-white" : "text-blue-300"
                                   }
                                 />
-                                <span className="font-medium">{item.label}</span>
+                                <span className="font-medium">
+                                  {item.label}
+                                </span>
                               </div>
                             </>
                           )}
@@ -414,7 +415,9 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
                               <Icon
                                 size={20}
                                 className={
-                                  hasActiveSubItem ? "text-white" : "text-blue-300"
+                                  hasActiveSubItem
+                                    ? "text-white"
+                                    : "text-blue-300"
                                 }
                               />
                               <span className="font-medium">{item.label}</span>
@@ -426,7 +429,9 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
                               <ChevronRight
                                 size={16}
                                 className={
-                                  hasActiveSubItem ? "text-white" : "text-blue-300"
+                                  hasActiveSubItem
+                                    ? "text-white"
+                                    : "text-blue-300"
                                 }
                               />
                             </motion.div>
