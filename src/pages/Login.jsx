@@ -192,15 +192,29 @@ const Login = () => {
     setLoading(true);
     setError("");
 
-    const result = await login(formData.email, formData.password);
+    try {
+      const result = await login(formData.email, formData.password);
 
-    if (result.success) {
-      navigate("/home");
-    } else {
-      setError(result.message);
+      if (result.success) {
+        navigate("/home");
+      } else {
+        // Custom Error Message
+        if (result.message?.includes("credentials are incorrect")) {
+          setError("Email atau password salah. Silakan coba lagi.");
+        } else if (result.message?.includes("email")) {
+          setError("Email tidak ditemukan.");
+        } else if (result.message?.includes("password")) {
+          setError("Password salah.");
+        } else {
+          setError("Terjadi kesalahan. Silakan coba lagi.");
+        }
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Terjadi kesalahan sistem. Silakan coba lagi nanti.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   // Helper functions untuk styling yang sama dengan register
