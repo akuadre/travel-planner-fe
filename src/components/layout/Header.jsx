@@ -23,7 +23,6 @@ const Header = ({ toggleSidebar }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentDay, setCurrentDay] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,8 +80,8 @@ const Header = ({ toggleSidebar }) => {
       });
       setCurrentDate(formattedDate);
 
-      const formattedDay = now.toLocaleDateString("id-ID", { 
-        weekday: "long" 
+      const formattedDay = now.toLocaleDateString("id-ID", {
+        weekday: "long",
       });
       setCurrentDay(formattedDay);
     };
@@ -171,44 +170,39 @@ const Header = ({ toggleSidebar }) => {
 
           {/* Right Section: Actions & User */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Search Button (Mobile) */}
-            <motion.button
-              onClick={() => setShowSearch(!showSearch)}
-              className="sm:hidden p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-              whileTap={{ scale: 0.9 }}
-            >
-              <Search size={20} />
-            </motion.button>
-
             {/* Date & Time Display */}
-            <div className="hidden lg:flex items-center gap-3">
-              {/* Time */}
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200">
-                <Clock size={16} className="text-blue-500" />
-                <div className="text-sm">
-                  <span className="font-semibold text-slate-800 font-mono">
-                    {currentTime}
-                  </span>
-                  <span className="text-xs text-slate-500 ml-1">WIB</span>
-                </div>
-              </div>
-
-              {/* Date */}
-              <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-xl border border-blue-100">
+            <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+              {/* Desktop - Full Date */}
+              <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-xl border border-blue-100">
                 <CalendarIcon size={16} className="text-blue-500" />
                 <div className="text-sm">
-                  <div className="font-semibold text-slate-800">{currentDay}</div>
+                  <div className="font-semibold text-slate-800">
+                    {currentDay}
+                  </div>
                   <div className="text-xs text-slate-600">{currentDate}</div>
                 </div>
               </div>
-            </div>
 
-            {/* Mobile Time Compact */}
-            <div className="lg:hidden flex items-center gap-1 px-2 py-1.5 bg-slate-50 rounded-lg">
-              <Clock size={14} className="text-blue-500" />
-              <span className="text-xs font-semibold text-slate-700 font-mono">
-                {currentTime}
-              </span>
+              {/* Mobile & Tablet - Compact Date */}
+              <div className="md:hidden flex items-center gap-1 px-2 py-1.5 bg-blue-50 rounded-lg border border-blue-100">
+                <CalendarIcon size={14} className="text-blue-500" />
+                <span className="text-xs font-semibold text-slate-700">
+                  {currentDate.split(" ")[0]} {/* Hanya tanggal (angka) */}
+                </span>
+              </div>
+
+              {/* Time - Selalu tampil */}
+              <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-50 rounded-lg sm:rounded-xl border border-slate-200">
+                <Clock size={14} className="sm:size-4 text-blue-500" />
+                <div className="text-xs sm:text-sm">
+                  <span className="font-semibold text-slate-800 font-mono">
+                    {currentTime}
+                  </span>
+                  <span className="text-xs text-slate-500 ml-0.5 sm:ml-1">
+                    WIB
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Dark Mode Toggle */}
@@ -246,10 +240,14 @@ const Header = ({ toggleSidebar }) => {
                 </div>
 
                 {/* Dropdown arrow - Desktop only */}
-                <ChevronDown 
-                  size={16} 
+                <ChevronDown
+                  size={16}
                   className="hidden lg:block text-slate-400 transition-transform duration-200"
-                  style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  style={{
+                    transform: isDropdownOpen
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                  }}
                 />
               </motion.button>
 
@@ -280,28 +278,33 @@ const Header = ({ toggleSidebar }) => {
                         </div>
                       </div>
                       <p className="text-xs text-blue-200 mt-2">
-                        ✈️ {user?.name?.split(' ')[0] || "Petualang"} Traveler
+                        ✈️ {user?.name?.split(" ")[0] || "Petualang"} Traveler
                       </p>
                     </div>
 
                     {/* Dropdown Menu Items */}
                     <div className="p-2">
-                      <Link
-                        to="/profile"
-                        className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
+                      <button
+                        disabled
+                        className="flex items-center w-full px-3 py-3 text-sm text-slate-400 rounded-lg cursor-not-allowed!"
                       >
-                        <User size={16} className="mr-3 text-slate-500" />
+                        <User size={16} className="mr-3 text-slate-300" />
                         Profil Saya
-                      </Link>
-                      <Link
-                        to="/settings"
-                        className="flex items-center w-full px-3 py-3 text-sm text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
+                        <span className="ml-auto text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
+                          Soon
+                        </span>
+                      </button>
+
+                      <button
+                        disabled
+                        className="flex items-center w-full px-3 py-3 text-sm text-slate-400 rounded-lg cursor-not-allowed!"
                       >
-                        <Settings size={16} className="mr-3 text-slate-500" />
+                        <Settings size={16} className="mr-3 text-slate-300" />
                         Pengaturan
-                      </Link>
+                        <span className="ml-auto text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
+                          Soon
+                        </span>
+                      </button>
 
                       {/* Theme Toggle in dropdown for mobile */}
                       {/* <button
@@ -332,28 +335,6 @@ const Header = ({ toggleSidebar }) => {
             </div>
           </div>
         </div>
-
-        {/* Mobile Search Bar (Toggle) */}
-        <AnimatePresence>
-          {showSearch && (
-            <motion.div
-              className="sm:hidden mt-2"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Cari destinasi..."
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  autoFocus
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </header>
   );
