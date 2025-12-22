@@ -15,7 +15,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useMediaQuery } from "react-responsive";
 
 // Shared animation variants
 const containerVariants = {
@@ -63,6 +62,8 @@ const floatingAnimation = {
 };
 
 const Login = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -83,7 +84,15 @@ const Login = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery({ maxWidth: 768 });
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Background image
   const baseUrl =
