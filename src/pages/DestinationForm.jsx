@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   Save,
@@ -25,6 +25,9 @@ import {
 import Notification, { useNotification } from "../components/Notification";
 
 const DestinationForm = () => {
+  const location = useLocation();
+  const formKey = location.key || "default";
+
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -67,9 +70,36 @@ const DestinationForm = () => {
   };
 
   const dateStatus = getDateStatus();
-
-  // const isToggleDisabled = dateStatus === "PAST" || dateStatus === "FUTURE";
   const isToggleDisabled = dateStatus === "PAST";
+
+  useEffect(() => {
+    const resetForm = () => {
+      setFormData({
+        title: "",
+        departure_date: "",
+        budget: "",
+        duration_days: "",
+        is_achieved: false,
+        photo: null,
+      });
+      setPhotoPreview(null);
+      setSelectedDate(new Date());
+      setErrors({});
+      setSubmitError("");
+    };
+
+    if (id) {
+      // Edit mode: Load destination
+      loadDestination();
+    } else {
+      // Create mode: Reset form
+      resetForm();
+    }
+
+    return () => {
+      console.log("🧽 Component cleanup");
+    };
+  }, [id]);
 
   // Check screen size
   useEffect(() => {
@@ -97,14 +127,6 @@ const DestinationForm = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDatePicker]);
-
-  useEffect(() => {
-    if (isEdit) {
-      loadDestination();
-    } else {
-      setSelectedDate(new Date());
-    }
-  }, [id]);
 
   useEffect(() => {
     if (formData.departure_date) {
@@ -537,7 +559,10 @@ const DestinationForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30">
+    <div
+      key={formKey}
+      className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-cyan-50/30"
+    >
       {/* Notification Component */}
       <Notification
         notification={notification}
