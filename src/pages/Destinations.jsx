@@ -20,6 +20,8 @@ import {
   ChevronDown,
   ArrowLeft,
   Menu,
+  FileText,
+  ChevronsUpDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -531,6 +533,19 @@ const Destinations = () => {
     return `${STORAGE_BASE_URL}/destinations/${photoPath}`;
   };
 
+  const getActiveButtonClasses = (color) => {
+    switch (color) {
+      case "blue":
+        return "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/25 hover:bg-blue-700 hover:border-blue-700";
+      case "green":
+        return "bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/25 hover:bg-green-700 hover:border-green-700";
+      case "orange":
+        return "bg-orange-600 text-white border-orange-600 shadow-lg shadow-orange-600/25 hover:bg-orange-700 hover:border-orange-700";
+      default:
+        return "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/25";
+    }
+  };
+
   // Action Dropdown Component - FIXED VERSION
   const ActionDropdown = ({ destination }) => {
     const dropdownRef = useRef(null);
@@ -879,9 +894,9 @@ const Destinations = () => {
                     onClick={() => setStatusFilter(filterOption.key)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border-2 transition-all font-medium text-xs md:text-sm ${
+                    className={`px-3 py-1.5 md:px-4 md:py-2.5 rounded-lg md:rounded-xl border-2 transition-all font-medium text-xs md:text-sm whitespace-nowrap ${
                       statusFilter === filterOption.key
-                        ? `bg-${filterOption.color}-500 text-white border-${filterOption.color}-500 shadow-lg shadow-${filterOption.color}-500/25`
+                        ? getActiveButtonClasses(filterOption.color)
                         : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
                     }`}
                   >
@@ -890,25 +905,50 @@ const Destinations = () => {
                 ))}
               </div>
 
-              <select
-                value={`${sortConfig.key}-${sortConfig.direction}`}
-                onChange={(e) => {
-                  const [key, direction] = e.target.value.split("-");
-                  setSortConfig({ key, direction });
-                }}
-                className="px-3 py-1.5 md:px-4 md:py-2.5 border-2 border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-xs md:text-sm"
-              >
-                <option value="departure_date-asc">
-                  Tanggal: Lama ke Baru
-                </option>
-                <option value="departure_date-desc">
-                  Tanggal: Baru ke Lama
-                </option>
-                <option value="title-asc">Judul: A-Z</option>
-                <option value="title-desc">Judul: Z-A</option>
-                <option value="budget-asc">Budget: Rendah ke Tinggi</option>
-                <option value="budget-desc">Budget: Tinggi ke Rendah</option>
-              </select>
+              {/* 🔥 VERSI SELECT YANG BENAR TANPA DIV DALAM OPTION */}
+              <div className="relative w-full sm:w-48 md:w-56 lg:w-64">
+                <select
+                  value={`${sortConfig.key}-${sortConfig.direction}`}
+                  onChange={(e) => {
+                    const [key, direction] = e.target.value.split("-");
+                    setSortConfig({ key, direction });
+                  }}
+                  className="appearance-none w-full px-4 py-2.5 pl-10 pr-10 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-sm cursor-pointer hover:border-blue-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                  style={{
+                    backgroundImage: `none`,
+                  }}
+                >
+                  {/* Hanya text biasa dalam option, tidak ada div/span */}
+                  <option value="departure_date-asc" className="py-2">
+                    📅 Tanggal: Lama ke Baru
+                  </option>
+                  <option value="departure_date-desc" className="py-2">
+                    📅 Tanggal: Baru ke Lama
+                  </option>
+                  <option value="title-asc" className="py-2">
+                    🅰️ Judul: A-Z
+                  </option>
+                  <option value="title-desc" className="py-2">
+                    🅰️ Judul: Z-A
+                  </option>
+                  <option value="budget-asc" className="py-2">
+                    💰 Budget: Rendah ke Tinggi
+                  </option>
+                  <option value="budget-desc" className="py-2">
+                    💰 Budget: Tinggi ke Rendah
+                  </option>
+                </select>
+
+                {/* Left icon */}
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <ChevronsUpDown className="h-4 w-4 text-blue-500" />
+                </div>
+
+                {/* Right arrow */}
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
+                </div>
+              </div>
             </div>
           </div>
 
