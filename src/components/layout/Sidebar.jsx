@@ -340,19 +340,24 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
             >
               {/* Mobile Header */}
               <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg">
-                    <Plane className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="text-white font-bold">Travel Planner</span>
-                </div>
-                <button
-                  onClick={closeSidebar}
-                  className="p-2 text-white hover:bg-white/10 rounded-lg"
-                >
-                  <X size={24} />
-                </button>
-              </div>
+  <div className="flex items-center gap-3">
+    {/* Custom Logo Image untuk Mobile - sama seperti desktop tapi ukuran kecil */}
+    <div className="p-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/10">
+      <img
+        src={`${import.meta.env.BASE_URL}images/icon.png`}
+        className="w-6 h-6" // Ukuran lebih kecil untuk mobile
+        alt="Travel Planner Logo"
+      />
+    </div>
+    <span className="text-white font-bold text-lg">Travel Planner</span>
+  </div>
+  <button
+    onClick={closeSidebar}
+    className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+  >
+    <X size={24} />
+  </button>
+</div>
 
               {/* Navigation Menu (Mobile) */}
               <nav className="flex-1 p-5 space-y-3 overflow-y-auto">
