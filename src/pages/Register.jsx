@@ -143,7 +143,7 @@ const Register = () => {
       }
     });
     setErrors(newErrors);
-  // }, [formData, touched]);
+    // }, [formData, touched]);
   }, [formData]);
 
   const handleChange = (e) => {
@@ -235,7 +235,7 @@ const Register = () => {
   const getInputClasses = (fieldName) => {
     const status = getFieldStatus(fieldName);
     const baseClasses =
-      "block w-full pl-12 pr-20 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300";
+      "block w-full pl-12 pr-16 sm:pr-20 py-3 sm:py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300";
 
     switch (status) {
       case "error":
@@ -447,7 +447,7 @@ const Register = () => {
       {/* Right Side - Form */}
       <motion.div
         variants={containerVariants}
-        className="flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 relative z-10"
+        className="flex-1 flex items-center justify-center px-6 py-8 sm:px-8 md:px-12 lg:px-20 xl:px-24 relative z-10"
       >
         <motion.div
           variants={containerVariants}
@@ -457,7 +457,9 @@ const Register = () => {
           <motion.div variants={itemVariants} className="text-center">
             <motion.div
               className="flex justify-center"
-              whileHover={!isMobile ? { scale: 1.1, rotate: [0, -5, 5, 0] } : {}}
+              whileHover={
+                !isMobile ? { scale: 1.1, rotate: [0, -5, 5, 0] } : {}
+              }
               whileTap={!isMobile ? { scale: 0.95 } : {}}
             >
               <motion.div
@@ -473,13 +475,13 @@ const Register = () => {
             </motion.div>
             <motion.h2
               variants={itemVariants}
-              className="mt-8 text-4xl font-bold text-white"
+              className="mt-6 text-3xl sm:text-4xl font-bold text-white"
             >
               Join Us
             </motion.h2>
             <motion.p
               variants={itemVariants}
-              className="mt-4 text-lg text-green-100"
+              className="mt-3 text-base sm:text-lg text-green-100"
             >
               Create your account and start exploring
             </motion.p>
@@ -488,7 +490,7 @@ const Register = () => {
           {/* Form */}
           <motion.form
             variants={itemVariants}
-            className="mt-12 space-y-6"
+            className="mt-8 sm:mt-10 space-y-5 sm:space-y-6"
             onSubmit={handleSubmit}
           >
             {error && (
@@ -526,7 +528,7 @@ const Register = () => {
                   />
 
                   {/* Status Icon */}
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center pointer-events-none">
                     {getFieldStatus("name") === "success" && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     )}
@@ -549,7 +551,7 @@ const Register = () => {
                     <motion.p
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="text-xs text-red-300 text-right"
+                      className="text-xs sm:text-sm text-red-300 text-right"
                     >
                       {errors.name}
                     </motion.p>
@@ -558,7 +560,7 @@ const Register = () => {
 
                 {/* Character counter */}
                 {formData.name && (
-                  <div className="mt-1 text-xs text-white/60 text-right">
+                  <div className="mt-1 text-xs sm:text-sm text-white/60 text-right">
                     {formData.name.length}/6 characters minimum
                   </div>
                 )}
@@ -587,7 +589,7 @@ const Register = () => {
                   />
 
                   {/* Status Icon */}
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center pointer-events-none">
                     {getFieldStatus("email") === "success" && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     )}
@@ -607,7 +609,7 @@ const Register = () => {
                     )}
                   </div>
                   {errors.email && (
-                    <motion.p className="text-xs text-red-300 text-right">
+                    <motion.p className="text-xs sm:text-sm text-red-300 text-right">
                       {errors.email}
                     </motion.p>
                   )}
@@ -659,7 +661,7 @@ const Register = () => {
                   />
 
                   {/* Status Icon */}
-                  <div className="absolute inset-y-0 right-12 pr-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-10 sm:right-12 pr-2 sm:pr-3 flex items-center pointer-events-none">
                     {getFieldStatus("password") === "success" && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     )}
@@ -671,7 +673,7 @@ const Register = () => {
                   {/* Show/Hide Button */}
                   <motion.button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
                     whileHover={!isMobile ? { scale: 1.1 } : {}}
                     whileTap={!isMobile ? { scale: 0.9 } : {}}
@@ -694,7 +696,7 @@ const Register = () => {
                     )}
                   </div>
                   {errors.password && (
-                    <motion.p className="text-xs text-red-300 text-right">
+                    <motion.p className="text-xs sm:text-sm text-red-300 text-right">
                       {errors.password}
                     </motion.p>
                   )}
@@ -704,7 +706,7 @@ const Register = () => {
                 {formData.password && (
                   <div className="mt-2">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-white/60">
+                      <span className="text-xs sm:text-sm text-white/60">
                         Password strength:
                       </span>
                       <span
@@ -728,7 +730,7 @@ const Register = () => {
                         }`}
                       />
                     </div>
-                    <div className="mt-1 text-xs text-white/60 text-right">
+                    <div className="mt-1 text-xs sm:text-sm text-white/60 text-right">
                       {formData.password.length}/8 characters
                     </div>
                   </div>
@@ -775,7 +777,7 @@ const Register = () => {
                   />
 
                   {/* Status Icon */}
-                  <div className="absolute inset-y-0 right-12 pr-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-10 sm:right-12 pr-2 sm:pr-3 flex items-center pointer-events-none">
                     {getFieldStatus("confirmPassword") === "success" && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     )}
@@ -787,7 +789,7 @@ const Register = () => {
                   {/* Show/Hide Button */}
                   <motion.button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     whileHover={!isMobile ? { scale: 1.1 } : {}}
                     whileTap={!isMobile ? { scale: 0.9 } : {}}
@@ -810,7 +812,7 @@ const Register = () => {
                     )}
                   </div>
                   {errors.confirmPassword && (
-                    <motion.p className="text-xs text-red-300 text-right">
+                    <motion.p className="text-xs sm:text-sm text-red-300 text-right">
                       {errors.confirmPassword}
                     </motion.p>
                   )}
@@ -825,7 +827,7 @@ const Register = () => {
                         Passwords match
                       </div>
                     ) : (
-                      <div className="text-xs text-red-300 text-right flex items-center justify-end gap-1">
+                      <div className="text-xs sm:text-sm text-red-300 text-right flex items-center justify-end gap-1">
                         <XCircle className="h-3 w-3" />
                         Passwords don't match
                       </div>
@@ -842,7 +844,7 @@ const Register = () => {
                 disabled={
                   loading || Object.values(errors).some((error) => error)
                 }
-                className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-green-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                className="group relative w-full flex justify-center py-3 sm:py-4 px-6 border border-transparent text-base sm:text-lg font-semibold rounded-xl text-green-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 whileHover={
                   !isMobile && !loading
                     ? {

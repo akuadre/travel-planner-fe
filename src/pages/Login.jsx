@@ -123,7 +123,7 @@ const Login = () => {
       }
     });
     setErrors(newErrors);
-  // }, [formData, touched]);
+    // }, [formData, touched]);
   }, [formData]);
 
   const handleChange = (e) => {
@@ -209,7 +209,7 @@ const Login = () => {
   const getInputClasses = (fieldName) => {
     const status = getFieldStatus(fieldName);
     const baseClasses =
-      "block w-full pl-12 pr-12 py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300";
+      "block w-full pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/20 border rounded-xl placeholder-white/60 text-white focus:outline-none focus:ring-2 transition-all duration-300";
 
     switch (status) {
       case "error":
@@ -334,7 +334,7 @@ const Login = () => {
       {/* Left Side - Form */}
       <motion.div
         variants={containerVariants}
-        className="flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 relative z-10"
+        className="flex-1 flex items-center justify-center px-6 py-8 sm:px-8 md:px-12 lg:px-20 xl:px-24 relative z-10"
       >
         <motion.div
           variants={containerVariants}
@@ -344,7 +344,9 @@ const Login = () => {
           <motion.div variants={itemVariants} className="text-center">
             <motion.div
               className="flex justify-center"
-              whileHover={!isMobile ? { scale: 1.1, rotate: [0, -5, 5, 0] } : {}}
+              whileHover={
+                !isMobile ? { scale: 1.1, rotate: [0, -5, 5, 0] } : {}
+              }
               whileTap={!isMobile ? { scale: 0.95 } : {}}
             >
               <motion.div
@@ -368,13 +370,13 @@ const Login = () => {
             </motion.div>
             <motion.h2
               variants={itemVariants}
-              className="mt-8 text-4xl font-bold text-white"
+              className="mt-6 text-3xl sm:text-4xl font-bold text-white"
             >
               Welcome Back
             </motion.h2>
             <motion.p
               variants={itemVariants}
-              className="mt-4 text-lg text-blue-100"
+              className="mt-3 text-base sm:text-lg text-blue-100"
             >
               Ready to continue your adventure?
             </motion.p>
@@ -383,7 +385,7 @@ const Login = () => {
           {/* Form */}
           <motion.form
             variants={itemVariants}
-            className="mt-12 space-y-6"
+            className="mt-8 sm:mt-10 space-y-5 sm:space-y-6"
             onSubmit={handleSubmit}
           >
             {error && (
@@ -555,7 +557,7 @@ const Login = () => {
                   // loading || Object.values(errors).some((error) => error)
                   loading
                 }
-                className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                className="group relative w-full flex justify-center py-3 sm:py-4 px-6 border border-transparent text-base sm:text-lg font-semibold rounded-xl text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 whileHover={
                   !isMobile && !loading
                     ? {
@@ -565,7 +567,11 @@ const Login = () => {
                     : {}
                 }
                 whileTap={!isMobile ? { scale: 0.98 } : {}}
-                transition={!isMobile ? { type: "spring", stiffness: 400, damping: 17 } : {}}
+                transition={
+                  !isMobile
+                    ? { type: "spring", stiffness: 400, damping: 17 }
+                    : {}
+                }
               >
                 {loading ? (
                   <motion.div
@@ -621,7 +627,7 @@ const Login = () => {
           {/* Demo Credentials */}
           <motion.div
             variants={itemVariants}
-            className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"
+            className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"
             whileHover={
               !isMobile
                 ? {
@@ -632,7 +638,7 @@ const Login = () => {
             }
             transition={!isMobile ? { type: "spring", stiffness: 300 } : {}}
           >
-            <p className="text-white/80 text-center text-sm">
+            <p className="text-white/80 text-center text-xs sm:text-sm">
               <strong className="text-white">Demo credentials:</strong>
               <br />
               <motion.span
@@ -694,8 +700,8 @@ const Login = () => {
               transition={{ delay: 1, duration: 0.8 }}
               className="text-xl text-blue-100 mb-12 leading-relaxed"
             >
-              Plan unforgettable adventures, create lasting memories, and explore
-              the world one destination at a time.
+              Plan unforgettable adventures, create lasting memories, and
+              explore the world one destination at a time.
             </motion.p>
 
             <motion.div
