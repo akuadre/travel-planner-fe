@@ -485,24 +485,12 @@ const DestinationDetail = () => {
                 disabled={refreshing}
                 whileHover={{ scale: refreshing ? 1 : 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="flex gap-2 items-center px-3 py-2 text-gray-600 bg-gray-100 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
                 title="Refresh"
               >
+                <span className="text-sm">Refresh</span>
                 <RefreshCw
                   className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-                />
-              </motion.button>
-
-              <motion.button
-                onClick={() => setIsFavorite(!isFavorite)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-2 text-pink-600 hover:text-pink-700 hover:bg-pink-50 rounded-lg transition-colors"
-                title={isFavorite ? "Hapus dari favorit" : "Tambah ke favorit"}
-              >
-                <Heart
-                  className="h-4 w-4"
-                  fill={isFavorite ? "currentColor" : "none"}
                 />
               </motion.button>
 
@@ -887,14 +875,6 @@ const DestinationDetail = () => {
               </h3>
 
               <div className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <Tag className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0" />
-                  <span className="text-gray-600 mr-2">ID:</span>
-                  <span className="font-mono text-gray-900 truncate">
-                    {destination.id}
-                  </span>
-                </div>
-
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0 text-sm">
                   <div className="flex items-center">
                     <Globe className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0" />
