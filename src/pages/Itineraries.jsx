@@ -133,15 +133,15 @@ const SkeletonGridView = () => (
     </div>
 
     {/* Day header skeleton */}
-    <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6 text-white">
+    <div className="bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-0">
         <div className="space-y-1.5 md:space-y-2">
-          <div className="h-5 md:h-6 lg:h-8 bg-blue-400/50 rounded animate-pulse w-40 md:w-56 lg:w-64"></div>
-          <div className="h-3 md:h-4 bg-blue-400/50 rounded animate-pulse w-32 md:w-40 lg:w-48"></div>
+          <div className="h-5 md:h-6 lg:h-8 bg-gray-300 rounded animate-pulse w-40 md:w-56 lg:w-64"></div>
+          <div className="h-3 md:h-4 bg-gray-300 rounded animate-pulse w-32 md:w-40 lg:w-48"></div>
         </div>
         <div className="text-right space-y-1">
-          <div className="h-6 md:h-8 lg:h-10 bg-blue-400/50 rounded animate-pulse w-10 md:w-12 lg:w-16"></div>
-          <div className="h-3 md:h-4 bg-blue-400/50 rounded animate-pulse w-14 md:w-16 lg:w-20"></div>
+          <div className="h-6 md:h-8 lg:h-10 bg-gray-300 rounded animate-pulse w-10 md:w-12 lg:w-16"></div>
+          <div className="h-3 md:h-4 bg-gray-300 rounded animate-pulse w-14 md:w-16 lg:w-20"></div>
         </div>
       </div>
     </div>
@@ -153,7 +153,8 @@ const SkeletonGridView = () => (
           key={activity}
           className="bg-white rounded-lg md:rounded-xl lg:rounded-2xl border border-gray-200 overflow-hidden"
         >
-          <div className="bg-gradient-to-r from-blue-500 to-cyan-400 p-3 md:p-4">
+          {/* 🔥 UPDATE HEADER CARD SKELETON DARI BIRU KE GRAY */}
+          <div className="bg-gradient-to-r from-gray-200 to-gray-300 p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-1.5 md:p-2 bg-white/20 rounded-lg md:rounded-xl backdrop-blur-sm">
@@ -601,6 +602,21 @@ const Itineraries = () => {
                               : "md:flex-col md:items-start md:gap-2"
                           } flex-shrink-0`}
                         >
+                          {/* Activity Icon - Mobile lebih kecil */}
+                          <div
+                            className={`${
+                              isMobile ? "p-1.5" : "p-2 md:p-2.5"
+                            } bg-white ${
+                              isMobile ? "rounded" : "rounded-lg"
+                            } border border-gray-200 shadow-sm flex-shrink-0`}
+                          >
+                            <ActivityIcon
+                              className={`${
+                                isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+                              } text-blue-600`}
+                            />
+                          </div>
+                          
                           {/* Time Badge - Mobile lebih kecil */}
                           <div
                             className={`bg-white ${
@@ -625,21 +641,6 @@ const Itineraries = () => {
                                 {formatTime(itinerary.schedule_time)}
                               </span>
                             </div>
-                          </div>
-
-                          {/* Activity Icon - Mobile lebih kecil */}
-                          <div
-                            className={`${
-                              isMobile ? "p-1.5" : "p-2 md:p-2.5"
-                            } bg-white ${
-                              isMobile ? "rounded" : "rounded-lg"
-                            } border border-gray-200 shadow-sm flex-shrink-0`}
-                          >
-                            <ActivityIcon
-                              className={`${
-                                isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
-                              } text-blue-600`}
-                            />
                           </div>
                         </div>
 
@@ -781,7 +782,9 @@ const Itineraries = () => {
                   isMobile ? "flex-shrink-0 px-3 py-2" : "px-4 py-3"
                 } rounded-xl border-2 transition-all font-semibold ${
                   selectedDay === dayNumber
-                    ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white border-transparent shadow-lg"
+                    ? `bg-gradient-to-r ${getDayColor(
+                        dayNumber
+                      )} text-white border-transparent shadow-lg`
                     : "bg-white text-gray-700 border-gray-300 hover:border-blue-300 hover:bg-blue-50"
                 }`}
               >
@@ -799,7 +802,7 @@ const Itineraries = () => {
           key={selectedDay}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`bg-gradient-to-r from-blue-500 to-cyan-400 ${
+          className={`bg-gradient-to-r ${getDayColor(selectedDay)} ${
             isMobile ? "rounded-xl p-4" : "rounded-2xl p-6"
           } text-white`}
         >
