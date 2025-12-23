@@ -1,18 +1,108 @@
-# React + Vite
+# Travel Planner (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplikasi frontend berbasis React untuk merencanakan perjalanan wisata, mengelola destinasi, dan membuat itinerary. Project ini dibangun menggunakan ekosistem React modern dengan Vite dan Tailwind CSS v4.
 
-Currently, two official plugins are available:
+## 🌟 Fitur Utama
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Berdasarkan struktur kode dan dependensi, berikut adalah fitur utama aplikasi:
 
-## React Compiler
+* **Autentikasi Pengguna**: Halaman Login dan Register untuk keamanan akses.
+* **Manajemen Destinasi**:
+    * Melihat daftar destinasi wisata.
+    * Melihat detail destinasi.
+    * Menambah/Mengedit data destinasi melalui formulir.
+* **Perencanaan Itinerary**: Membuat dan mengatur jadwal perjalanan.
+* **Antarmuka Interaktif**: Menggunakan Modal, Notifikasi, dan transisi animasi.
+* **Desain Responsif**: Tampilan yang menyesuaikan perangkat desktop dan mobile.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## 🛠 Teknologi yang Digunakan
 
-Note: This will impact Vite dev & build performances.
+Project ini dibangun menggunakan *stack* teknologi berikut:
 
-## Expanding the ESLint configuration
+* **Core**: [React](https://react.dev/) (v19), [React DOM](https://react.dev/)
+* **Build Tool**: [Vite](https://vitejs.dev/)
+* **Styling**: [Tailwind CSS](https://tailwindcss.com/) (v4)
+* **Routing**: [React Router DOM](https://reactrouter.com/) (v7)
+* **State & API**: [Axios](https://axios-http.com/)
+* **Animasi**: [Framer Motion](https://www.framer.com/motion/)
+* **Ikon**: [Lucide React](https://lucide.dev/)
+* **Utilities**: React Responsive
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📋 Prasyarat Instalasi
+
+Sebelum memulai, pastikan komputer Anda telah terinstal:
+
+* [Node.js](https://nodejs.org/) (Versi LTS direkomendasikan)
+* npm (bawaan Node.js) atau yarn/pnpm
+
+## 🚀 Cara Instalasi dan Penggunaan
+
+1.  **Clone Repository**
+    ```bash
+    git clone [https://github.com/akuadre/travel-planner-fe.git](https://github.com/akuadre/travel-planner-fe.git)
+    cd travel-planner-fe
+    ```
+
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Jalankan Mode Development**
+    Untuk menjalankan aplikasi di server lokal (biasanya di http://localhost:5173):
+    ```bash
+    npm run dev
+    ```
+
+4.  **Build untuk Production**
+    Untuk membuild aplikasi menjadi file statis:
+    ```bash
+    npm run build
+    ```
+
+5.  **Preview Hasil Build**
+    ```bash
+    npm run preview
+    ```
+
+## 📂 Susunan Project
+
+Berikut adalah struktur folder utama dari aplikasi ini:
+
+```text
+travel-planner-fe/
+├── public/              # Aset statis (gambar background, icon)
+├── src/
+│   ├── assets/          # Aset project (logo, svg)
+│   ├── components/      # Komponen UI yang dapat digunakan kembali
+│   │   ├── common/      # Komponen umum (OptimizedImage, dll)
+│   │   ├── layout/      # Header, Footer, Sidebar
+│   │   └── ...          # Modal, Form, Notification
+│   ├── layouts/         # Layout utama aplikasi (AppLayout)
+│   ├── pages/           # Halaman utama (Home, Login, Destinations, dll)
+│   ├── routes/          # Konfigurasi routing (AuthRoutes)
+│   ├── services/        # Logika API (auth, destination, itinerary)
+│   ├── utils/           # Fungsi utilitas (auth helper)
+│   ├── App.jsx          # Komponen root utama
+│   ├── main.jsx         # Entry point aplikasi
+│   └── index.css        # Global styles & konfigurasi Tailwind
+├── .gitignore
+├── eslint.config.js     # Konfigurasi ESLint
+├── index.html
+├── package.json         # Manifest project & dependensi
+└── vite.config.js       # Konfigurasi Vite
+```
+
+## 🤝 Kontribusi
+
+Kontribusi selalu diterima! Jika Anda ingin berkontribusi:
+
+1. Fork repository ini.
+2. Buat branch fitur baru (git checkout -b fitur-baru).
+3. Commit perubahan Anda (git commit -m 'Menambahkan fitur baru').
+4. Push ke branch tersebut (git push origin fitur-baru).
+5. Buat Pull Request.
+
+## 📄 Lisensi
+
+Project ini dilisensikan di bawah MIT License.
