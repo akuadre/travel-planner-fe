@@ -2,6 +2,11 @@
 
 Aplikasi frontend berbasis React untuk merencanakan perjalanan wisata, mengelola destinasi, dan membuat itinerary. Project ini dibangun menggunakan ekosistem React modern dengan Vite dan Tailwind CSS v4.
 
+## 🎥 Video Penjelasan
+
+Link video demo dan penjelasan aplikasi:
+https://youtu.be/Fxz7Sb3CI_I
+
 ## 🌟 Fitur Utama
 
 Berdasarkan struktur kode dan dependensi, berikut adalah fitur utama aplikasi:
