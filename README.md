@@ -26,7 +26,6 @@ Project ini dibangun menggunakan *stack* teknologi berikut:
 * **State & API**: [Axios](https://axios-http.com/)
 * **Animasi**: [Framer Motion](https://www.framer.com/motion/)
 * **Ikon**: [Lucide React](https://lucide.dev/)
-* **Utilities**: React Responsive
 
 ## 📋 Prasyarat Instalasi
 
