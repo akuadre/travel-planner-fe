@@ -14,11 +14,9 @@ export const destinationService = {
     // 🔥 Cek cache masih valid
     const now = Date.now();
     if (destinationsCache && (now - lastFetchTime) < CACHE_DURATION) {
-      console.log('📦 Using cached destinations');
       return Promise.resolve(destinationsCache);
     }
-
-    console.log('🔄 Fetching destinations from API');
+    
     try {
       const response = await api.get("/destinations");
       destinationsCache = response.data;
@@ -34,7 +32,6 @@ export const destinationService = {
   clearCache: () => {
     destinationsCache = null;
     lastFetchTime = 0;
-    console.log('🧹 Destination cache cleared');
   },
 
   // Get single destination - NO CACHE untuk detail
@@ -46,20 +43,6 @@ export const destinationService = {
   // Create new destination - FIXED VERSION
   create: async (destinationData) => {
     const formData = new FormData();
-
-    console.log("Creating destination with data:", {
-      title: destinationData.get("title"),
-      departure_date: destinationData.get("departure_date"),
-      budget: destinationData.get("budget"),
-      duration_days: destinationData.get("duration_days"),
-      is_achieved: destinationData.get("is_achieved"),
-      hasPhoto: destinationData.get("photo") ? "Yes" : "No",
-    });
-
-    // Append all fields to FormData
-    for (let [key, value] of destinationData.entries()) {
-      console.log(`FormData - ${key}:`, value);
-    }
 
     const response = await api.post("/destinations", destinationData, {
       headers: {
@@ -75,17 +58,6 @@ export const destinationService = {
   // services/destinationService.js - PERBAIKI update method
   update: async (id, formData) => {
     try {
-      console.log("🔄 Updating destination:", id);
-
-      // Debug: Log semua data di FormData
-      for (let [key, value] of formData.entries()) {
-        if (key === "photo") {
-          console.log(`📸 Photo:`, value.name, value.type, value.size);
-        } else {
-          console.log(`📦 ${key}:`, value);
-        }
-      }
-
       formData.append("_method", "PUT");
 
       const response = await api.post(`/destinations/${id}`, formData, {
@@ -93,8 +65,6 @@ export const destinationService = {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      console.log("✅ Update successful:", response.data);
       
       // 🔥 Clear cache setelah update
       destinationService.clearCache();

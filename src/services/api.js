@@ -18,33 +18,17 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  
-  console.log(`🚀 ${config.method?.toUpperCase()} ${config.url}`, {
-    data: config.data,
-    headers: config.headers
-  });
-  
+
   return config;
 });
 
 // Add response logger
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url}`, {
-      status: response.status,
-      data: response.data
-    });
     return response;
   },
   (error) => {
-    console.error(`❌ ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
-    
     if (error.response?.status === 401) {
-      console.log('🛑 Unauthorized, clearing auth data');
       localStorage.removeItem('auth_token');
       window.location.href = '/login';
     }

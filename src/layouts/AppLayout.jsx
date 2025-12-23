@@ -16,12 +16,10 @@ const AppLayout = () => {
   // Biarkan CSS yang handle mobile/desktop
 
   const toggleSidebar = useCallback(() => {
-    console.log("Toggle sidebar clicked");
     setSidebarOpen(prev => !prev);
   }, []);
 
   const closeSidebar = useCallback(() => {
-    console.log("Closing sidebar");
     setSidebarOpen(false);
   }, []);
 

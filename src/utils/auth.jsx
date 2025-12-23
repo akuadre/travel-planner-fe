@@ -25,13 +25,11 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-
-      console.log("🌐 Fetching user from API...");
+      
       const response = await authService.getUser();
       
       if (response && response.user) {
         setUser(response.user);
-        console.log("✅ User loaded from API:", response.user);
       } else {
         console.error("❌ Invalid API response");
         setUser(null);

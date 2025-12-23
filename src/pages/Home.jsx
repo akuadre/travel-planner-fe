@@ -386,8 +386,6 @@ const StoryCarousel = ({ upcomingDestinations }) => {
     if (!photoPath) return null;
     if (photoPath.startsWith("http")) return photoPath;
 
-    console.log("📸 DEBUG - Original photoPath:", photoPath);
-
     // CASE 1: Path sudah relatif "destinations/filename.jpg"
     if (photoPath.startsWith("destinations/")) {
       return `${STORAGE_BASE_URL}/${photoPath}`;

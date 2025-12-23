@@ -4,9 +4,7 @@ export const itineraryService = {
   // Get itineraries by destination
   getByDestination: async (destinationId) => {
     try {
-      console.log('Fetching itineraries for destination:', destinationId);
       const response = await api.get(`/destinations/${destinationId}/itineraries`);
-      console.log('Itineraries response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching itineraries:', error);

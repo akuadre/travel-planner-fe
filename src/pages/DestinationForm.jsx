@@ -97,7 +97,7 @@ const DestinationForm = () => {
     }
 
     return () => {
-      console.log("🧽 Component cleanup");
+      // console.log("🧽 Component cleanup");
     };
   }, [id]);
 

@@ -8,8 +8,6 @@ export const authService = {
         password,
       });
 
-      console.log("🔐 Login raw response:", response.data);
-
       const data = response.data;
 
       if (data.access_token && data.user) {
@@ -36,8 +34,6 @@ export const authService = {
         password,
         password_confirmation: password,
       });
-
-      console.log("👤 Register raw response:", response.data);
 
       const data = response.data;
 
