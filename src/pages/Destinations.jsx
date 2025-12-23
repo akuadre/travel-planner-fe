@@ -1006,7 +1006,7 @@ const Destinations = () => {
                     onClick={() => setSelectedDestinations([])}
                     className="px-3 py-1.5 md:px-4 md:py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg md:rounded-xl hover:bg-gray-50 transition-all font-medium text-xs md:text-sm"
                   >
-                    Hapus Pilihan
+                    Batalkan
                   </button>
                 </div>
               </div>
