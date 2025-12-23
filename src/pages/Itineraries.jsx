@@ -33,6 +33,7 @@ import {
   STORAGE_BASE_URL,
 } from "../services/destinationService";
 import Notification, { useNotification } from "../components/Notification";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 // 🔥 Skeleton Loading Components - Desktop tetap sama
 const SkeletonStats = () => (
@@ -275,6 +276,10 @@ const Itineraries = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { notification, showNotification, dismissNotification } =
     useNotification();
 
@@ -372,22 +377,31 @@ const Itineraries = () => {
     setEditingItinerary(null);
   };
 
-  const handleDelete = async (itineraryId) => {
-    if (
-      window.confirm(
-        "Apakah Anda yakin ingin menghapus item rencana perjalanan ini?"
-      )
-    ) {
-      try {
-        await itineraryService.delete(itineraryId);
-        setItineraries((prev) =>
-          prev.filter((item) => item.id !== itineraryId)
-        );
-        showNotification("Aktivitas berhasil dihapus", "success");
-      } catch (error) {
-        console.error("Failed to delete itinerary:", error);
-        showNotification("Gagal menghapus aktivitas", "error");
-      }
+  const handleDeleteClick = (itinerary) => {
+    setDeleteTarget({
+      id: itinerary.id,
+      title: `${itinerary.location} (Hari ${itinerary.day_number})`,
+    });
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      setIsDeleting(true);
+      await itineraryService.delete(deleteTarget.id);
+      setItineraries((prev) =>
+        prev.filter((item) => item.id !== deleteTarget.id)
+      );
+      showNotification("Aktivitas berhasil dihapus", "success");
+      setDeleteModalOpen(false);
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error("Failed to delete itinerary:", error);
+      showNotification("Gagal menghapus aktivitas", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -616,7 +630,7 @@ const Itineraries = () => {
                               } text-blue-600`}
                             />
                           </div>
-                          
+
                           {/* Time Badge - Mobile lebih kecil */}
                           <div
                             className={`bg-white ${
@@ -721,7 +735,7 @@ const Itineraries = () => {
                               {isMobile && <span>Edit</span>}
                             </button>
                             <button
-                              onClick={() => handleDelete(itinerary.id)}
+                              onClick={() => handleDeleteClick(itinerary)}
                               className={`${
                                 isMobile
                                   ? "flex-1 flex items-center justify-center gap-1 py-1.5 text-xs"
@@ -905,7 +919,7 @@ const Itineraries = () => {
                         Edit
                       </motion.button>
                       <motion.button
-                        onClick={() => handleDelete(itinerary.id)}
+                        onClick={() => handleDeleteClick(itinerary)}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors text-sm font-medium"
@@ -1200,6 +1214,17 @@ const Itineraries = () => {
       <Notification
         notification={notification}
         onDismiss={dismissNotification}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title={deleteTarget?.title}
+        isLoading={isDeleting}
       />
 
       {/* HEADER - Mobile responsive, desktop tetap */}
