@@ -1220,13 +1220,8 @@ const Home = () => {
       setIsDataLoaded(false);
       setError("");
 
-      // 🔥 PERBAIKI console.time - handle duplicate timers
-      const timerName = `fetch-destinations-${Date.now()}`;
-      console.time(timerName);
-
       const data = await destinationService.getAll();
-
-      console.timeEnd(timerName);
+      
       setDestinations(data);
       setIsDataLoaded(true);
     } catch (error) {
