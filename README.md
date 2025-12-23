@@ -39,7 +39,7 @@ Sebelum memulai, pastikan komputer Anda telah terinstal:
 
 1.  **Clone Repository**
     ```bash
-    git clone [https://github.com/akuadre/travel-planner-fe.git](https://github.com/akuadre/travel-planner-fe.git)
+    git clone https://github.com/akuadre/travel-planner-fe.git
     cd travel-planner-fe
     ```
 
