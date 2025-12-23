@@ -26,7 +26,6 @@ Project ini dibangun menggunakan *stack* teknologi berikut:
 * **State & API**: [Axios](https://axios-http.com/)
 * **Animasi**: [Framer Motion](https://www.framer.com/motion/)
 * **Ikon**: [Lucide React](https://lucide.dev/)
-* **Utilities**: React Responsive
 
 ## 📋 Prasyarat Instalasi
 
@@ -39,7 +38,7 @@ Sebelum memulai, pastikan komputer Anda telah terinstal:
 
 1.  **Clone Repository**
     ```bash
-    git clone [https://github.com/akuadre/travel-planner-fe.git](https://github.com/akuadre/travel-planner-fe.git)
+    git clone https://github.com/akuadre/travel-planner-fe.git
     cd travel-planner-fe
     ```
 
