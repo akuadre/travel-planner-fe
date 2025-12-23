@@ -527,6 +527,7 @@ const Register = () => {
                     id="name"
                     name="name"
                     type="text"
+                    autoComplete="off"
                     value={formData.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -588,6 +589,7 @@ const Register = () => {
                     id="email"
                     name="email"
                     type="email"
+                    autoComplete="off"
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -645,6 +647,7 @@ const Register = () => {
                   <input
                     id="password"
                     name="password"
+                    autoComplete="off"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={handleChange}
@@ -761,6 +764,7 @@ const Register = () => {
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
+                    autoComplete="off"
                     type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
                     onChange={handleChange}
