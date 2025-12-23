@@ -31,6 +31,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNotification } from "../components/Notification";
 
 import {
   STORAGE_BASE_URL,
@@ -348,7 +349,10 @@ const DestinationDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [lastUpdatedId, setLastUpdatedId] = useState(null);
+
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     loadDestination();
@@ -382,39 +386,96 @@ const DestinationDetail = () => {
     );
   }
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadDestination();
-    setTimeout(() => setRefreshing(false), 500);
+  const toggleStatus = async () => {
+    if (!destination || isUpdating) return;
+
+    // 🔥 CEK APAKAH SUDAH "SELESAI" DAN TANGGALNYA SUDAH LEWAT
+    if (destination.is_achieved) {
+      const departureDate = new Date(destination.departure_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (departureDate < today) {
+        // 🔥 GANTI ALERT DENGAN NOTIFICATION
+        showNotification(
+          "Tidak dapat mengubah status destinasi masa lalu menjadi perencanaan",
+          "error"
+        );
+        return;
+      }
+    }
+
+    setIsUpdating(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("is_achieved", !destination.is_achieved ? "1" : "0");
+
+      await destinationService.update(destination.id, formData);
+
+      // 🔥 REFRESH PAGE
+      await loadDestination();
+
+      // 🔥 GANTI ALERT DENGAN NOTIFICATION
+      const statusText = !destination.is_achieved ? "selesai" : "perencanaan";
+      showNotification(
+        `Status destinasi berhasil diubah menjadi ${statusText}`,
+        "success"
+      );
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      // 🔥 GANTI ALERT DENGAN NOTIFICATION
+      showNotification(
+        `Gagal memperbarui status: ${
+          error.response?.data?.message || "Coba lagi nanti"
+        }`,
+        "error"
+      );
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDelete = async () => {
     if (window.confirm("Apakah Anda yakin ingin menghapus destinasi ini?")) {
       try {
         await destinationService.delete(id);
-        navigate("/destinations");
+        // 🔥 NOTIFIKASI SEBELUM NAVIGATE
+        showNotification("Destinasi berhasil dihapus", "success");
+        setTimeout(() => navigate("/destinations"), 500); // Delay sedikit untuk lihat notifikasi
       } catch (error) {
         console.error("Failed to delete destination:", error);
-        alert("Gagal menghapus destinasi");
+        // 🔥 GANTI ALERT DENGAN NOTIFICATION
+        showNotification("Gagal menghapus destinasi", "error");
       }
     }
   };
 
-  const toggleStatus = async () => {
-    if (!destination) return;
-
+  const handleRefresh = async () => {
+    setRefreshing(true);
     try {
-      const updatedDestination = await destinationService.update(
-        destination.id,
-        {
-          is_achieved: !destination.is_achieved,
-        }
-      );
-      setDestination(updatedDestination);
+      await loadDestination();
+      // 🔥 TAMBAHKAN NOTIFIKASI
+      showNotification("Data destinasi berhasil dimuat ulang", "success");
     } catch (error) {
-      console.error("Failed to update status:", error);
-      alert("Gagal memperbarui status");
+      showNotification("Gagal memuat ulang data", "error");
+    } finally {
+      setTimeout(() => setRefreshing(false), 500);
     }
+  };
+
+  // 🔥 UPDATE BUTTON AGAR DISABLE JIKA TIDAK BISA DIUBAH
+  const isPastDestination = () => {
+    if (!destination) return false;
+    const departureDate = new Date(destination.departure_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return departureDate < today;
+  };
+
+  const canChangeToPlanning = () => {
+    if (!destination.is_achieved) return true; // Sudah perencanaan
+    return !isPastDestination(); // Hanya bisa jika belum lewat
   };
 
   const getImageUrl = (photoPath) => {
@@ -498,15 +559,41 @@ const DestinationDetail = () => {
 
               <motion.button
                 onClick={toggleStatus}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={
+                  !isUpdating && canChangeToPlanning() ? { scale: 1.05 } : {}
+                }
+                whileTap={
+                  !isUpdating && canChangeToPlanning() ? { scale: 0.95 } : {}
+                }
+                disabled={
+                  isUpdating || (destination.is_achieved && isPastDestination())
+                }
                 className={`inline-flex items-center px-3 py-1.5 text-sm rounded-lg transition-all font-medium ${
-                  destination.is_achieved
+                  isUpdating
+                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                    : destination.is_achieved
                     ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
                     : "bg-green-100 text-green-700 hover:bg-green-200"
+                } ${
+                  isUpdating || (destination.is_achieved && isPastDestination())
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                 }`}
+                title={
+                  isUpdating
+                    ? "Memperbarui status..."
+                    : destination.is_achieved && isPastDestination()
+                    ? "Destinasi masa lalu tidak dapat diubah ke perencanaan"
+                    : ""
+                }
               >
-                {destination.is_achieved ? (
+                {isUpdating ? (
+                  <>
+                    <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full mr-1"></div>
+                    <span className="hidden sm:inline">Memproses...</span>
+                    <span className="sm:hidden">...</span>
+                  </>
+                ) : destination.is_achieved ? (
                   <>
                     <XCircle className="h-3 w-3 mr-1" />
                     <span className="hidden sm:inline">Tandai Planning</span>
