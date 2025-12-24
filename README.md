@@ -2,6 +2,13 @@
 
 Aplikasi frontend berbasis React untuk merencanakan perjalanan wisata, mengelola destinasi, dan membuat itinerary. Project ini dibangun menggunakan ekosistem React modern dengan Vite dan Tailwind CSS v4.
 
+## 🖥️ Repository Backend (Terpisah)
+
+Backend dibangun menggunakan **Laravel** dan berada di repository terpisah:
+
+Backend Repository  
+https://github.com/akuadre/travel-planner-be
+
 ## 🎥 Video Penjelasan
 
 Link video demo dan penjelasan aplikasi:
