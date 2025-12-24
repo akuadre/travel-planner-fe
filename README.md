@@ -9,11 +9,6 @@ Backend dibangun menggunakan **Laravel** dan berada di repository terpisah:
 Backend Repository  
 https://github.com/akuadre/travel-planner-be
 
-## 🎥 Video Penjelasan
-
-Link video demo dan penjelasan aplikasi:
-https://youtu.be/Fxz7Sb3CI_I
-
 ## 🌟 Fitur Utama
 
 Berdasarkan struktur kode dan dependensi, berikut adalah fitur utama aplikasi:
@@ -113,6 +108,11 @@ Kontribusi selalu diterima! Jika Anda ingin berkontribusi:
 3. Commit perubahan Anda (git commit -m 'Menambahkan fitur baru').
 4. Push ke branch tersebut (git push origin fitur-baru).
 5. Buat Pull Request.
+
+## 🎥 Video Penjelasan
+
+Link video demo dan penjelasan aplikasi:
+https://youtu.be/Fxz7Sb3CI_I
 
 ## 📄 Lisensi
 
